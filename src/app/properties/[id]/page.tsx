@@ -140,7 +140,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                     </div>
                     {agent.isVerified && (
                       <div className="absolute -bottom-1 -right-1 bg-[#845326] text-white p-1 rounded-full border-2 border-[#f7f9fb]">
-                        <span className="material-symbols-outlined text-[12px]" style={{ fontVariantSettings: "'FILL' 1" }}>verified</span>
+                        <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                       </div>
                     )}
                   </div>
