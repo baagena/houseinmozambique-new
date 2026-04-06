@@ -42,7 +42,7 @@ function AuthForm() {
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
       {/* Left: Editorial Visual */}
-      <section className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#002045] items-end p-12 lg:p-20">
+      <section className="hidden md:flex md:w-1/3 relative overflow-hidden bg-[#002045] items-end p-12 lg:p-20">
         <div className="absolute inset-0 z-0">
           <Image src={BG_IMG} alt="Luxury Villa" fill className="object-cover opacity-60 mix-blend-luminosity" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#002045] via-transparent to-transparent opacity-90" />
