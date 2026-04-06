@@ -262,7 +262,7 @@ function PropertiesContent() {
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
               {sorted.map((p) => (
-                <PropertyCard key={p.id} property={p} variant="search" />
+                <PropertyCard key={p.id} property={p} />
               ))}
             </div>
 
