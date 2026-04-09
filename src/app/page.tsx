@@ -159,10 +159,24 @@ export default function HomePage() {
                 seeAllUrl="/properties?location=Nampula"
                 subtitle="Exclusive opportunities in the north"
             />
+
+            <CategoryCarousel
+                title="Prime Tete"
+                properties={teteProps}
+                seeAllUrl="/properties?location=Tete"
+                subtitle="High-growth opportunities in the industrial capital"
+            />
+
+            <CategoryCarousel
+                title="Pristine Pemba"
+                properties={pembaProps}
+                seeAllUrl="/properties?location=Pemba"
+                subtitle="Luxury waterfront living in the far north"
+            />
           </section>
 
           {/* Inhambane Grid (kept as grid for layout variety) */}
-          <div className="space-y-8">
+          <div className="space-y-8 pb-12">
             <Link href="/properties?location=Inhambane" className="flex items-center gap-2 group cursor-pointer w-fit">
               <h3 className="text-2xl font-bold text-[#191c1e]">
                 Beachfront in Inhambane
@@ -176,32 +190,6 @@ export default function HomePage() {
               {inhamProps.slice(0, 4).map((p) => (
                 <PropertyCard key={p.id} property={p} hideLocation={true} />
               ))}
-            </div>
-          </div>
-
-          {/* Tete & Pemba Simplified Grids */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-[#c4c6cf]/20">
-            <div className="space-y-6">
-              <Link href="/properties?location=Tete" className="flex items-center gap-2 group cursor-pointer w-fit">
-                <h3 className="text-2xl font-bold text-[#191c1e]">Prime Tete</h3>
-                <span className="material-symbols-outlined text-[#43474e] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-              </Link>
-              <div className="grid grid-cols-2 gap-4">
-                {teteProps.slice(0, 4).map((p) => (
-                  <PropertyCard key={p.id} property={p} hideLocation={true} />
-                ))}
-              </div>
-            </div>
-            <div className="space-y-6">
-              <Link href="/properties?location=Pemba" className="flex items-center gap-2 group cursor-pointer w-fit">
-                <h3 className="text-2xl font-bold text-[#191c1e]">Pristine Pemba</h3>
-                <span className="material-symbols-outlined text-[#43474e] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-              </Link>
-              <div className="grid grid-cols-2 gap-4">
-                {pembaProps.slice(0, 4).map((p) => (
-                  <PropertyCard key={p.id} property={p} hideLocation={true} />
-                ))}
-              </div>
             </div>
           </div>
         </div>
