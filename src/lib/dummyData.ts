@@ -55,7 +55,19 @@ export const properties: Property[] = [
     isSuperhost: true,
     isRareFind: true,
     badge: 'Superhost',
-    images: [IMG.detail1, IMG.detail2, IMG.detail3, IMG.detail4, IMG.detail5],
+    images: [
+      IMG.detail1,   // Main hero — exterior pool shot
+      IMG.detail2,   // Living room
+      IMG.detail3,   // Master bedroom
+      IMG.detail4,   // Bathroom
+      IMG.detail5,   // Kitchen
+      IMG.villa1,    // Garden / exterior angle 2
+      IMG.villa2,    // Living / dining area
+      IMG.kitchen1,  // Chef's kitchen detail
+      IMG.loft1,     // Bedroom suite
+      IMG.estate1,   // Aerial / exterior wide
+    ],
+
     description: `Experience the pinnacle of Maputo living in this architecturally significant villa located in the heart of the historic Polana district. Designed with a focus on seamless indoor-outdoor living, the property features floor-to-ceiling glass walls that disappear to merge the living area with a lush, tropical private garden.
 
 The interior is a masterclass in modern minimalism, featuring Portuguese marble flooring, custom mahogany cabinetry, and a chef's kitchen equipped with the latest European appliances. Every detail has been curated to provide an atmosphere of serene luxury, from the automated lighting system to the climate-controlled wine cellar.
@@ -812,8 +824,8 @@ export function formatPrice(price: number, unit: Property['priceUnit']): string 
   }).format(price);
 
   switch (unit) {
-    case 'monthly': return `${formatted}/mo`;
-    case 'nightly': return `${formatted}/night`;
+    case 'monthly': return `${formatted}`;
+    case 'nightly': return `${formatted}`;
     case 'sale': return formatted;
     default: return formatted;
   }

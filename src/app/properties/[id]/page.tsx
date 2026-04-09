@@ -31,7 +31,14 @@ export default async function PropertyDetailPage({ params }: Props) {
       <main className="max-w-7xl mx-auto px-4 md:px-8">
 
         {/* ── Dynamic Hero Gallery ── */}
-        <PropertyGallery images={property.images} title={property.title} />
+        <PropertyGallery
+          images={property.images}
+          title={property.title}
+          isSuperhost={property.isSuperhost}
+          isRareFind={property.isRareFind}
+          isNew={property.isNew}
+          isPremium={property.isPremium}
+        />
 
         {/* ── Main Content ── */}
         <div className="flex flex-col lg:flex-row gap-16 pb-24">
