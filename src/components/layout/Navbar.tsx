@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
+import { initAuth, getAuth, clearAuth } from '@/lib/auth';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -10,6 +11,7 @@ const navLinks = [
   { href: '/properties?type=Buy', label: 'Buy' },
   { href: '/properties?type=Short+Stay', label: 'Short Stay' },
   { href: '/agents', label: 'Agents' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 function NavbarContent() {
@@ -19,15 +21,16 @@ function NavbarContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [isDevMode, setIsDevMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Read auth state from localStorage after mount (client-only)
+  // Read auth state using centralized utility after mount
   useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const name = localStorage.getItem('userName') || 'Curator';
-    setIsLoggedIn(loggedIn);
-    setUserName(name);
+    const auth = initAuth();
+    setIsLoggedIn(auth.isLoggedIn);
+    setUserName(auth.userName);
+    setIsDevMode(!!auth.isDevAutoLogin);
   }, []);
 
   // Close dropdown on outside click
@@ -42,16 +45,16 @@ function NavbarContent() {
   }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('selectedPlan');
+    clearAuth();
     setIsLoggedIn(false);
+    setIsDevMode(false);
     setDropdownOpen(false);
     router.push('/');
   };
 
-  // Hide Navbar on auth page
-  if (pathname?.startsWith('/auth')) return null;
+  // Hide Navbar on specific routes (Auth, Dashboard, Post Property)
+  const hideNavbarPaths = ['/auth', '/dashboard', '/post-property'];
+  if (hideNavbarPaths.some(path => pathname?.startsWith(path))) return null;
 
   const userInitials = userName
     .split(' ')
@@ -149,7 +152,12 @@ function NavbarContent() {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-black text-[#002045] tracking-tight leading-tight">{userName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-black text-[#002045] tracking-tight leading-tight">{userName}</p>
+                        {isDevMode && (
+                          <span className="bg-[#845326]/10 text-[#845326] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">Premium Curator</p>
                     </div>
                   </div>

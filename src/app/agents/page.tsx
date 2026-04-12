@@ -147,7 +147,7 @@ export default function AgentsPage() {
               <Link href="/post-property" className="bg-[#845326] text-white px-8 py-4 rounded-xl font-extrabold text-lg shadow-xl hover:-translate-y-0.5 transition-all text-center">
                 List Your Property
               </Link>
-              <Link href="/auth" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-extrabold text-lg hover:bg-white/20 transition-all text-center">
+              <Link href="/auth/agent-register" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-extrabold text-lg hover:bg-white/20 transition-all text-center">
                 Join as an Agent
               </Link>
             </div>

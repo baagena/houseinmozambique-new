@@ -140,14 +140,14 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Link
-                href={`/auth?redirect=/post-property&plan=${plan.name.toLowerCase()}`}
+                href={plan.name === 'Enterprise' ? '/auth/agent-register' : `/auth?redirect=/post-property&plan=${plan.name.toLowerCase()}`}
                 className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
                   plan.highlighted
                     ? 'bg-[#845326] text-white hover:opacity-90'
                     : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
                 }`}
               >
-                Post Your House
+                {plan.name === 'Enterprise' ? 'Contact Our Team' : 'Post Your House'}
               </Link>
             </div>
           ))}

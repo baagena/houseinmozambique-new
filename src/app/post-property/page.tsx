@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { initAuth } from '@/lib/auth';
 
 const STEPS = [
   { id: 0, label: 'Property Details', icon: 'home_work', description: 'Basic info about your home' },
@@ -62,8 +63,8 @@ export default function PostPropertyPage() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
+    const auth = initAuth();
+    if (!auth.isLoggedIn) {
       router.push('/auth?redirect=/post-property');
     } else {
       setIsAuthorized(true);
