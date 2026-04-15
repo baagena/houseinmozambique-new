@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-export const dynamic = 'force-dynamic';
 import { getPropertyById, getProperties } from '@/lib/data';
 import { formatPrice } from '@/lib/utils';
 import PropertyGallery from '@/components/properties/PropertyGallery';
