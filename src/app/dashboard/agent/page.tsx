@@ -1,5 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { getAgentById } from '@/lib/data';
+import StatCard from '@/components/dashboard/StatCard';
 
 export default async function AgentDashboard() {
   const cookieStore = await cookies();

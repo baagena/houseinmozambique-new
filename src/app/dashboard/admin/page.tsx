@@ -1,5 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
+import { prisma } from '@/lib/db';
+import { getPlatformStats } from '@/lib/data';
+import StatCard from '@/components/dashboard/StatCard';
 
 export default async function AdminDashboard() {
   const cookieStore = await cookies();

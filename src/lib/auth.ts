@@ -23,7 +23,7 @@ const IS_DEV = process.env.NODE_ENV === 'development';
 
 export const getAuth = (): AuthState => {
   if (typeof window === 'undefined') {
-    return { isLoggedIn: false, userName: '', selectedPlan: null };
+    return { isLoggedIn: false, userName: '', role: 'agent', selectedPlan: null };
   }
 
   // Auto-login logic for local development
