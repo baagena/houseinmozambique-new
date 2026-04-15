@@ -104,8 +104,10 @@ function NavbarContent() {
               );
             })}
           </div>
-
-
+  
+          {/* Visual Separator */}
+          <div className="hidden md:block h-6 w-px bg-slate-200 mx-2" />
+  
           {/* CTA Group */}
           <div className="flex items-center gap-3">
             {/* Sign In (logged out, desktop only) */}
