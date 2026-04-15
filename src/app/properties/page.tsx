@@ -1,4 +1,5 @@
 import { getProperties } from '@/lib/data';
+export const dynamic = 'force-dynamic';
 import PropertiesClient from '@/components/properties/PropertiesClient';
 import { Suspense } from 'react';
 

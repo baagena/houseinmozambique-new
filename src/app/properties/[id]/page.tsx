@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+export const dynamic = 'force-dynamic';
 import { getPropertyById, getProperties } from '@/lib/data';
 import { formatPrice } from '@/lib/utils';
 import PropertyGallery from '@/components/properties/PropertyGallery';
@@ -12,10 +13,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export async function generateStaticParams() {
-  const properties = await getProperties();
-  return properties.map((p) => ({ id: p.id }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;

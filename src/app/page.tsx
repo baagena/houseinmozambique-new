@@ -1,4 +1,5 @@
 import Link from 'next/link';
+export const dynamic = 'force-dynamic';
 import PropertyCard from '@/components/properties/PropertyCard';
 import CategoryCarousel from '@/components/properties/CategoryCarousel';
 import HomeHero from '@/components/home/HomeHero';
