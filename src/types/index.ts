@@ -6,7 +6,7 @@ export interface Property {
   price: number;
   priceUnit: 'sale' | 'monthly' | 'nightly';
   type: 'Villa' | 'Apartment' | 'Land' | 'Penthouse' | 'Studio' | 'Bungalow' | 'Lodge';
-  listingType: 'Buy' | 'Rent' | 'Short Stay';
+  listingType: 'Buy' | 'Rent' | 'Short Stay' | 'Auction';
   bedrooms: number;
   bathrooms: number;
   area: number; // m²
@@ -24,6 +24,7 @@ export interface Property {
   amenities: string[];
   houseRules?: string[];
   hostId: string;
+  status: 'PENDING' | 'PUBLISHED' | 'REJECTED';
   tags?: string[];
 }
 
@@ -44,7 +45,7 @@ export interface Agent {
 }
 
 export interface SearchFilters {
-  listingType?: 'Buy' | 'Rent' | 'Short Stay';
+  listingType?: 'Buy' | 'Rent' | 'Short Stay' | 'Auction';
   location?: string;
   propertyType?: string;
   minPrice?: number;

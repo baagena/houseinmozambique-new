@@ -1,10 +1,30 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import StatCard from '@/components/dashboard/StatCard';
-import { properties, agents } from '@/lib/dummyData';
-import Image from 'next/image';
+export default async function AdminDashboard() {
+  const cookieStore = await cookies();
+  const agentId = cookieStore.get('userId')?.value;
 
-export default function AdminDashboard() {
+  if (!agentId) {
+    redirect('/auth');
+  }
+
+  const admin = await prisma.agent.findUnique({
+    where: { id: agentId },
+  });
+
+  if (!admin || admin.role !== 'ADMIN') {
+    redirect('/dashboard/agent'); // Redirect non-admins to agent dashboard
+  }
+
+  const stats = await getPlatformStats();
+  
+  // Fetch latest 3 agents
+  const latestAgents = await prisma.agent.findMany({
+    take: 3,
+    orderBy: { createdAt: 'desc' },
+  });
+
   return (
     <div className="space-y-12">
       {/* Platform Header */}
@@ -21,13 +41,13 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title="Total Properties" 
-          value={properties.length} 
+          value={stats.propertyCount} 
           trend={{ value: 14, isUp: true }} 
           icon="domain" 
         />
         <StatCard 
           title="Active Agents" 
-          value={agents.length} 
+          value={stats.agentCount} 
           trend={{ value: 3, isUp: true }} 
           icon="group" 
         />
@@ -48,7 +68,7 @@ export default function AdminDashboard() {
         {/* Pending Agent Approvals */}
         <div className="lg:col-span-2 space-y-8">
           <div className="flex justify-between items-end">
-            <h3 className="text-xl font-black text-[#002045] tracking-tight">Pending Agent Approvals</h3>
+            <h3 className="text-xl font-black text-[#002045] tracking-tight">Active Curators</h3>
             <button className="text-[10px] font-black text-[#845326] uppercase tracking-[0.2em] hover:underline">View All Requests</button>
           </div>
           
@@ -56,35 +76,37 @@ export default function AdminDashboard() {
             <table className="w-full text-left border-collapse border-transparent">
               <thead>
                 <tr className="border-b border-[#f2f4f6] bg-[#f7f9fb]/50">
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Applicant</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Curator</th>
                   <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Specialization</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Experience</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Location</th>
                   <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f2f4f6]">
-                {[
-                  { name: 'Bernardo Matola', spec: 'Industrial Real Estate', exp: '12 Years', date: '2h ago' },
-                  { name: 'Isabel Langa', spec: 'Coastal Retreats', exp: '4 Years', date: '5h ago' },
-                  { name: 'Tomas Tembe', spec: 'Urban Luxury', exp: '7 Years', date: '1d ago' },
-                ].map((app, i) => (
-                  <tr key={i} className="hover:bg-[#f7f9fb] transition-colors group">
+                {latestAgents.map((agent) => (
+                  <tr key={agent.id} className="hover:bg-[#f7f9fb] transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[#f2f4f6] flex items-center justify-center text-[#1a365d] font-black text-[10px]">
-                          {app.name.split(' ').map(n => n[0]).join('')}
+                        <div className="relative w-10 h-10">
+                          {agent.avatar ? (
+                            <Image src={agent.avatar} alt={agent.name} fill className="rounded-full object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#f2f4f6] flex items-center justify-center text-[#1a365d] font-black text-[10px]">
+                              {agent.initials}
+                            </div>
+                          )}
                         </div>
                         <div>
-                          <p className="font-black text-[#002045] text-sm tracking-tight">{app.name}</p>
-                          <p className="text-[10px] text-[#c4c6cf] font-bold uppercase tracking-wider">{app.date}</p>
+                          <p className="font-black text-[#002045] text-sm tracking-tight">{agent.name}</p>
+                          <p className="text-[10px] text-[#c4c6cf] font-bold uppercase tracking-wider">{agent.title}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-[#fab983] uppercase tracking-widest">{app.spec}</span>
+                      <span className="text-[10px] font-black text-[#fab983] uppercase tracking-widest">Premium Curator</span>
                     </td>
                     <td className="px-6 py-4 text-xs font-bold text-[#74777f]">
-                      {app.exp}
+                      {agent.location}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">

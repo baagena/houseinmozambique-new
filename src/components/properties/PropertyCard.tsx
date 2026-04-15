@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Property } from '@/types';
-import { formatPrice } from '@/lib/dummyData';
+import { formatPrice } from '@/lib/utils';
 
 interface PropertyCardProps {
   property: Property;

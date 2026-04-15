@@ -1,13 +1,22 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import StatCard from '@/components/dashboard/StatCard';
-import { properties } from '@/lib/dummyData';
-import Image from 'next/image';
-import Link from 'next/link';
+export default async function AgentDashboard() {
+  const cookieStore = await cookies();
+  const agentId = cookieStore.get('userId')?.value;
 
-export default function AgentDashboard() {
-  // Mock data for the agent
-  const myProperties = properties.filter(p => p.hostId === 'agent-1');
+  if (!agentId) {
+    redirect('/auth');
+  }
+
+  const agent = await getAgentById(agentId);
+  
+  if (!agent) {
+    // If cookie exists but agent not found, clear cookie and redirect
+    redirect('/auth');
+  }
+
+  const myProperties = agent.properties || [];
   
   return (
     <div className="space-y-12">
@@ -17,7 +26,7 @@ export default function AgentDashboard() {
           Portfolio Performance
         </h2>
         <p className="text-[#74777f] font-medium font-serif leading-relaxed italic">
-          Overview of your current real estate footprint and market engagement.
+          Hello, {agent.name}. Overview of your current real estate footprint.
         </p>
       </div>
 

@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { initAuth } from '@/lib/auth';
+import { createProperty, uploadSingleImage } from '@/actions/properties';
+import Image from 'next/image';
+import { useRef } from 'react';
 
 const STEPS = [
   { id: 0, label: 'Property Details', icon: 'home_work', description: 'Basic info about your home' },
@@ -45,6 +48,9 @@ export default function PostPropertyPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState<FormData>({
     title: '',
     listingType: 'Buy',
@@ -61,6 +67,7 @@ export default function PostPropertyPage() {
     priceUnit: 'sale',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number } | null>(null);
 
   useEffect(() => {
     const auth = initAuth();
@@ -84,9 +91,88 @@ export default function PostPropertyPage() {
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setUploadStatus({ current: 0, total: images.length });
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      // Sequential Upload
+      for (let i = 0; i < images.length; i++) {
+        setUploadStatus({ current: i + 1, total: images.length });
+        
+        // Skip if already a URL (shouldn't happen here but good for safety)
+        if (!images[i].startsWith('data:')) {
+          uploadedUrls.push(images[i]);
+          continue;
+        }
+
+        const uploadResult = await uploadSingleImage(images[i]);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || `Failed to upload image ${i + 1}`);
+        }
+        uploadedUrls.push(uploadResult.url!);
+      }
+
+      // Finalize Property Creation
+      const result = await createProperty(form, uploadedUrls);
+      
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        alert(result.error || 'Failed to publish asset. Please verify details.');
+      }
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      alert(`Publication error: ${error.message || 'The connection was lost. Please try with fewer or smaller images.'}`);
+    } finally {
+      setIsSubmitting(false);
+      setUploadStatus(null);
+    }
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          // Proactive Compression Logic
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 1920; 
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Use JPEG quality 0.8 to significantly reduce file size
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          setImages((prev) => [...prev, compressedBase64]);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   if (!isAuthorized) {
@@ -108,7 +194,7 @@ export default function PostPropertyPage() {
             Listing Submitted!
           </h1>
           <p className="text-[#43474e] mb-8 leading-relaxed">
-            Your property has been submitted for review. Our curation team will review your listing within 24 hours and get back to you.
+            Your property has been submitted for review. Our team will review your listing within 24 hours and get back to you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/" className="flex-1 bg-[#002045] text-white py-4 rounded-xl font-bold text-center hover:opacity-90 transition-opacity">
@@ -171,7 +257,7 @@ export default function PostPropertyPage() {
               <div className="mt-12 p-5 bg-[#f7f9fb] rounded-2xl border border-[#c4c6cf]/10">
                 <p className="text-[10px] font-bold text-[#002045] uppercase tracking-widest mb-2">Need help?</p>
                 <p className="text-[11px] text-[#43474e] leading-relaxed">
-                  Our curation team is available 24/7 to help you with your listing. 
+                  Our team is available 24/7 to help you with your listing. 
                   <a href="#" className="text-[#845326] font-bold block mt-1 hover:underline">Contact Support</a>
                 </p>
               </div>
@@ -214,7 +300,7 @@ export default function PostPropertyPage() {
                       <div className="space-y-4">
                         <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">Intention</label>
                         <div className="flex gap-2 bg-[#f2f4f6]/50 p-1.5 rounded-xl border border-[#f2f4f6]">
-                          {['Buy', 'Rent', 'Short Stay'].map((t) => (
+                          {['Buy', 'Rent', 'Short Stay', 'Auction'].map((t) => (
                             <button
                               key={t}
                               type="button"
@@ -357,10 +443,21 @@ export default function PostPropertyPage() {
                       <div className="flex items-center gap-3 pl-1">
                         <span className="material-symbols-outlined text-[#845326] text-xl">camera_outdoor</span>
                         <label className="block text-sm font-bold text-[#002045] uppercase tracking-[0.15em]" style={{ fontFamily: 'var(--font-headline)' }}>
-                          Curated Photography
+                          Property Photography
                         </label>
                       </div>
-                      <div className="border-4 border-dashed border-[#f2f4f6] rounded-2xl p-12 text-center hover:bg-[#002045]/[0.02] transition-all cursor-pointer group relative overflow-hidden">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-4 border-dashed border-[#f2f4f6] rounded-2xl p-12 text-center hover:bg-[#002045]/[0.02] transition-all cursor-pointer group relative overflow-hidden"
+                      >
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          ref={fileInputRef}
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
                         <div className="relative z-10">
                           <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] text-[#002045] group-hover:-translate-y-2 transition-transform duration-700">
                             <span className="material-symbols-outlined text-5xl">upload_file</span>
@@ -370,9 +467,19 @@ export default function PostPropertyPage() {
                             Premium buyers expect <span className="text-[#845326] font-bold">4K Aerial and Architectural shots</span>. 
                             Min 12 high-res files recommended.
                           </p>
-                          <button type="button" className="mt-8 px-10 py-4 bg-[#002045] text-white rounded-xl text-[10px] font-black tracking-widest uppercase hover:shadow-xl hover:scale-105 transition-all">
-                            Open Media Vault
-                          </button>
+                          <div className="flex flex-wrap justify-center gap-4 mt-8">
+                            {images.length > 0 ? (
+                              images.map((img, i) => (
+                                <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-[#845326]/20">
+                                  <Image src={img} alt="Preview" fill className="object-cover" />
+                                </div>
+                              ))
+                            ) : (
+                              <button type="button" className="px-10 py-4 bg-[#002045] text-white rounded-xl text-[10px] font-black tracking-widest uppercase hover:shadow-xl hover:scale-105 transition-all">
+                                Open Media Vault
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -453,7 +560,7 @@ export default function PostPropertyPage() {
                         </div>
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/10">
                           <div className="w-3 h-3 bg-[#fab983] rounded-full animate-pulse" />
-                          <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Curation Pending</span>
+                          <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Review Pending</span>
                         </div>
                       </div>
 
@@ -481,7 +588,7 @@ export default function PostPropertyPage() {
                       <div>
                         <p className="text-sm text-[#002045] font-black tracking-tight mb-1" style={{ fontFamily: 'var(--font-headline)' }}>Editorial Compliance</p>
                         <p className="text-xs text-[#43474e] leading-relaxed max-w-lg">
-                          By confirming, you acknowledge that this listing adheres to the <span className="font-black text-[#845326] underline underline-offset-4">Elite Standards Code</span>. Our curators will finalize the narrative aesthetic before publication.
+                          By confirming, you acknowledge that this listing adheres to the <span className="font-black text-[#845326] underline underline-offset-4">Agency Standards Code</span>. Our team will finalize the narrative aesthetic before publication.
                         </p>
                       </div>
                     </div>
@@ -520,10 +627,22 @@ export default function PostPropertyPage() {
                     ) : (
                       <button
                         type="submit"
-                        className="flex-1 md:flex-none group bg-[#845326] text-white px-10 py-4 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-3 shadow-lg hover:bg-[#965f2c] hover:-translate-y-1 transition-all active:scale-95"
+                        disabled={isSubmitting}
+                        className={`flex-1 md:flex-none group bg-[#845326] text-white px-10 py-4 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-3 shadow-lg hover:bg-[#965f2c] hover:-translate-y-1 transition-all active:scale-95 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        Publish Asset
-                        <span className="material-symbols-outlined animate-pulse text-xl">publish</span>
+                        {isSubmitting ? (
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                              {uploadStatus ? `Syncing Image ${uploadStatus.current}/${uploadStatus.total}` : 'Finalizing...'}
+                            </span>
+                            <span className="material-symbols-outlined text-xl animate-spin">sync</span>
+                          </div>
+                        ) : (
+                          <>
+                            Publish Asset
+                            <span className="material-symbols-outlined text-xl animate-pulse">publish</span>
+                          </>
+                        )}
                       </button>
                     )}
                   </div>

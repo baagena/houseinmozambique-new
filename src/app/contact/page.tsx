@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 
 const CONTACT_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
 
@@ -30,8 +28,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f9fb] flex flex-col">
-      <Navbar />
+    <div className="bg-[#f7f9fb] flex flex-col">
 
       <main className="flex-1 pt-32 pb-24 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto animate-in fade-in duration-1000">
@@ -182,7 +179,7 @@ export default function ContactPage() {
 
               {/* Socials */}
               <div className="pt-12 border-t border-[#c4c6cf]/20">
-                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">Follow Our Curation</h3>
+                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">Follow Our Agents</h3>
                 <div className="flex gap-4">
                   {['Instagram', 'LinkedIn', 'Facebook', 'X'].map((social) => (
                     <Link 
@@ -203,7 +200,7 @@ export default function ContactPage() {
                   Join our agent network?
                 </h3>
                 <p className="text-[#86a0cd] text-sm font-medium mb-8 leading-relaxed relative z-10">
-                  We're always looking for talented curators to join Mozambique's premier network.
+                  We're always looking for talented agents to join Mozambique's agency network.
                 </p>
                 <Link 
                   href="/auth"
@@ -218,7 +215,6 @@ export default function ContactPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

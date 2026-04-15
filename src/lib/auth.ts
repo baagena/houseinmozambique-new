@@ -31,7 +31,7 @@ export const getAuth = (): AuthState => {
     console.log('🛠️ [Auth] Local development detected. Activating auto-login.');
     setAuth({
       isLoggedIn: true,
-      userName: 'Dev Curator',
+      userName: 'Dev Agent',
       role: 'agent',
       selectedPlan: 'Premium',
       isDevAutoLogin: true,

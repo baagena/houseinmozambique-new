@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Agent {
+  id              String     @id @default(cuid())
+  name            String
+  initials        String
+  title           String
+  location        String
+  rating          Float      @default(0)
+  reviewCount     Int        @default(0)
+  isFeatured      Boolean    @default(false)
+  isVerified      Boolean    @default(false)
+  avatar          String?
+  bio             String?
+  yearsExperience Int?
+  specializations String[]
+  email           String     @unique
+  password        String
+  role            String     @default("AGENT") // AGENT, ADMIN
+  properties      Property[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Property {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  location        String
+  city            String
+  neighborhood    String?
+  address         String?
+  price           Float
+  priceUnit       String   // "sale", "monthly", "nightly"
+  type            String   // "Villa", "Apartment", etc.
+  listingType     String   // "Buy", "Rent", "Short Stay"
+  bedrooms        Int
+  bathrooms       Int
+  area            Float
+  rating          Float?   @default(0)
+  reviewCount     Int?     @default(0)
+  isFeatured      Boolean  @default(false)
+  isSuperhost     Boolean  @default(false)
+  isRareFind      Boolean  @default(false)
+  isNew           Boolean  @default(false)
+  isPremium       Boolean  @default(false)
+  isGuestFavorite Boolean  @default(false)
+  badge           String?
+  amenities       String[]
+  images          String[]
+  host            Agent    @relation(fields: [hostId], references: [id])
+  hostId          String
+  status          String   @default("PENDING") // PENDING, PUBLISHED, REJECTED
+  tags            String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

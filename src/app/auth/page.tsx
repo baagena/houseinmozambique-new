@@ -57,7 +57,7 @@ function AuthForm() {
     password: '',
     name: '',
     // Step 2 Professional
-    title: 'Premier Curator',
+    title: 'Premier Agent',
     location: '',
     yearsExperience: 1,
     // Step 3 Narrative
@@ -65,40 +65,87 @@ function AuthForm() {
     specializations: [] as string[],
   });
 
+  const [error, setError] = useState<string | null>(null);
+
   const redirect = searchParams.get('redirect') || '/';
   const plan = searchParams.get('plan');
 
-  const handleAuth = (e?: React.FormEvent) => {
+  const handleAuth = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    // Mock Authentication Logic
-    setTimeout(() => {
-      const userRole = formData.email.includes('admin') ? 'admin' : 'agent';
+    try {
+      const endpoint = tab === 'signin' ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      const user = data.user;
       setAuth({
         isLoggedIn: true,
-        userName: formData.name || (userRole === 'admin' ? 'System Admin' : 'Premium Agent'),
-        role: userRole,
+        userName: user.name,
+        role: user.role === 'ADMIN' ? 'admin' : 'agent',
         selectedPlan: plan || null,
         isDevAutoLogin: false,
       });
       
-      const dashboardPath = userRole === 'admin' ? '/dashboard/admin' : '/dashboard/agent';
+      // Store the real ID in localStorage for data fetching
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userId', user.id);
+      }
+      
+      const dashboardPath = user.role === 'ADMIN' ? '/dashboard/admin' : '/dashboard/agent';
       router.push(dashboardPath);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const handleDevQuickLogin = (role: 'admin' | 'agent' = 'agent') => {
+  const handleDevQuickLogin = async (role: 'admin' | 'agent' = 'agent') => {
     setIsLoading(true);
-    setAuth({
-      isLoggedIn: true,
-      userName: role === 'admin' ? 'Dev Admin' : 'Dev Agent',
-      role: role,
-      selectedPlan: plan || 'Premium',
-      isDevAutoLogin: true,
-    });
-    router.push(role === 'admin' ? '/dashboard/admin' : '/dashboard/agent');
+    setError(null);
+    try {
+      const devEmail = role === 'admin' ? 'admin@houseinmoz.com' : 'agent-1@houseinmoz.com';
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: devEmail, password: 'password123' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
+
+      const user = data.user;
+      setAuth({
+        isLoggedIn: true,
+        userName: user.name,
+        role: role,
+        selectedPlan: plan || 'Premium',
+        isDevAutoLogin: true,
+      });
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userId', user.id);
+      }
+
+      router.push(role === 'admin' ? '/dashboard/admin' : '/dashboard/agent');
+    } catch (err: any) {
+      setError("Dev Login failed: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleSpecialization = (spec: string) => {
@@ -152,7 +199,8 @@ function AuthForm() {
                   ))}
                 </div>
                 <div>
-                  <p className="text-white font-black text-sm tracking-tight leading-none mb-1">Elite Network</p>
+                  <p className="text-white font-black text-sm tracking-tight leading-none mb-1">Agency Network</p>
+                  <p className="text-[10px] text-[#74777f] uppercase tracking-widest">Premium Agent</p>
                   <p className="text-[10px] text-[#86a0cd] uppercase tracking-widest font-bold">280+ Certified Partners</p>
                 </div>
               </footer>
@@ -266,6 +314,13 @@ function AuthForm() {
               </p>
             </div>
 
+            {error && (
+              <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl flex items-center gap-3">
+                <span className="material-symbols-outlined text-lg">error</span>
+                {error}
+              </div>
+            )}
+
             <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
               {tab === 'signin' ? (
                 /* Login Form */
@@ -290,6 +345,8 @@ function AuthForm() {
                         required
                         className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                         placeholder="••••••••"
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
                       />
                     </div>
                   </div>
@@ -336,6 +393,8 @@ function AuthForm() {
                           required
                           className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                           placeholder="••••••••"
+                          value={formData.password}
+                          onChange={(e) => setFormData({...formData, password: e.target.value})}
                         />
                       </div>
                     </div>

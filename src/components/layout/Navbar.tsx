@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
+import Image from 'next/image';
 import { initAuth, getAuth, clearAuth } from '@/lib/auth';
 
 const navLinks = [
@@ -10,7 +11,7 @@ const navLinks = [
   { href: '/properties?type=Rent', label: 'Rent' },
   { href: '/properties?type=Buy', label: 'Buy' },
   { href: '/properties?type=Short+Stay', label: 'Short Stay' },
-  { href: '/agents', label: 'Agents' },
+  { href: '/properties?type=Auction', label: 'Auction' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -67,148 +68,160 @@ function NavbarContent() {
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-[12px] shadow-sm border-b border-[#c4c6cf]/10">
       <div className="flex justify-between items-center px-6 lg:px-8 py-4 max-w-7xl mx-auto">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-extrabold text-[#002045] tracking-tighter">
-          HouseinMozambique
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative w-12 h-12 transition-transform group-hover:scale-105">
+            <Image src="/logo.png" alt="House in Mozambique Ltd" fill className="object-contain" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xl font-black text-[#002045] tracking-tighter leading-none">House in Mozambique</span>
+            <span className="text-[10px] font-bold text-[#845326] uppercase tracking-[0.2em] leading-none mt-1">Limited</span>
+          </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => {
-            const url = new URL(link.href, 'http://localhost');
-            const linkPath = url.pathname;
-            const linkType = url.searchParams.get('type');
-            const isPathActive = linkPath === '/' ? pathname === '/' : pathname === linkPath;
-            const isTypeActive = linkType ? searchParams.get('type') === linkType : true;
-            const isActive = isPathActive && isTypeActive;
+        {/* Desktop Nav & Actions Grouped on Right */}
+        <div className="hidden md:flex items-center gap-10">
+          <div className="flex items-center gap-8">
+            {navLinks.map((link) => {
+              const url = new URL(link.href, 'http://localhost');
+              const linkPath = url.pathname;
+              const linkType = url.searchParams.get('type');
+              const isPathActive = linkPath === '/' ? pathname === '/' : pathname === linkPath;
+              const isTypeActive = linkType ? searchParams.get('type') === linkType : true;
+              const isActive = isPathActive && isTypeActive;
 
-            return (
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`font-bold tracking-tight text-sm transition-colors ${
+                    isActive
+                      ? 'text-[#002045] border-b-2 border-[#002045] pb-1'
+                      : 'text-slate-600 hover:text-[#002045]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+  
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-[#c4c6cf]/30" />
+
+          <div className="flex items-center gap-3">
+            {/* Sign In (logged out, desktop only) */}
+            {!isLoggedIn && (
               <Link
-                key={link.href}
-                href={link.href}
-                className={`font-bold tracking-tight text-sm transition-colors ${
-                  isActive
-                    ? 'text-[#002045] border-b-2 border-[#002045] pb-1'
-                    : 'text-slate-600 hover:text-[#002045]'
-                }`}
+                href="/auth"
+                className="hidden md:block text-sm font-bold text-slate-600 hover:text-[#002045] transition-colors"
               >
-                {link.label}
+                Sign In
               </Link>
-            );
-          })}
-        </div>
+            )}
 
-        {/* Right: CTA + User */}
-        <div className="flex items-center gap-3">
-          {/* Sign In (logged out, desktop only) */}
-          {!isLoggedIn && (
+            {/* Post a House — always visible action button */}
             <Link
-              href="/auth"
-              className="hidden md:block text-sm font-bold text-slate-600 hover:text-[#002045] transition-colors"
+              href="/post-property"
+              className="bg-[#002045] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#002045]/20"
             >
-              Sign In
+              Post a House
             </Link>
-          )}
 
-          {/* Post a House — always visible action button */}
-          <Link
-            href="/post-property"
-            className="bg-[#002045] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#002045]/20"
-          >
-            Post a House
-          </Link>
-
-          {/* User avatar — to the RIGHT of the action button, only when logged in */}
-          {isLoggedIn && (
-            <div className="relative hidden md:block" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="relative group transition-all duration-500"
-                aria-label="User menu"
-              >
-                {/* Architectural Avatar Container */}
-                <div className="w-9 h-9 rounded-lg bg-[#002045] border border-[#845326]/30 flex items-center justify-center shadow-lg group-hover:shadow-[#002045]/20 group-hover:border-[#845326] transition-all duration-300 overflow-hidden relative">
-                  {/* Subtle inner sheen */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+            {/* User avatar — to the RIGHT of the action button, only when logged in */}
+            {isLoggedIn && (
+              <div className="relative hidden md:block" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="relative group transition-all duration-500"
+                  aria-label="User menu"
+                >
+                  {/* Architectural Avatar Container */}
+                  <div className="w-9 h-9 rounded-lg bg-[#002045] border border-[#845326]/30 flex items-center justify-center shadow-lg group-hover:shadow-[#002045]/20 group-hover:border-[#845326] transition-all duration-300 overflow-hidden relative">
+                    {/* Subtle inner sheen */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+                    
+                    {/* Headline Initials */}
+                    <span className="text-[10px] font-bold text-white tracking-[0.2em] leading-none translate-x-[0.5px] [font-family:var(--font-headline)]">
+                      {userInitials}
+                    </span>
+                  </div>
                   
-                  {/* Headline Initials */}
-                  <span className="text-[10px] font-bold text-white tracking-[0.2em] leading-none translate-x-[0.5px] [font-family:var(--font-headline)]">
-                    {userInitials}
-                  </span>
-                </div>
-                
-                {/* Refined Status Orb */}
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm z-10" />
-              </button>
+                  {/* Refined Status Orb */}
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm z-10" />
+                </button>
 
-              {/* Dropdown */}
-              {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-3 w-60 bg-white rounded-2xl shadow-[0_16px_48px_rgba(0,32,69,0.12)] border border-[#eef0f2] overflow-hidden z-50">
-                  {/* User info */}
-                  <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f2f4f6]">
-                    <div className="w-11 h-11 rounded-lg bg-[#002045] border border-[#845326]/20 flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent" />
-                      <span className="text-sm font-bold text-white tracking-[0.1em] [font-family:var(--font-headline)]">
-                        {userInitials}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-black text-[#002045] tracking-tight leading-tight">{userName}</p>
-                        {isDevMode && (
-                          <span className="bg-[#845326]/10 text-[#845326] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
-                        )}
+                {/* Dropdown */}
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-full mt-3 w-60 bg-white rounded-2xl shadow-[0_16px_48px_rgba(0,32,69,0.12)] border border-[#eef0f2] overflow-hidden z-50">
+                    {/* User info */}
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f2f4f6]">
+                      <div className="w-11 h-11 rounded-lg bg-[#002045] border border-[#845326]/20 flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent" />
+                        <span className="text-sm font-bold text-white tracking-[0.1em] [font-family:var(--font-headline)]">
+                          {userInitials}
+                        </span>
                       </div>
-                      <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">Premium Curator</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-black text-[#002045] tracking-tight leading-tight">{userName}</p>
+                          {isDevMode && (
+                            <span className="bg-[#845326]/10 text-[#845326] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">Premium Agent</p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="p-2">
+                      <Link
+                        href="/dashboard/agent/listings"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
+                      >
+                        <span className="material-symbols-outlined text-lg text-[#845326]">dashboard</span>
+                        My Listings
+                      </Link>
+                      <Link
+                        href="/pricing"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
+                      >
+                        <span className="material-symbols-outlined text-lg text-[#845326]">workspace_premium</span>
+                        Upgrade Plan
+                      </Link>
+                    </div>
+
+                    {/* Sign out */}
+                    <div className="p-2 border-t border-[#f2f4f6]">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors text-sm font-bold text-red-500"
+                      >
+                        <span className="material-symbols-outlined text-lg">logout</span>
+                        Sign Out
+                      </button>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="p-2">
-                    <Link
-                      href="/properties"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
-                    >
-                      <span className="material-symbols-outlined text-lg text-[#845326]">dashboard</span>
-                      My Listings
-                    </Link>
-                    <Link
-                      href="/pricing"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
-                    >
-                      <span className="material-symbols-outlined text-lg text-[#845326]">workspace_premium</span>
-                      Upgrade Plan
-                    </Link>
-                  </div>
-
-                  {/* Sign out */}
-                  <div className="p-2 border-t border-[#f2f4f6]">
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors text-sm font-bold text-red-500"
-                    >
-                      <span className="material-symbols-outlined text-lg">logout</span>
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-[#e6e8ea] transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
-            <span className="material-symbols-outlined text-[#002045]">
-              {mobileOpen ? 'close' : 'menu'}
-            </span>
-          </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden p-2 rounded-lg hover:bg-[#e6e8ea] transition-colors"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="material-symbols-outlined text-[#002045]">
+            {mobileOpen ? 'close' : 'menu'}
+          </span>
+        </button>
       </div>
+
+
 
       {/* Mobile Menu */}
       {mobileOpen && (
@@ -242,7 +255,7 @@ function NavbarContent() {
                   </div>
                   <div>
                     <p className="text-sm font-black text-[#002045]">{userName}</p>
-                    <p className="text-[10px] text-[#74777f] uppercase tracking-widest">Premium Curator</p>
+                    <p className="text-[10px] text-[#74777f] uppercase tracking-widest">Premium Agent</p>
                   </div>
                 </div>
                 <button

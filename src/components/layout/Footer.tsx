@@ -14,7 +14,7 @@ export default function Footer() {
               HouseinMozambique
             </Link>
             <p className="text-[#43474e] mb-8 max-w-sm leading-relaxed text-sm">
-              Curating the finest real estate opportunities across Mozambique. Experience institutional trust with a local touch. From Maputo lofts to Bazaruto retreats.
+              Providing the finest real estate opportunities across Mozambique. Experience institutional trust with a local touch. From Maputo lofts to Bazaruto retreats.
             </p>
             <div className="flex gap-4">
               {(['share', 'alternate_email', 'public'] as const).map((icon) => (
@@ -64,7 +64,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-[#191c1e] mb-6">Stay Updated</h4>
             <p className="text-[#43474e] text-sm mb-4 leading-relaxed">
-              Get the latest curated listings and market insights delivered to your inbox.
+              Get the latest agent listings and market insights delivered to your inbox.
             </p>
             <div className="flex gap-2">
               <input
@@ -82,7 +82,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-[#c4c6cf]/20 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[#74777f] text-xs tracking-[0.15em] uppercase">
-            © 2024 HouseinMozambique. The Modern Estate Curator.
+            © 2024 HouseinMozambique. The Modern Estate Agent.
           </p>
           <div className="flex gap-6 text-xs text-[#74777f]">
             <a href="#" className="hover:text-[#002045] transition-colors">Privacy</a>
