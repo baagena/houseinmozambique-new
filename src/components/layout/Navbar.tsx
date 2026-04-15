@@ -104,10 +104,9 @@ function NavbarContent() {
               );
             })}
           </div>
-  
-          {/* Vertical Separator */}
-          <div className="h-6 w-px bg-[#c4c6cf]/30" />
 
+
+          {/* CTA Group */}
           <div className="flex items-center gap-3">
             {/* Sign In (logged out, desktop only) */}
             {!isLoggedIn && (
