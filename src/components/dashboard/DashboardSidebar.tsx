@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { clearAuth } from '@/lib/auth';
 
 interface SidebarLink {
   label: string;
@@ -36,9 +35,12 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
   const router = useRouter();
   const links = role === 'admin' ? ADMIN_LINKS : AGENT_LINKS;
 
-  const handleLogout = () => {
-    clearAuth();
-    router.push('/auth');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } finally {
+      router.push('/auth');
+    }
   };
 
   const initials = userName

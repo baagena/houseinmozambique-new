@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
@@ -13,6 +14,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters' },
+        { status: 400 }
+      );
+    }
+
     // Check if user already exists
     const existingAgent = await prisma.agent.findUnique({
       where: { email },
@@ -20,18 +28,21 @@ export async function POST(request: Request) {
 
     if (existingAgent) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'An account with this email already exists' },
         { status: 400 }
       );
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create new Agent
-    const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+    const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
     
     const newAgent = await prisma.agent.create({
       data: {
         email,
-        password,
+        password: hashedPassword,
         name,
         initials,
         title: title || 'Agent',

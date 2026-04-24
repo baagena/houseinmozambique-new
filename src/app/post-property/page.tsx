@@ -1,19 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { initAuth } from '@/lib/auth';
 import { createProperty, uploadSingleImage } from '@/actions/properties';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const STEPS = [
-  { id: 0, label: 'Property Details', icon: 'home_work', description: 'Basic info about your home' },
-  { id: 1, label: 'Location', icon: 'location_on', description: 'Where is it situated?' },
-  { id: 2, label: 'Media & Features', icon: 'photo_library', description: 'Photos and amenities' },
-  { id: 3, label: 'Pricing & Review', icon: 'payments', description: 'Finalize and submit' },
-];
 
 interface FormData {
   // Step 1
@@ -35,17 +29,36 @@ interface FormData {
   priceUnit: string;
 }
 
-const AMENITIES_LIST = [
-  'WiFi / Internet', 'Swimming Pool', '24/7 Security', 'Parking',
-  'Air Conditioning', 'Garden', 'Gym / Fitness Center', 'Ocean View',
-  'Waterfront', 'BBQ Area', 'Solar Power', 'Backup Generator',
-  'Household Staff', 'Private Beach', 'Tennis Court', 'Home Theater',
-];
+const AMENITIES_KEYS = [
+  'wifi', 'pool', 'security', 'parking',
+  'ac', 'garden', 'gym', 'oceanView',
+  'waterfront', 'bbq', 'solar', 'generator',
+  'staff', 'beach', 'tennis', 'theater'
+] as const;
 
 const CITIES = ['Maputo', 'Beira', 'Nampula', 'Vilanculos', 'Inhambane', 'Pemba', 'Matola', 'Tete', 'Quelimane'];
 
-export default function PostPropertyPage() {
+
+function PostPropertyForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { lang, t } = useLanguage();
+
+  const STEPS = [
+    { id: 0, label: t.postProperty.identityLabel, icon: 'home_work', description: lang === 'en' ? 'Property baseline & narrative' : 'Descrição e base do imóvel' },
+    { id: 1, label: t.home.locationLabel, icon: 'location_on', description: t.postProperty.precisionPlotting },
+    { id: 2, label: t.postProperty.photographyLabel, icon: 'photo_library', description: t.postProperty.featuresLabel },
+    { id: 3, label: t.pricing.heroBadge, icon: 'payments', description: t.postProperty.publishAsset },
+  ];
+
+  const PLAN_META: Record<string, { label: string; icon: string; color: string }> = {
+    standard: { label: lang === 'en' ? 'Standard Plan' : 'Plano Standard', icon: 'home', color: '#43474e' },
+    premium:  { label: lang === 'en' ? 'Premium Plan' : 'Plano Premium',  icon: 'stars', color: '#845326' },
+  };
+
+  const selectedPlan = searchParams.get('plan') || 'standard';
+  const planMeta = PLAN_META[selectedPlan] || PLAN_META.standard;
+
   const [step, setStep] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -254,11 +267,22 @@ export default function PostPropertyPage() {
                 ))}
               </nav>
 
-              <div className="mt-12 p-5 bg-[#f7f9fb] rounded-2xl border border-[#c4c6cf]/10">
-                <p className="text-[10px] font-bold text-[#002045] uppercase tracking-widest mb-2">Need help?</p>
+              {/* Selected Plan Badge */}
+              <div className="mt-6 p-4 bg-[#002045] rounded-2xl flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-white text-xl">{planMeta.icon}</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em] mb-0.5">{lang === 'en' ? 'Your Plan' : 'Seu Plano'}</p>
+                  <p className="text-sm font-black text-white tracking-tight">{planMeta.label}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 p-5 bg-[#f7f9fb] rounded-2xl border border-[#c4c6cf]/10">
+                <p className="text-[10px] font-bold text-[#002045] uppercase tracking-widest mb-2">{t.postProperty.needHelp}</p>
                 <p className="text-[11px] text-[#43474e] leading-relaxed">
-                  Our team is available 24/7 to help you with your listing. 
-                  <a href="#" className="text-[#845326] font-bold block mt-1 hover:underline">Contact Support</a>
+                  {t.postProperty.supportDesc} 
+                  <a href="#" className="text-[#845326] font-bold block mt-1 hover:underline">{t.postProperty.contactSupport}</a>
                 </p>
               </div>
             </div>
@@ -283,14 +307,14 @@ export default function PostPropertyPage() {
                       <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[#845326] text-xl">edit_note</span>
                         <label className="block text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]" style={{ fontFamily: 'var(--font-headline)' }}>
-                          The Property Identity
+                          {t.postProperty.identityLabel}
                         </label>
                       </div>
                       <input
                         type="text"
                         required
                         className="w-full h-16 px-6 rounded-xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-[#f2f4f6] focus:outline-none focus:ring-4 focus:ring-[#002045]/5 text-xl font-black text-[#191c1e] placeholder-[#c4c6cf] transition-all"
-                        placeholder="e.g., The Glass House in Sommerschield"
+                        placeholder={t.postProperty.identityPlaceholder}
                         value={form.title}
                         onChange={(e) => update('title', e.target.value)}
                       />
@@ -369,7 +393,7 @@ export default function PostPropertyPage() {
                         rows={6}
                         required
                         className="w-full px-6 py-6 rounded-2xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-[#f2f4f6] focus:outline-none focus:ring-4 focus:ring-[#002045]/5 text-sm font-medium text-[#43474e] resize-none placeholder-[#c4c6cf] transition-all leading-relaxed"
-                        placeholder="Transport the reader to their future home. Describe the light, the mood, and the unique architectural details..."
+                        placeholder={t.postProperty.narrativePlaceholder}
                         value={form.description}
                         onChange={(e) => update('description', e.target.value)}
                       />
@@ -382,7 +406,7 @@ export default function PostPropertyPage() {
                   <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-5">
-                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">City / Province</label>
+                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">{t.postProperty.locationCityLabel}</label>
                         <div className="relative group">
                           <select
                             required
@@ -400,7 +424,7 @@ export default function PostPropertyPage() {
                       </div>
 
                       <div className="space-y-5">
-                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">Historic District / Neighborhood</label>
+                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">{t.postProperty.neighborhoodLabel}</label>
                         <input
                           type="text"
                           required
@@ -413,11 +437,11 @@ export default function PostPropertyPage() {
                     </div>
 
                     <div className="space-y-5">
-                      <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">Full Legal Address</label>
+                      <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">{t.postProperty.addressLabel}</label>
                       <input
                         type="text"
                         className="w-full h-14 px-6 rounded-xl bg-[#f2f4f6]/30 border border-none focus:outline-none focus:ring-4 focus:ring-[#002045]/5 text-sm font-medium text-[#43474e] placeholder-[#c4c6cf]"
-                        placeholder="Rua, Building, Floor..."
+                        placeholder={t.postProperty.addressPlaceholder}
                         value={form.address}
                         onChange={(e) => update('address', e.target.value)}
                       />
@@ -429,7 +453,7 @@ export default function PostPropertyPage() {
                         <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl text-[#002045] animate-bounce-slow">
                           <span className="material-symbols-outlined text-4xl">my_location</span>
                         </div>
-                        <h4 className="text-xl font-black text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>Precision Plotting</h4>
+                        <h4 className="text-xl font-black text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>{t.postProperty.precisionPlotting}</h4>
                         <p className="text-[11px] text-[#43474e] mt-2 font-bold tracking-widest uppercase">Cartographic Engine Initializing</p>
                       </div>
                     </div>
@@ -443,7 +467,7 @@ export default function PostPropertyPage() {
                       <div className="flex items-center gap-3 pl-1">
                         <span className="material-symbols-outlined text-[#845326] text-xl">camera_outdoor</span>
                         <label className="block text-sm font-bold text-[#002045] uppercase tracking-[0.15em]" style={{ fontFamily: 'var(--font-headline)' }}>
-                          Property Photography
+                          {t.postProperty.photographyLabel}
                         </label>
                       </div>
                       <div 
@@ -462,7 +486,7 @@ export default function PostPropertyPage() {
                           <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] text-[#002045] group-hover:-translate-y-2 transition-transform duration-700">
                             <span className="material-symbols-outlined text-5xl">upload_file</span>
                           </div>
-                          <h3 className="text-3xl font-black text-[#002045] mb-3 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>Bring your asset to life</h3>
+                          <h3 className="text-3xl font-black text-[#002045] mb-3 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>{lang === 'en' ? 'Bring your asset to life' : 'Dê vida ao seu imóvel'}</h3>
                           <p className="text-sm text-[#74777f] max-w-sm mx-auto leading-relaxed font-medium">
                             Premium buyers expect <span className="text-[#845326] font-bold">4K Aerial and Architectural shots</span>. 
                             Min 12 high-res files recommended.
@@ -476,7 +500,7 @@ export default function PostPropertyPage() {
                               ))
                             ) : (
                               <button type="button" className="px-10 py-4 bg-[#002045] text-white rounded-xl text-[10px] font-black tracking-widest uppercase hover:shadow-xl hover:scale-105 transition-all">
-                                Open Media Vault
+                                {t.postProperty.uploadMediaBtn}
                               </button>
                             )}
                           </div>
@@ -488,23 +512,23 @@ export default function PostPropertyPage() {
                     <div className="flex items-center gap-3 pl-1">
                         <span className="material-symbols-outlined text-[#845326] text-xl">award_star</span>
                         <label className="block text-sm font-bold text-[#002045] uppercase tracking-[0.15em]" style={{ fontFamily: 'var(--font-headline)' }}>
-                          Signature Features
+                          {t.postProperty.featuresLabel}
                         </label>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {AMENITIES_LIST.map((a) => (
+                        {AMENITIES_KEYS.map((k) => (
                           <button
-                            key={a}
+                            key={k}
                             type="button"
-                            onClick={() => toggleAmenity(a)}
+                            onClick={() => toggleAmenity(k)}
                             className={`p-4 rounded-xl text-[9px] font-black tracking-wider uppercase text-left transition-all duration-300 border-2 flex items-center justify-between ${
-                                form.amenities.includes(a)
+                                form.amenities.includes(k)
                                   ? 'border-[#002045] bg-[#002045] text-white shadow-xl shadow-[#002045]/10 translate-y-[-1px]'
                                   : 'border-[#f2f4f6] bg-white text-[#43474e] hover:border-[#002045]/20'
                             }`}
                           >
-                            <span>{a}</span>
-                            {form.amenities.includes(a) && <span className="material-symbols-outlined text-sm">verified</span>}
+                            <span>{(t.property.amenities as any)[k]}</span>
+                            {form.amenities.includes(k) && <span className="material-symbols-outlined text-sm">verified</span>}
                           </button>
                         ))}
                       </div>
@@ -517,7 +541,7 @@ export default function PostPropertyPage() {
                   <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-5">
-                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">Market Valuation (USD)</label>
+                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">{t.postProperty.valuationLabel}</label>
                         <div className="relative">
                           <span className="absolute left-8 top-1/2 -translate-y-1/2 font-black text-2xl text-[#c4c6cf]">$</span>
                           <input
@@ -531,16 +555,16 @@ export default function PostPropertyPage() {
                         </div>
                       </div>
                       <div className="space-y-5">
-                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">Acquisition Model</label>
+                        <label className="block text-[10px] font-extrabold text-[#74777f] uppercase tracking-[0.25em] pl-1">{t.postProperty.acquisitionLabel}</label>
                         <div className="relative group">
                           <select
                             className="w-full h-16 px-8 rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.02)] border border-[#f2f4f6] focus:outline-none focus:ring-4 focus:ring-[#002045]/5 text-lg font-black text-[#191c1e] appearance-none cursor-pointer transition-all"
                             value={form.priceUnit}
                             onChange={(e) => update('priceUnit', e.target.value)}
                           >
-                            <option value="sale">Full Asset Ownership</option>
-                            <option value="monthly">Monthly Retainer</option>
-                            <option value="nightly">Nocturnal Rate</option>
+                            <option value="sale">{t.nav.buy}</option>
+                            <option value="monthly">{t.nav.rent}</option>
+                            <option value="nightly">{t.nav.shortStay}</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none text-[#845326] text-3xl opacity-40 group-hover:opacity-100 transition-opacity">
                             account_balance_wallet
@@ -555,7 +579,7 @@ export default function PostPropertyPage() {
                       
                       <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/10 pb-10">
                         <div>
-                          <h3 className="text-3xl font-black text-white tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-headline)' }}>Review Portfolio</h3>
+                          <h3 className="text-3xl font-black text-white tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-headline)' }}>{t.postProperty.reviewPortfolio}</h3>
                           <p className="text-[#86a0cd] font-bold text-xs tracking-widest">DIGITAL TWIN ASSESSMENT · v1.0</p>
                         </div>
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/10">
@@ -566,12 +590,12 @@ export default function PostPropertyPage() {
 
                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-14 gap-x-10 relative z-10">
                         {[
-                          { label: 'Object Identity', value: form.title || 'Incomplete' },
-                          { label: 'Category Style', value: `${form.listingType} Concept · ${form.propertyType}` },
-                          { label: 'Geo-Coordinates', value: form.city ? `${form.neighborhood}, ${form.city}` : 'Target not set' },
-                          { label: 'Dimensional Metrics', value: `${form.bedrooms} BR · ${form.bathrooms} BA · ${form.area}m²` },
-                          { label: 'Featured Amenities', value: `${form.amenities.length} Verified Signatures` },
-                          { label: 'Expected Valuation', value: form.price ? `$ ${Number(form.price).toLocaleString()}` : 'Valuation missing' },
+                          { label: t.postProperty.objectIdentity, value: form.title || t.postProperty.incomplete },
+                          { label: t.postProperty.categoryStyle, value: `${form.listingType} ${t.postProperty.concept} · ${form.propertyType}` },
+                          { label: t.postProperty.geoCoordinates, value: form.city ? `${form.neighborhood}, ${form.city}` : t.postProperty.targetNotSet },
+                          { label: t.postProperty.dimensionalMetrics, value: `${form.bedrooms} BR · ${form.bathrooms} BA · ${form.area}m²` },
+                          { label: t.postProperty.featuredAmenities, value: `${form.amenities.length} ${t.postProperty.verifiedSignatures}` },
+                          { label: t.postProperty.expectedValuation, value: form.price ? `$ ${Number(form.price).toLocaleString()}` : t.postProperty.valuationMissing },
                         ].map(({ label, value }) => (
                           <div key={label} className="space-y-2 border-l border-white/20 pl-6">
                             <span className="text-[9px] font-black text-[#86a0cd] uppercase tracking-[0.25em]">{label}</span>
@@ -586,9 +610,9 @@ export default function PostPropertyPage() {
                         <span className="material-symbols-outlined text-3xl">verified_user</span>
                       </div>
                       <div>
-                        <p className="text-sm text-[#002045] font-black tracking-tight mb-1" style={{ fontFamily: 'var(--font-headline)' }}>Editorial Compliance</p>
+                        <p className="text-sm text-[#002045] font-black tracking-tight mb-1" style={{ fontFamily: 'var(--font-headline)' }}>{t.postProperty.complianceLabel}</p>
                         <p className="text-xs text-[#43474e] leading-relaxed max-w-lg">
-                          By confirming, you acknowledge that this listing adheres to the <span className="font-black text-[#845326] underline underline-offset-4">Agency Standards Code</span>. Our team will finalize the narrative aesthetic before publication.
+                          {t.postProperty.complianceDesc}
                         </p>
                       </div>
                     </div>
@@ -606,11 +630,11 @@ export default function PostPropertyPage() {
                       className="group flex items-center gap-3 px-6 text-[#002045] font-black tracking-widest uppercase text-[10px] hover:text-[#845326] transition-all"
                     >
                       <span className="material-symbols-outlined transition-transform group-hover:-translate-x-2 text-xl">arrow_back_ios</span>
-                      Previous Step
+                      {t.postProperty.previousStep}
                     </button>
                   ) : (
                     <Link href="/" className="px-6 text-[#74777f] font-black tracking-widest uppercase text-[10px] hover:text-[#002045] transition-all">
-                      Discard Listing
+                      {t.postProperty.discardListing}
                     </Link>
                   )}
 
@@ -621,7 +645,7 @@ export default function PostPropertyPage() {
                         onClick={() => setStep(step + 1)}
                         className="flex-1 md:flex-none group bg-[#002045] text-white px-10 py-4 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-3 shadow-lg hover:bg-[#003061] hover:-translate-y-1 transition-all active:scale-95"
                       >
-                        Save & Proceed
+                        {t.postProperty.saveAndProceed}
                         <span className="material-symbols-outlined transition-transform group-hover:translate-x-2 text-xl">arrow_forward_ios</span>
                       </button>
                     ) : (
@@ -633,13 +657,13 @@ export default function PostPropertyPage() {
                         {isSubmitting ? (
                           <div className="flex items-center gap-3">
                             <span className="text-[10px] font-black uppercase tracking-widest">
-                              {uploadStatus ? `Syncing Image ${uploadStatus.current}/${uploadStatus.total}` : 'Finalizing...'}
+                              {uploadStatus ? `${lang === 'en' ? 'Syncing Image' : 'Sincronizando Imagem'} ${uploadStatus.current}/${uploadStatus.total}` : lang === 'en' ? 'Finalizing...' : 'Finalizando...'}
                             </span>
                             <span className="material-symbols-outlined text-xl animate-spin">sync</span>
                           </div>
                         ) : (
                           <>
-                            Publish Asset
+                            {t.postProperty.publishAsset}
                             <span className="material-symbols-outlined text-xl animate-pulse">publish</span>
                           </>
                         )}
@@ -653,5 +677,13 @@ export default function PostPropertyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PostPropertyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#f7f9fb]"><div className="animate-pulse text-[#002045] font-bold">Loading...</div></div>}>
+      <PostPropertyForm />
+    </Suspense>
   );
 }

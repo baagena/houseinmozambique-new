@@ -4,49 +4,53 @@ import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 import { setAuth } from '@/lib/auth';
 
 // Professional, agent-focused hero image
 const BG_IMG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
 
-const SPECIALIZATIONS = [
-  'Luxury Villas', 'Expat Relocations', 'Polana District', 
-  'Investment Properties', 'Waterfront Properties', 'Retail Spaces',
-  'Commercial Leasing', 'Rural Properties', 'Matola Market'
-];
+const SPECIALIZATION_KEYS = [
+  'luxury', 'expat', 'polana', 
+  'investment', 'waterfront', 'retail',
+  'commercial', 'rural', 'matola'
+] as const;
 
-const TITLES = [
-  'Junior Partner', 'Senior Partner', 'Premier Curator', 
-  'Investment Specialist', 'Luxury Advisor', 'Relocation Expert'
-];
+const TITLE_KEYS = [
+  'junior', 'senior', 'premier', 
+  'investSpecialist', 'luxuryAdvisor', 'relocation'
+] as const;
 
-const REGISTRATION_STEPS = [
-  {
-    id: 1,
-    title: 'Getting Started',
-    description: 'Create your account and choose a secure password.',
-    icon: 'vignette'
-  },
-  {
-    id: 2,
-    title: 'Professional Info',
-    description: 'Tell us where you work and your experience details.',
-    icon: 'distance'
-  },
-  {
-    id: 3,
-    title: 'Your Profile',
-    description: 'Write a short bio and pick your specialties for the directory.',
-    icon: 'edit_note'
-  }
-];
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { lang, t } = useLanguage();
+  
+  const REGISTRATION_STEPS = [
+    {
+      id: 1,
+      title: lang === 'en' ? 'Getting Started' : 'Começar',
+      description: t.auth.signupStep1Desc,
+      icon: 'vignette'
+    },
+    {
+      id: 2,
+      title: lang === 'en' ? 'Professional Info' : 'Informação Profissional',
+      description: t.auth.signupStep2Desc,
+      icon: 'distance'
+    },
+    {
+      id: 3,
+      title: lang === 'en' ? 'Your Profile' : 'Seu Perfil',
+      description: t.auth.signupStep3Desc,
+      icon: 'edit_note'
+    }
+  ];
+
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
@@ -103,8 +107,17 @@ function AuthForm() {
         localStorage.setItem('userId', user.id);
       }
       
-      const dashboardPath = user.role === 'ADMIN' ? '/dashboard/admin' : '/dashboard/agent';
-      router.push(dashboardPath);
+      // Admins always go to admin dashboard; agents respect the ?redirect= param
+      if (user.role === 'ADMIN') {
+        router.push('/dashboard/admin');
+      } else {
+        // Build the full redirect URL, appending plan if present
+        let destination = redirect && redirect !== '/' ? redirect : '/dashboard/agent';
+        if (plan && !destination.includes('plan=')) {
+          destination += destination.includes('?') ? `&plan=${plan}` : `?plan=${plan}`;
+        }
+        router.push(destination);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -140,7 +153,15 @@ function AuthForm() {
         localStorage.setItem('userId', user.id);
       }
 
-      router.push(role === 'admin' ? '/dashboard/admin' : '/dashboard/agent');
+      if (role === 'admin') {
+        router.push('/dashboard/admin');
+      } else {
+        let destination = redirect && redirect !== '/' ? redirect : '/dashboard/agent';
+        if (plan && !destination.includes('plan=')) {
+          destination += destination.includes('?') ? `&plan=${plan}` : `?plan=${plan}`;
+        }
+        router.push(destination);
+      }
     } catch (err: any) {
       setError("Dev Login failed: " + err.message);
     } finally {
@@ -278,14 +299,14 @@ function AuthForm() {
                 onClick={() => { setTab('signin'); setStep(1); }}
                 className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${tab === 'signin' ? 'text-[#002045]' : 'text-[#c4c6cf] hover:text-[#74777f]'}`}
               >
-                Sign In
+                {t.nav.signIn}
                 {tab === 'signin' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
               </button>
               <button
                 onClick={() => setTab('signup')}
                 className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${tab === 'signup' ? 'text-[#002045]' : 'text-[#c4c6cf] hover:text-[#74777f]'}`}
               >
-                Agent Registration
+                {lang === 'en' ? 'Agent Registration' : 'Registo de Agente'}
                 {tab === 'signup' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
               </button>
             </div>
@@ -299,18 +320,18 @@ function AuthForm() {
                     className={`h-1 flex-1 rounded-full transition-all duration-700 ${s <= step ? 'bg-[#002045]' : 'bg-[#f2f4f6]'}`} 
                   />
                 ))}
-                <span className="text-[10px] font-black text-[#002045] ml-4 uppercase tracking-tighter">Step 0{step}</span>
+                <span className="text-[10px] font-black text-[#002045] ml-4 uppercase tracking-tighter">{lang === 'en' ? 'Step' : 'Passo'} 0{step}</span>
               </div>
             )}
 
             <div className="mb-12">
               <h2 className="text-4xl font-black text-[#002045] mb-4 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
-                {tab === 'signin' ? 'Welcome Back.' : step === 1 ? 'Get Started.' : step === 2 ? 'Your Details.' : 'About You.'}
+                {tab === 'signin' ? t.auth.welcomeBtn : step === 1 ? t.auth.getStarted : step === 2 ? t.auth.yourDetails : t.auth.aboutYou}
               </h2>
               <p className="text-[#43474e] font-medium leading-relaxed">
                 {tab === 'signin' 
-                  ? 'Access your agent dashboard and manage your property listings.'
-                  : step === 1 ? 'Create your account to begin your journey.' : step === 2 ? 'Tell us about your professional background and location.' : 'Tell us what you specialize in to show off on our directory.'}
+                  ? t.auth.loginDesc
+                  : step === 1 ? t.auth.signupStep1Desc : step === 2 ? t.auth.signupStep2Desc : t.auth.signupStep3Desc}
               </p>
             </div>
 
@@ -327,18 +348,20 @@ function AuthForm() {
                 <>
                   <div className="space-y-6">
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Email Address</label>
+                       <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.emailLabel}</label>
                        <input
                         type="email"
                         required
                         className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                         placeholder="agent@houseinmoz.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
                       />
                     </div>
                     <div className="space-y-2">
                        <div className="flex justify-between items-center">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Password</label>
-                         <button className="text-[10px] font-black text-[#845326] uppercase tracking-[0.1em] hover:underline">Forgot?</button>
+                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.passwordLabel}</label>
+                         <button className="text-[10px] font-black text-[#845326] uppercase tracking-[0.1em] hover:underline">{t.auth.forgotPassword}</button>
                        </div>
                        <input
                         type="password"
@@ -354,7 +377,7 @@ function AuthForm() {
                     onClick={handleAuth}
                     className="w-full h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
                   >
-                    Sign In
+                    {t.auth.signInBtn}
                     <span className="material-symbols-outlined text-xl">login</span>
                   </button>
                 </>
@@ -365,7 +388,7 @@ function AuthForm() {
                   {step === 1 && (
                     <div className="space-y-6">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Full Name</label>
+                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.fullNameLabel}</label>
                          <input
                           type="text"
                           required
@@ -376,7 +399,7 @@ function AuthForm() {
                         />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Email Address</label>
+                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.emailLabel}</label>
                          <input
                           type="email"
                           required
@@ -387,7 +410,7 @@ function AuthForm() {
                         />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Create Password</label>
+                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.createPassword}</label>
                          <input
                           type="password"
                           required
@@ -405,17 +428,17 @@ function AuthForm() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Professional Role</label>
+                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.profRoleLabel}</label>
                           <select 
                             className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold appearance-none"
                             value={formData.title}
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                           >
-                            {TITLES.map(t => <option key={t}>{t}</option>)}
+                            {TITLE_KEYS.map(k => <option key={k} value={k}>{(t.auth.titles as any)[k]}</option>)}
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Experience (Years)</label>
+                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.expLabel}</label>
                           <input
                             type="number"
                             className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
@@ -425,7 +448,7 @@ function AuthForm() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Your Location</label>
+                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.locationLabel}</label>
                         <input
                           type="text"
                           required
@@ -442,7 +465,7 @@ function AuthForm() {
                   {step === 3 && (
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">About You</label>
+                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.bioLabel}</label>
                         <textarea
                           rows={4}
                           className="w-full px-6 py-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-sm font-medium text-[#43474e] resize-none"
@@ -452,16 +475,16 @@ function AuthForm() {
                         />
                       </div>
                       <div className="space-y-4">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Area Expertise</label>
+                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.expertiseLabel}</label>
                         <div className="flex flex-wrap gap-2">
-                          {SPECIALIZATIONS.map(spec => (
+                          {SPECIALIZATION_KEYS.map(k => (
                             <button
-                              key={spec}
+                              key={k}
                               type="button"
-                              onClick={() => toggleSpecialization(spec)}
-                              className={`px-4 py-2 rounded-lg text-[9px] font-black tracking-widest uppercase transition-all ${formData.specializations.includes(spec) ? 'bg-[#845326] text-white' : 'bg-[#f7f9fb] text-[#74777f] hover:bg-[#e6e8ea]'}`}
+                              onClick={() => toggleSpecialization(k)}
+                              className={`px-4 py-2 rounded-lg text-[9px] font-black tracking-widest uppercase transition-all ${formData.specializations.includes(k) ? 'bg-[#845326] text-white' : 'bg-[#f7f9fb] text-[#74777f] hover:bg-[#e6e8ea]'}`}
                             >
-                              {spec}
+                              {(t.auth.specializations as any)[k]}
                             </button>
                           ))}
                         </div>
@@ -476,7 +499,7 @@ function AuthForm() {
                         className="flex-1 h-16 bg-[#f7f9fb] text-[#002045] font-black rounded-2xl hover:bg-[#e6e8ea] transition-all flex items-center justify-center gap-3"
                       >
                         <span className="material-symbols-outlined">arrow_back</span>
-                        Back
+                        {t.auth.backBtn}
                       </button>
                     )}
                     {step < 3 ? (
@@ -484,7 +507,7 @@ function AuthForm() {
                         onClick={nextStep}
                         className="flex-[2] h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                       >
-                        Save & Continue
+                         {t.auth.saveAndContinue}
                         <span className="material-symbols-outlined">arrow_forward</span>
                       </button>
                     ) : (
@@ -492,7 +515,7 @@ function AuthForm() {
                         onClick={handleAuth}
                         className="flex-[2] h-16 bg-[#845326] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                       >
-                        Complete Registration
+                         {t.auth.completeRegistration}
                         <span className="material-symbols-outlined">how_to_reg</span>
                       </button>
                     )}

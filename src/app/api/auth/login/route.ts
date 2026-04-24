@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
@@ -16,7 +17,15 @@ export async function POST(request: Request) {
       where: { email },
     });
 
-    if (!agent || agent.password !== password) {
+    if (!agent) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    const passwordMatch = await bcrypt.compare(password, agent.password);
+    if (!passwordMatch) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -26,7 +35,6 @@ export async function POST(request: Request) {
     // Return the agent data (excluding password)
     const { password: _, ...agentWithoutPassword } = agent;
     
-    // Set a session cookie (simple version)
     const response = NextResponse.json({
       user: agentWithoutPassword,
       message: 'Logged in successfully'

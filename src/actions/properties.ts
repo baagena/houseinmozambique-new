@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db';
 import { uploadImage, FOLDERS } from '@/lib/cloudinary';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 /**
  * Uploads a single image to Cloudinary.
@@ -23,24 +24,22 @@ export async function uploadSingleImage(base64: string) {
 
 /**
  * Creates a property record. 
- * Expected image list to be already-uploaded URLs.
+ * Resolves the hosting agent from the authenticated session cookie.
  */
 export async function createProperty(formData: any, imageUrls: string[]) {
   try {
     console.log('Finalizing property publication with', imageUrls.length, 'assets');
 
-    // 1. Resolve Agent
-    // Using a default agent for now. In a real app, this would be the authenticated user's ID.
-    let agent = await prisma.agent.findFirst({
-      where: { id: 'agent-1' } // Try to use the seeded agent-1 first
-    });
+    // 1. Resolve Agent from session cookie
+    const cookieStore = await cookies();
+    const agentId = cookieStore.get('userId')?.value;
+
+    let agent = agentId
+      ? await prisma.agent.findUnique({ where: { id: agentId } })
+      : null;
 
     if (!agent) {
-      agent = await prisma.agent.findFirst();
-    }
-
-    if (!agent) {
-      throw new Error('No curator found to host this portfolio. Please register as an agent first.');
+      throw new Error('You must be logged in as an agent to post a property.');
     }
 
     // 2. Insert into Prisma

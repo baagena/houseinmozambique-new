@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import PropertyCard from './PropertyCard';
 import { Property } from '@/types';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 interface CategoryCarouselProps {
   title: string;
@@ -21,6 +22,7 @@ export default function CategoryCarousel({
   subtitle,
   badge,
 }: CategoryCarouselProps) {
+  const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -136,10 +138,10 @@ export default function CategoryCarousel({
 
             <div className="text-center">
               <span className="block text-xl font-extrabold text-[#002045] tracking-tight mb-1">
-                See all
+                {t.nav.home === 'Home' ? 'See all' : 'Ver tudo'}
               </span>
               <span className="text-xs font-bold text-[#845326] tracking-widest uppercase">
-                {properties.length} Properties
+                {properties.length} {t.nav.home === 'Home' ? 'Properties' : 'Propriedades'}
               </span>
             </div>
 

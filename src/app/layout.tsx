@@ -3,6 +3,7 @@ import { DM_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import FooterWrapper from '@/components/layout/FooterWrapper';
+import { LanguageProvider } from '@/components/i18n/LanguageContext';
 
 const dmsans = DM_Sans({
   subsets: ['latin'],
@@ -37,9 +38,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <FooterWrapper />
+        <LanguageProvider>
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
+          <FooterWrapper />
+        </LanguageProvider>
       </body>
     </html>
   );

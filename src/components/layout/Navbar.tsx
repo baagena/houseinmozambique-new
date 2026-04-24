@@ -5,14 +5,15 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import { initAuth, getAuth, clearAuth } from '@/lib/auth';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/properties?type=Rent', label: 'Rent' },
-  { href: '/properties?type=Buy', label: 'Buy' },
-  { href: '/properties?type=Short+Stay', label: 'Short Stay' },
-  { href: '/properties?type=Auction', label: 'Auction' },
-  { href: '/contact', label: 'Contact' },
+const navLinkKeys = [
+  { href: '/', key: 'home' },
+  { href: '/properties?type=Rent', key: 'rent' },
+  { href: '/properties?type=Buy', key: 'buy' },
+  { href: '/properties?type=Short+Stay', key: 'shortStay' },
+  { href: '/properties?type=Auction', key: 'auction' },
+  { href: '/contact', key: 'contact' },
 ];
 
 function NavbarContent() {
@@ -23,6 +24,7 @@ function NavbarContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [isDevMode, setIsDevMode] = useState(false);
+  const { lang, setLang, t } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +83,7 @@ function NavbarContent() {
         {/* Desktop Nav & Actions Grouped on Right */}
         <div className="hidden md:flex items-center gap-10">
           <div className="flex items-center gap-8">
-            {navLinks.map((link) => {
+            {navLinkKeys.map((link) => {
               const url = new URL(link.href, 'http://localhost');
               const linkPath = url.pathname;
               const linkType = url.searchParams.get('type');
@@ -99,14 +101,30 @@ function NavbarContent() {
                       : 'text-slate-600 hover:text-[#002045]'
                   }`}
                 >
-                  {link.label}
+                  {(t.nav as any)[link.key]}
                 </Link>
               );
             })}
           </div>
   
+          {/* Language Switcher */}
+          <div className="flex items-center bg-[#f2f4f6] rounded-lg p-1 border border-[#c4c6cf]/20">
+            <button
+              onClick={() => setLang('en')}
+              className={`px-2 py-1 rounded-md text-[10px] font-black transition-all ${lang === 'en' ? 'bg-[#002045] text-white shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLang('pt')}
+              className={`px-2 py-1 rounded-md text-[10px] font-black transition-all ${lang === 'pt' ? 'bg-[#002045] text-white shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
+            >
+              PT
+            </button>
+          </div>
+
           {/* Visual Separator */}
-          <div className="hidden md:block h-6 w-px bg-slate-200 mx-2" />
+          <div className="hidden md:block h-6 w-px bg-slate-200 mx-1" />
   
           {/* CTA Group */}
           <div className="flex items-center gap-3">
@@ -116,16 +134,16 @@ function NavbarContent() {
                 href="/auth"
                 className="hidden md:block text-sm font-bold text-slate-600 hover:text-[#002045] transition-colors"
               >
-                Sign In
+                {t.nav.signIn}
               </Link>
             )}
 
             {/* Post a House — always visible action button */}
             <Link
-              href="/post-property"
+              href="/pricing"
               className="bg-[#002045] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#002045]/20"
             >
-              Post a House
+              {t.nav.postHouse}
             </Link>
 
             {/* User avatar — to the RIGHT of the action button, only when logged in */}
@@ -169,7 +187,7 @@ function NavbarContent() {
                             <span className="bg-[#845326]/10 text-[#845326] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
                           )}
                         </div>
-                        <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">Premium Agent</p>
+                        <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">{t.auth.premiumAgent}</p>
                       </div>
                     </div>
 
@@ -181,7 +199,7 @@ function NavbarContent() {
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
                       >
                         <span className="material-symbols-outlined text-lg text-[#845326]">dashboard</span>
-                        My Listings
+                        {t.auth.myListings}
                       </Link>
                       <Link
                         href="/pricing"
@@ -189,7 +207,7 @@ function NavbarContent() {
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
                       >
                         <span className="material-symbols-outlined text-lg text-[#845326]">workspace_premium</span>
-                        Upgrade Plan
+                        {t.auth.upgradePlan}
                       </Link>
                     </div>
 
@@ -200,7 +218,7 @@ function NavbarContent() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors text-sm font-bold text-red-500"
                       >
                         <span className="material-symbols-outlined text-lg">logout</span>
-                        Sign Out
+                        {t.auth.signOut}
                       </button>
                     </div>
                   </div>
@@ -227,14 +245,14 @@ function NavbarContent() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-[#c4c6cf]/20 px-6 pb-6 pt-4 space-y-2">
-          {navLinks.map((link) => (
+          {navLinkKeys.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
               className="block font-bold text-[#002045] text-base py-2 hover:text-[#845326] transition-colors"
             >
-              {link.label}
+              {(t.nav as any)[link.key]}
             </Link>
           ))}
           <Link
@@ -242,8 +260,33 @@ function NavbarContent() {
             onClick={() => setMobileOpen(false)}
             className="block font-bold text-[#002045] text-base py-2 hover:text-[#845326] transition-colors"
           >
-            Pricing
+            {t.nav.pricing}
           </Link>
+          <Link
+            href="/pricing"
+            onClick={() => setMobileOpen(false)}
+            className="mt-2 block text-center bg-[#002045] text-white px-6 py-3 rounded-lg font-bold text-sm hover:opacity-90 transition-all font-headline"
+          >
+            {t.nav.postHouse}
+          </Link>
+
+          <div className="flex items-center justify-center gap-6 py-4 bg-[#f2f4f6] rounded-xl mt-4">
+            <button
+              onClick={() => setLang('en')}
+              className={`flex flex-col items-center gap-1 transition-all ${lang === 'en' ? 'text-[#002045] scale-110' : 'text-[#74777f] opacity-50'}`}
+            >
+              <span className="text-xs font-black">ENGLISH</span>
+              {lang === 'en' && <div className="w-1 h-1 bg-[#002045] rounded-full" />}
+            </button>
+            <div className="w-px h-8 bg-[#c4c6cf]" />
+            <button
+              onClick={() => setLang('pt')}
+              className={`flex flex-col items-center gap-1 transition-all ${lang === 'pt' ? 'text-[#002045] scale-110' : 'text-[#74777f] opacity-50'}`}
+            >
+              <span className="text-xs font-black">PORTUGUÊS</span>
+              {lang === 'pt' && <div className="w-1 h-1 bg-[#002045] rounded-full" />}
+            </button>
+          </div>
 
           <div className="border-t border-[#f2f4f6] pt-4 mt-2">
             {isLoggedIn ? (
@@ -256,7 +299,7 @@ function NavbarContent() {
                   </div>
                   <div>
                     <p className="text-sm font-black text-[#002045]">{userName}</p>
-                    <p className="text-[10px] text-[#74777f] uppercase tracking-widest">Premium Agent</p>
+                    <p className="text-[10px] text-[#74777f] uppercase tracking-widest">{t.auth.premiumAgent}</p>
                   </div>
                 </div>
                 <button
@@ -264,7 +307,7 @@ function NavbarContent() {
                   className="flex items-center gap-2 font-bold text-red-500 text-sm py-2"
                 >
                   <span className="material-symbols-outlined text-lg">logout</span>
-                  Sign Out
+                  {t.auth.signOut}
                 </button>
               </>
             ) : (
@@ -273,7 +316,7 @@ function NavbarContent() {
                 onClick={() => setMobileOpen(false)}
                 className="block font-bold text-slate-600 text-base py-2"
               >
-                Sign In
+                {t.nav.signIn}
               </Link>
             )}
           </div>

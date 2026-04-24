@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 import { agents, properties } from './seed-data';
 
 dotenv.config();
@@ -14,11 +15,14 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('Seeding started...');
 
-  // 1. Seed Agents
+  // 1. Seed Agents (with hashed passwords)
   for (const agent of agents) {
+    const rawPassword = (agent as any).password || 'password123';
+    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
     await prisma.agent.upsert({
       where: { id: agent.id },
-      update: {},
+      update: { password: hashedPassword },
       create: {
         id: agent.id,
         name: agent.name,
@@ -34,12 +38,12 @@ async function main() {
         yearsExperience: agent.yearsExperience,
         specializations: agent.specializations || [],
         email: (agent as any).email,
-        password: (agent as any).password,
+        password: hashedPassword,
         role: (agent as any).role || 'AGENT',
       },
     });
   }
-  console.log(`Seeded ${agents.length} agents.`);
+  console.log(`Seeded ${agents.length} agents (passwords hashed).`);
 
   // 2. Seed Properties
   for (const property of properties) {

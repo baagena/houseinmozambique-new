@@ -1,9 +1,14 @@
 import { getAgentById } from '@/lib/data';
+import { cookies } from 'next/headers';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 export default async function AgentListingsPage() {
-  const agentId = 'agent-1'; // Temporary until Auth is linked
+  const cookieStore = await cookies();
+  const agentId = cookieStore.get('userId')?.value;
+
+  if (!agentId) redirect('/auth');
+
   const agent = await getAgentById(agentId);
   
   if (!agent) notFound();

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Property } from '@/types';
 import { formatPrice } from '@/lib/utils';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 interface PropertyCardProps {
   property: Property;
@@ -13,6 +14,7 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ property, variant = 'standard', hideLocation = false }: PropertyCardProps) {
+  const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const images = property.images ?? [];
@@ -104,22 +106,22 @@ export default function PropertyCard({ property, variant = 'standard', hideLocat
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-[4] transition-transform duration-300 group-hover:translate-x-1 pointer-events-none">
           {property.isSuperhost && (
             <span className="bg-white/90 backdrop-blur-sm shadow-sm text-[#845326] px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border border-[#febc85]/30">
-              Superhost
+              {t.property.superhost}
             </span>
           )}
           {property.isRareFind && (
             <span className="bg-[#ffdad3]/90 backdrop-blur-sm text-[#3e0500] px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm">
-              Rare Find
+              {t.property.rareFind}
             </span>
           )}
           {property.isNew && (
             <span className="bg-[#002045]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm">
-              New Listing
+              {t.property.newListing}
             </span>
           )}
           {property.isPremium && (
             <span className="bg-[#845326]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm">
-              Premium
+              {t.property.premium}
             </span>
           )}
         </div>
@@ -211,26 +213,26 @@ export default function PropertyCard({ property, variant = 'standard', hideLocat
         <div className="grid grid-cols-3 gap-2 py-4 border-y border-[#c4c6cf]/10 mb-5">
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50/50">
             <span className="material-symbols-outlined text-[18px] text-[#002045] mb-1">bed</span>
-            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.bedrooms} Beds</span>
+            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.bedrooms} {t.property.beds}</span>
           </div>
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50/50">
             <span className="material-symbols-outlined text-[18px] text-[#002045] mb-1">bathtub</span>
-            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.bathrooms} Baths</span>
+            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.bathrooms} {t.property.baths}</span>
           </div>
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50/50">
             <span className="material-symbols-outlined text-[18px] text-[#002045] mb-1">square_foot</span>
-            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.area} m²</span>
+            <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.area} {t.property.area}</span>
           </div>
         </div>
 
         {/* Price & Footer */}
         <div className="mt-auto flex items-end justify-between flex-wrap">
           <div>
-            <p className="text-[10px] uppercase font-bold text-[#845326] tracking-widest mb-0.5">Price</p>
+            <p className="text-[10px] uppercase font-bold text-[#845326] tracking-widest mb-0.5">{t.property.price}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-extrabold text-[#002045]">{formatPrice(property.price, property.priceUnit)}</span>
-              {property.priceUnit === 'monthly' && <span className="text-xs text-[#43474e] font-medium">/ month</span>}
-              {property.priceUnit === 'nightly' && <span className="text-xs text-[#43474e] font-medium">/ night</span>}
+              {property.priceUnit === 'monthly' && <span className="text-xs text-[#43474e] font-medium">{t.property.perMonth}</span>}
+              {property.priceUnit === 'nightly' && <span className="text-xs text-[#43474e] font-medium">{t.property.perNight}</span>}
             </div>
           </div>
           <span
@@ -242,7 +244,7 @@ export default function PropertyCard({ property, variant = 'standard', hideLocat
                 : 'bg-[#0b4f6c]/10 text-[#0b4f6c] border border-[#0b4f6c]/25'
             }`}
           >
-            {property.listingType}
+            {property.listingType === 'Buy' ? t.nav.buy : property.listingType === 'Rent' ? t.nav.rent : property.listingType === 'Short Stay' ? t.nav.shortStay : t.nav.auction}
           </span>
         </div>
       </div>

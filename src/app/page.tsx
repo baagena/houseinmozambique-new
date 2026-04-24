@@ -1,16 +1,10 @@
-import Link from 'next/link';
-export const dynamic = 'force-dynamic';
-import PropertyCard from '@/components/properties/PropertyCard';
-import CategoryCarousel from '@/components/properties/CategoryCarousel';
-import HomeHero from '@/components/home/HomeHero';
 import {
   getFeaturedProperties,
   getPropertiesByCity,
   getProperties,
   getFeaturedAgents,
 } from '@/lib/data';
-import AgentCarousel from '@/components/home/AgentCarousel';
-import { formatPrice } from '@/lib/utils';
+import HomeClient from '@/components/home/HomeClient';
 
 export default async function HomePage() {
   const featured = await getFeaturedProperties();
@@ -28,172 +22,18 @@ export default async function HomePage() {
   const shortStayProps = allProperties.filter((p) => p.listingType === 'Short Stay').slice(0, 8);
 
   return (
-    <>
-      <HomeHero />
-      
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <AgentCarousel agents={featuredAgents as any} />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-24 pb-24">
-
-        {/* ── Featured Collection ── */}
-        <CategoryCarousel
-          title="Featured Collection"
-          badge="Curated Picks"
-          properties={featured as any}
-          seeAllUrl="/properties?isFeatured=true"
-          subtitle="A selection of our most prestigious and exclusive listings"
-        />
-
-        {/* ── Explore by Location ── */}
-        <div className="space-y-24">
-          <section className="space-y-24">
-            {/* <div>
-              <h2 className="text-4xl font-bold text-[#191c1e]">
-                Explore by Location
-              </h2>
-              <p className="text-[#43474e] mt-2">Discover properties in the most desirable regions of Mozambique</p>
-            </div> */}
-
-            {maputoProps.length > 0 && (
-              <CategoryCarousel
-                title="Homes in Maputo"
-                properties={maputoProps as any}
-                seeAllUrl="/properties?location=Maputo"
-                subtitle="Discover luxury living in the heart of Mozambique's capital"
-              />
-            )}
-
-            {beiraProps.length > 0 && (
-              <CategoryCarousel
-                title="Port-side Luxury in Beira"
-                properties={beiraProps as any}
-                seeAllUrl="/properties?location=Beira"
-                subtitle="Premium residences near the historic port district"
-              />
-            )}
-
-            {nampulaProps.length > 0 && (
-              <CategoryCarousel
-                title="Northern Hub Nampula"
-                properties={nampulaProps as any}
-                seeAllUrl="/properties?location=Nampula"
-                subtitle="Exclusive opportunities in the north"
-              />
-            )}
-
-            {teteProps.length > 0 && (
-              <CategoryCarousel
-                title="Prime Tete"
-                properties={teteProps as any}
-                seeAllUrl="/properties?location=Tete"
-                subtitle="High-growth opportunities in the industrial capital"
-              />
-            )}
-
-            {pembaProps.length > 0 && (
-              <CategoryCarousel
-                title="Pristine Pemba"
-                properties={pembaProps as any}
-                seeAllUrl="/properties?location=Pemba"
-                subtitle="Luxury waterfront living in the far north"
-              />
-            )}
-          </section>
-
-          {/* Inhambane Grid (kept as grid for layout variety) */}
-          {inhamProps.length > 0 && (
-            <div className="space-y-8 pb-12">
-              <Link href="/properties?location=Inhambane" className="flex items-center gap-2 group cursor-pointer w-fit">
-                <h3 className="text-2xl font-bold text-[#191c1e]">
-                  Beachfront in Inhambane
-                </h3>
-                <span className="material-symbols-outlined text-[#43474e] group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
-              </Link>
-              <p className="text-[#43474e] -mt-6 text-sm">A collection of independent and handpicked retreats</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {inhamProps.slice(0, 4).map((p) => (
-                  <PropertyCard key={p.id} property={p as any} hideLocation={true} />
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-
-        {/* ── Quick Lists ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#c4c6cf]/20">
-          {/* Rent */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold border-l-4 border-[#002045] pl-4">
-              Rent
-            </h3>
-            <div className="h-[480px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
-              {rentProps.map((p) => (
-                <PropertyCard key={p.id} property={p as any} variant="compact" />
-              ))}
-            </div>
-          </div>
-
-          {/* Buy */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold border-l-4 border-[#845326] pl-4">
-              Buy
-            </h3>
-            <div className="h-[480px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
-              {buyProps.map((p) => (
-                <PropertyCard key={p.id} property={p as any} variant="compact" />
-              ))}
-            </div>
-          </div>
-
-          {/* Short Stay */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold border-l-4 border-[#480600] pl-4">
-              Short Stay
-            </h3>
-            <div className="h-[480px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
-              {shortStayProps.map((p) => (
-                <PropertyCard key={p.id} property={p as any} variant="compact" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── CTA ── */}
-        <section className="relative rounded-[3rem] overflow-hidden bg-[#1a365d] text-white p-12 md:p-20">
-          <div className="absolute right-0 top-0 w-1/3 h-full opacity-20 pointer-events-none hidden lg:block">
-            <svg className="w-full h-full" fill="currentColor" viewBox="0 0 200 200">
-              <path d="M44.7,-76.4C58.1,-69.2,69.2,-58.1,76.4,-44.7C83.7,-31.3,87,-15.7,86.1,-0.5C85.2,14.6,80,29.3,71.7,42.1C63.4,54.9,52,65.8,38.9,73.5C25.8,81.2,12.9,85.6,-1.1,87.6C-15.1,89.5,-30.2,88.9,-44,83.1C-57.8,77.3,-70.2,66.2,-78.4,52.6C-86.6,39.1,-90.6,23.1,-90.6,7.1C-90.6,-8.9,-86.6,-24.9,-78.4,-38.5C-70.2,-52,-57.8,-63.1,-44,-70.3C-30.2,-77.5,-15.1,-80.7,-0.5,-79.8C14,-78.9,28.1,-73.9,44.7,-76.4Z" transform="translate(100 100)" />
-            </svg>
-          </div>
-          <div className="relative z-10 max-w-2xl">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-              Become an Estate Agent
-            </h2>
-            <p className="text-xl text-[#86a0cd] mb-10 leading-relaxed">
-              Join the most prestigious real estate network in Mozambique. List your property with us and reach high-intent buyers and renters looking for premium living experiences.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/post-property"
-                className="bg-[#845326] text-white px-8 py-4 rounded-xl font-extrabold text-lg shadow-xl hover:-translate-y-0.5 transition-all inline-block text-center"
-              >
-                List Your Property
-              </Link>
-              <Link
-                href="/agents"
-                className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-extrabold text-lg hover:bg-white/20 transition-all inline-block text-center"
-              >
-                Partner With Us
-              </Link>
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
+    <HomeClient
+      featured={featured as any}
+      featuredAgents={featuredAgents as any}
+      maputoProps={maputoProps as any}
+      inhamProps={inhamProps as any}
+      beiraProps={beiraProps as any}
+      nampulaProps={nampulaProps as any}
+      teteProps={teteProps as any}
+      pembaProps={pembaProps as any}
+      rentProps={rentProps as any}
+      buyProps={buyProps as any}
+      shortStayProps={shortStayProps as any}
+    />
   );
 }

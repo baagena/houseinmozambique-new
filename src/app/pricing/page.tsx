@@ -1,75 +1,90 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { getAuth } from '@/lib/auth';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const VILLA_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuWSUXLzid2u3OTERtIK6qJpnQlbOOhtVc8LqRxn7Hrx7ruVHxYBf8--9D8l6yM3GhgeRVipuoE11QCFta8tp1kWWb90aRa29GOMGpZxetULhNqwHN9tg4DZJDQxxvHeC-Bc3s1qnnRU9xhJbqMu-ghY4452JCSdw7aDslq4hnlZFFAWHbV07Uq3tveepD8WDCZTmpWuIOLlG2eJpCcRD1tC_uwEg4ED4mP7Gc4i8hoQXD_vB7MunEBhDwdlvRjJzo8dR2NdGnUEs';
 
-const plans = [
-  {
-    name: 'Standard',
-    price: '$29',
-    unit: '/ listing',
-    description: 'Perfect for individual homeowners looking for a quick sale.',
-    features: [
-      { label: 'Single Property Listing', included: true, star: false },
-      { label: '15 High-res Photos', included: true, star: false },
-      { label: 'Featured Listing', included: false, star: false },
-      { label: 'Professional Photography', included: false, star: false },
-    ],
-    highlighted: false,
-  },
-  {
-    name: 'Premium',
-    price: '$99',
-    unit: '/ listing',
-    description: 'Our most popular choice for serious sellers and boutiques.',
-    badge: 'Recommended',
-    features: [
-      { label: 'Featured Listing (7 Days)', included: true, star: true },
-      { label: '30 High-res Photos', included: true, star: false },
-      { label: 'Social Media Promotion', included: true, star: false },
-      { label: 'Priority Support', included: true, star: false },
-    ],
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Contact',
-    unit: '/ custom',
-    description: 'Tailored solutions for real estate agencies and developers.',
-    features: [
-      { label: 'Unlimited Listings', included: true, star: false },
-      { label: 'Agent Dashboard & Analytics', included: true, star: false },
-      { label: 'Professional Photography', included: true, star: false },
-      { label: 'Dedicated Account Manager', included: true, star: false },
-    ],
-    highlighted: false,
-  },
-];
-
-const faqs = [
-  {
-    q: 'How much does it cost to list?',
-    a: 'Listing costs vary based on the tier you select. Our Standard tier starts at $29 per listing, while the Premium tier is $99. Enterprise customers can contact us for custom volume-based pricing.',
-  },
-  {
-    q: 'How do I contact agents?',
-    a: 'Each property listing features a dedicated contact module. You can send a direct message, request a callback, or schedule a viewing through the integrated calendar system on the listing page.',
-  },
-  {
-    q: 'Can I list multiple properties?',
-    a: 'Absolutely. Individual owners can purchase single listings, while professional agents typically opt for our Enterprise plan which allows for unlimited or bulk listing capabilities.',
-  },
-  {
-    q: 'What is the curation process?',
-    a: 'Every listing submitted to HouseinMozambique goes through a quality review by our curation team. We verify accuracy and ensure images meet our aesthetic standards to maintain the premium feel of the platform.',
-  },
-];
 
 export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const router = useRouter();
+  const { lang, t } = useLanguage();
+
+  const plans = [
+    {
+      name: lang === 'en' ? 'Standard' : 'Standard',
+      price: '$29',
+      unit: lang === 'en' ? '/ listing' : '/ anúncio',
+      description: lang === 'en' ? 'Perfect for individual homeowners looking for a quick sale.' : 'Perfeito para proprietários individuais que procuram uma venda rápida.',
+      features: [
+        { label: lang === 'en' ? 'Single Property Listing' : 'Listagem de Imóvel Único', included: true, star: false },
+        { label: lang === 'en' ? '15 High-res Photos' : '15 Fotos em Alta Resolução', included: true, star: false },
+        { label: lang === 'en' ? 'Featured Listing' : 'Listagem em Destaque', included: false, star: false },
+        { label: lang === 'en' ? 'Professional Photography' : 'Fotografia Profissional', included: false, star: false },
+      ],
+      highlighted: false,
+    },
+    {
+      name: 'Premium',
+      price: '$99',
+      unit: lang === 'en' ? '/ listing' : '/ anúncio',
+      description: lang === 'en' ? 'Our most popular choice for serious sellers and boutiques.' : 'A nossa escolha mais popular para vendedores sérios e boutiques.',
+      badge: lang === 'en' ? 'Recommended' : 'Recomendado',
+      features: [
+        { label: lang === 'en' ? 'Featured Listing (7 Days)' : 'Listagem em Destaque (7 Dias)', included: true, star: true },
+        { label: lang === 'en' ? '30 High-res Photos' : '30 Fotos em Alta Resolução', included: true, star: false },
+        { label: lang === 'en' ? 'Social Media Promotion' : 'Promoção nas Redes Sociais', included: true, star: false },
+        { label: lang === 'en' ? 'Priority Support' : 'Suporte Prioritário', included: true, star: false },
+      ],
+      highlighted: true,
+    },
+    {
+      name: 'Enterprise',
+      price: lang === 'en' ? 'Contact' : 'Contacto',
+      unit: lang === 'en' ? '/ custom' : '/ personalizado',
+      description: lang === 'en' ? 'Tailored solutions for real estate agencies and developers.' : 'Soluções sob medida para agências imobiliárias e promotores.',
+      features: [
+        { label: lang === 'en' ? 'Unlimited Listings' : 'Listagens Ilimitadas', included: true, star: false },
+        { label: lang === 'en' ? 'Agent Dashboard & Analytics' : 'Painel de Agente e Analítica', included: true, star: false },
+        { label: lang === 'en' ? 'Professional Photography' : 'Fotografia Profissional', included: true, star: false },
+        { label: lang === 'en' ? 'Dedicated Account Manager' : 'Gestor de Conta Dedicado', included: true, star: false },
+      ],
+      highlighted: false,
+    },
+  ];
+
+  const faqs = [
+    {
+      q: lang === 'en' ? 'How much does it cost to list?' : 'Quanto custa para publicar?',
+      a: lang === 'en' ? 'Listing costs vary based on the tier you select. Our Standard tier starts at $29 per listing.' : 'Os custos de listagem variam com base no nível que selecionar. Nosso nível Standard começa em $29 por anúncio.',
+    },
+    {
+      q: lang === 'en' ? 'How do I contact agents?' : 'Como contacto os agentes?',
+      a: lang === 'en' ? 'Each property listing features a dedicated contact module.' : 'Cada listagem de propriedade apresenta um módulo de contacto dedicado.',
+    },
+    {
+      q: lang === 'en' ? 'Can I list multiple properties?' : 'Posso publicar várias propriedades?',
+      a: lang === 'en' ? 'Absolutely. Individual owners can purchase single listings.' : 'Com certeza. Os proprietários individuais podem comprar listagens individuais.',
+    },
+    {
+      q: lang === 'en' ? 'What is the curation process?' : 'Qual é o processo de curadoria?',
+      a: lang === 'en' ? 'Every listing submitted goes through a quality review.' : 'Cada listagem submetida passa por uma revisão de qualidade.',
+    },
+  ];
+
+  function handlePlanSelect(planName: string) {
+    const slug = planName.toLowerCase();
+    const auth = getAuth();
+    if (auth.isLoggedIn) {
+      router.push(`/post-property?plan=${slug}`);
+    } else {
+      router.push(`/auth?redirect=/post-property&plan=${slug}`);
+    }
+  }
 
   return (
     <div className="pt-20 bg-[#f7f9fb]">
@@ -77,17 +92,16 @@ export default function PricingPage() {
       <section className="relative py-24 px-6 overflow-hidden bg-[#f2f4f6]">
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
           <span className="inline-block py-1 px-4 mb-6 bg-[#845326] text-white rounded-full text-xs font-bold uppercase tracking-widest">
-            Pricing Strategy
+            {t.pricing.heroBadge}
           </span>
           <h1
             className="text-5xl md:text-7xl font-extrabold text-[#191c1e] tracking-tighter mb-8 max-w-4xl"
             style={{ fontFamily: 'var(--font-headline)' }}
           >
-            List Your Property{' '}
-            <span className="text-[#845326]">with Confidence</span>
+            {t.pricing.heroTitle}
           </h1>
           <p className="text-lg md:text-xl text-[#43474e] max-w-2xl leading-relaxed mb-12">
-            Choose the plan that best fits your needs as an individual owner or professional agent. Experience the premier digital gallery of Mozambique.
+            {t.pricing.heroSubtitle}
           </p>
         </div>
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#002045]/5 rounded-full blur-3xl" />
@@ -139,16 +153,29 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={plan.name === 'Enterprise' ? '/auth/agent-register' : `/auth?redirect=/post-property&plan=${plan.name.toLowerCase()}`}
-                className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
-                  plan.highlighted
-                    ? 'bg-[#845326] text-white hover:opacity-90'
-                    : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
-                }`}
-              >
-                {plan.name === 'Enterprise' ? 'Contact Our Team' : 'Post Your House'}
-              </Link>
+              {plan.name === 'Enterprise' ? (
+                <a
+                  href="/contact"
+                  className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
+                    plan.highlighted
+                      ? 'bg-[#845326] text-white hover:opacity-90'
+                      : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
+                  }`}
+                >
+                  {t.pricing.contactTeam}
+                </a>
+              ) : (
+                <button
+                  onClick={() => handlePlanSelect(plan.name)}
+                  className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
+                    plan.highlighted
+                      ? 'bg-[#845326] text-white hover:opacity-90'
+                      : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
+                  }`}
+                >
+                  {t.pricing.postHouseBtn}
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -163,10 +190,10 @@ export default function PricingPage() {
             </div>
             <div className="absolute -bottom-8 -right-8 w-64 p-6 bg-white/80 backdrop-blur-sm rounded-lg shadow-xl hidden md:block border border-[#c4c6cf]/10">
               <h4 className="font-bold text-[#002045] mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-                Exclusive Curation
+                {t.pricing.exclusiveCuration}
               </h4>
               <p className="text-xs text-[#43474e] leading-relaxed">
-                We only feature properties that meet our architectural and aesthetic standards, ensuring a premium experience for every buyer.
+                {t.pricing.exclusiveCurationDesc}
               </p>
             </div>
           </div>
@@ -176,13 +203,13 @@ export default function PricingPage() {
               className="text-4xl font-extrabold text-[#002045] tracking-tight mb-6"
               style={{ fontFamily: 'var(--font-headline)' }}
             >
-              Why List With Us?
+              {t.pricing.whyListTitle}
             </h2>
             <div className="space-y-8">
               {[
-                { icon: 'visibility', title: 'High-Intent Audience', desc: 'Reach investors and home-seekers specifically looking for premium Mozambique real estate.' },
-                { icon: 'camera_enhance', title: 'Editorial Presentation', desc: 'Every listing is styled with an editorial approach, making your property stand out as a work of art.' },
-                { icon: 'analytics', title: 'In-Depth Insights', desc: 'Access data on how your listing is performing, including engagement rates and lead quality.' },
+                { icon: 'visibility', title: t.pricing.highIntentAudience, desc: t.pricing.highIntentAudienceDesc },
+                { icon: 'camera_enhance', title: t.pricing.editorialPresentation, desc: t.pricing.editorialPresentationDesc },
+                { icon: 'analytics', title: t.pricing.inDepthInsights, desc: t.pricing.inDepthInsightsDesc },
               ].map((item) => (
                 <div key={item.title} className="flex gap-6">
                   <div className="flex-shrink-0 w-12 h-12 bg-[#845326]/10 rounded-full flex items-center justify-center">
@@ -207,9 +234,9 @@ export default function PricingPage() {
               className="text-4xl font-extrabold text-[#002045] mb-4"
               style={{ fontFamily: 'var(--font-headline)' }}
             >
-              Frequently Asked Questions
+              {t.pricing.faqTitle}
             </h2>
-            <p className="text-[#43474e]">Everything you need to know about the HouseinMozambique experience.</p>
+            <p className="text-[#43474e]">{t.pricing.faqSubtitle}</p>
           </div>
           <div className="space-y-4">
             {faqs.map((faq, i) => (
