@@ -19,7 +19,7 @@ export default function Footer() {
             <p className="text-[#43474e] mb-8 max-w-sm leading-relaxed text-sm">
               {t.footer.brandDesc}
             </p>
-            <div className="flex gap-4">
+            {/* <div className="flex gap-4">
               {(["share", "alternate_email", "public"] as const).map((icon) => (
                 <a
                   key={icon}
@@ -31,7 +31,7 @@ export default function Footer() {
                   </span>
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Discover */}
