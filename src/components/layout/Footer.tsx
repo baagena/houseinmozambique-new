@@ -59,15 +59,15 @@ export default function Footer() {
             <h4 className="font-bold text-[#191c1e] mb-6">{t.footer.legal}</h4>
             <ul className="space-y-4">
               {[
-                { label: t.footer.privacyPolicy, href: '#' },
-                { label: t.footer.termsOfService, href: '#' },
+                { label: t.footer.privacyPolicy, href: '/privacy' },
+                { label: t.footer.termsOfService, href: '/terms' },
                 { label: t.footer.cookiePolicy, href: '#' },
                 { label: t.footer.agentAgreement, href: '#' }
               ].map((item) => (
                 <li key={item.label}>
-                  <a href={item.href} className="text-[#43474e] hover:text-[#002045] transition-colors text-sm font-medium">
+                  <Link href={item.href} className="text-[#43474e] hover:text-[#002045] transition-colors text-sm font-medium">
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -98,8 +98,8 @@ export default function Footer() {
             {t.footer.copyright}
           </p>
           <div className="flex gap-6 text-xs text-[#74777f]">
-            <a href="#" className="hover:text-[#002045] transition-colors">{t.footer.privacy}</a>
-            <a href="#" className="hover:text-[#002045] transition-colors">{t.footer.terms}</a>
+            <Link href="/privacy" className="hover:text-[#002045] transition-colors">{t.footer.privacy}</Link>
+            <Link href="/terms" className="hover:text-[#002045] transition-colors">{t.footer.terms}</Link>
             <Link href="/pricing" className="hover:text-[#002045] transition-colors">{t.nav.pricing}</Link>
             <Link href="/agents" className="hover:text-[#002045] transition-colors">{t.nav.agents}</Link>
           </div>

@@ -103,9 +103,9 @@ export default async function AgentDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-[#74777f] hover:text-[#002045] hover:bg-white rounded-lg border border-transparent hover:border-[#f2f4f6] transition-all">
+                      <Link href={`/post-property?edit=${p.id}`} className="p-2 text-[#74777f] hover:text-[#002045] hover:bg-white rounded-lg border border-transparent hover:border-[#f2f4f6] transition-all inline-flex items-center justify-center">
                         <span className="material-symbols-outlined text-xl">edit_note</span>
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -124,10 +124,10 @@ export default async function AgentDashboard() {
                 <span className="material-symbols-outlined text-3xl">add_box</span>
                 <span className="text-[10px] font-black uppercase tracking-widest">Post Home</span>
               </Link>
-              <button className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-white border border-[#f2f4f6] text-[#002045] hover:-translate-y-1 transition-all shadow-sm">
+              <a href="mailto:hello@houseinmoz.com?subject=Share%20my%20agent%20profile&body=Hello%2C%0A%0APlease%20review%20my%20agent%20profile%20on%20House%20in%20Mozambique.%0A%0AThank%20you.%0A" className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-white border border-[#f2f4f6] text-[#002045] hover:-translate-y-1 transition-all shadow-sm">
                 <span className="material-symbols-outlined text-3xl text-[#fab983]">share</span>
                 <span className="text-[10px] font-black uppercase tracking-widest">Share Profile</span>
-              </button>
+              </a>
             </div>
           </div>
 
@@ -140,15 +140,23 @@ export default async function AgentDashboard() {
                 { name: 'Celia Guambe', time: '1h ago', property: 'Costa do Sol Apt' },
                 { name: 'Xavier Tembe', time: '4h ago', property: 'Sommerschield Loft' },
               ].map((lead, i) => (
-                <div key={i} className="bg-white p-4 rounded-2xl border border-[#f2f4f6] flex items-center gap-4 hover:shadow-lg hover:shadow-[#002045]/5 transition-all group cursor-pointer">
-                  <div className="w-10 h-10 rounded-full bg-[#f7f9fb] flex items-center justify-center text-[#002045] font-black text-[10px] group-hover:bg-[#002045] group-hover:text-white transition-colors">
-                    {lead.name.split(' ').map(n => n[0]).join('')}
+                <div key={i} className="bg-white p-4 rounded-2xl border border-[#f2f4f6] flex flex-col gap-4 hover:shadow-lg hover:shadow-[#002045]/5 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f7f9fb] flex items-center justify-center text-[#002045] font-black text-[10px] group-hover:bg-[#002045] group-hover:text-white transition-colors">
+                      {lead.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="text-sm font-black text-[#002045] leading-none mb-1">{lead.name}</p>
+                      <p className="text-[10px] text-[#74777f] font-medium truncate">Inquiry on <span className="font-bold text-[#845326]">{lead.property}</span></p>
+                    </div>
+                    <span className="text-[9px] font-bold text-[#c4c6cf] uppercase whitespace-nowrap">{lead.time}</span>
                   </div>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-black text-[#002045] leading-none mb-1">{lead.name}</p>
-                    <p className="text-[10px] text-[#74777f] font-medium truncate">Inquiry on <span className="font-bold text-[#845326]">{lead.property}</span></p>
-                  </div>
-                  <span className="text-[9px] font-bold text-[#c4c6cf] uppercase whitespace-nowrap">{lead.time}</span>
+                  <a
+                    href={`mailto:hello@houseinmoz.com?subject=${encodeURIComponent(`Reply to ${lead.name}`)}&body=${encodeURIComponent(`Hello,\n\nI am following up on your inquiry about ${lead.property}. Please let me know the next steps.\n\nThank you,\n`)}`}
+                    className="inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-[#002045] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#001a38] transition-colors"
+                  >
+                    Reply to lead
+                  </a>
                 </div>
               ))}
             </div>

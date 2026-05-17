@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { logout } from '@/lib/auth';
 
 interface SidebarLink {
   label: string;
@@ -37,7 +39,7 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await logout();
     } finally {
       router.push('/auth');
     }
@@ -54,11 +56,17 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
     <aside className="w-80 h-full flex flex-col bg-white border-r border-[#f2f4f6] relative z-20 overflow-y-auto custom-scrollbar">
       {/* Branding */}
       <div className="p-8 pb-12">
-        <Link href="/" className="text-2xl font-black text-[#002045] tracking-tighter block mb-1" style={{ fontFamily: 'var(--font-headline)' }}>
-          HIM.
-          <span className="text-[#fab983] ml-0.5">Control</span>
-        </Link>
-        <p className="text-[10px] font-bold text-[#c4c6cf] uppercase tracking-widest">{role} dashboard</p>
+        <Link href="/" className="flex items-center gap-3 mb-4">
+        <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-[#f2f4f6] border border-[#e6e8ea] shadow-sm">
+          <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" />
+        </div>
+        <div>
+          <p className="text-2xl font-black text-[#002045] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
+            House in&nbsp;Mozambique
+          </p>
+          <p className="text-[10px] font-bold text-[#c4c6cf] uppercase tracking-widest">{role} dashboard</p>
+        </div>
+      </Link>
       </div>
 
       {/* Nav Links */}

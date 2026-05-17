@@ -19,12 +19,17 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Mock submit
+
+    const mailto = `mailto:hello@houseinmoz.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
+    )}`;
+
+    window.location.href = mailto;
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 1500);
+    }, 500);
   };
 
   return (

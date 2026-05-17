@@ -7,14 +7,26 @@ import AdminPropertyActions from './AdminPropertyActions';
 interface PendingProperty {
   id: string;
   title: string;
+  description: string;
+  location: string;
   city: string;
+  neighborhood: string | null;
+  address: string | null;
   price: number;
   priceUnit: string;
+  type: string;
+  listingType: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  amenities: string[];
   images: string[];
   createdAt: Date;
   host: {
     name: string;
     initials: string;
+    title: string;
+    location: string;
   };
 }
 
@@ -58,6 +70,7 @@ function formatPrice(price: number, unit: string): string {
 
 export default function AdminApprovalsClient({ pendingProperties, newAgents }: Props) {
   const [activeTab, setActiveTab] = useState<'agents' | 'properties'>('properties');
+  const [selectedProperty, setSelectedProperty] = useState<PendingProperty | null>(null);
 
   return (
     <div className="space-y-12">
@@ -141,9 +154,13 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                     {listing.city} · Submitted by <span className="text-[#002045]">{listing.host.name}</span>
                   </p>
                 </div>
-                <div className="text-left shrink-0">
+                <div className="text-left shrink-0 space-y-4">
                   <p className="text-xl font-black text-[#002045] mb-4">{formatPrice(listing.price, listing.priceUnit)}</p>
-                  <AdminPropertyActions propertyId={listing.id} currentStatus="PENDING" />
+                  <AdminPropertyActions
+                    propertyId={listing.id}
+                    currentStatus="PENDING"
+                    onView={() => setSelectedProperty(listing)}
+                  />
                 </div>
               </div>
             ))}
@@ -201,6 +218,108 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
           </div>
         )}
       </div>
+
+      {selectedProperty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+            <button
+              onClick={() => setSelectedProperty(null)}
+              className="absolute right-4 top-4 text-[#74777f] hover:text-[#002045] text-xl font-black cursor-pointer"
+            >
+              ×
+            </button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-8">
+              <div className="rounded-[2rem] overflow-hidden bg-[#f7f9fb] border border-[#f2f4f6] shadow-sm h-full">
+                {selectedProperty.images[0] ? (
+                  <div className="relative h-80 w-full">
+                    <Image src={selectedProperty.images[0]} alt={selectedProperty.title} fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="flex h-80 items-center justify-center text-[#c4c6cf]">
+                    <span className="material-symbols-outlined text-6xl">image</span>
+                  </div>
+                )}
+                <div className="space-y-4 p-6">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#845326]">Host</p>
+                    <p className="text-base font-black text-[#002045]">{selectedProperty.host.name}</p>
+                    <p className="text-sm text-[#74777f]">{selectedProperty.host.title || selectedProperty.host.location}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#74777f]">Listing Type</p>
+                    <p className="text-base font-black text-[#002045]">{selectedProperty.listingType}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#74777f]">Property Type</p>
+                    <p className="text-base font-black text-[#002045]">{selectedProperty.type}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-3xl font-black text-[#002045] tracking-tight">{selectedProperty.title}</h2>
+                      <p className="text-sm text-[#74777f] mt-2">{selectedProperty.city}{selectedProperty.neighborhood ? ` · ${selectedProperty.neighborhood}` : ''}</p>
+                    </div>
+                    <span className="px-4 py-2 rounded-full bg-[#fef9f2] text-[#845326] text-[11px] font-black uppercase tracking-widest">Pending Review</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
+                      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Price</p>
+                      <p className="text-xl font-black text-[#002045]">{formatPrice(selectedProperty.price, selectedProperty.priceUnit)}</p>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
+                      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Size</p>
+                      <p className="text-xl font-black text-[#002045]">{selectedProperty.area} m²</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 rounded-[1.5rem] border border-[#f2f4f6] p-6 bg-[#fafbfc]">
+                    <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Full Description</p>
+                    <p className="text-sm leading-relaxed text-[#4b5363]">{selectedProperty.description}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
+                      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Bedrooms</p>
+                      <p className="text-lg font-black text-[#002045]">{selectedProperty.bedrooms}</p>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
+                      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Bathrooms</p>
+                      <p className="text-lg font-black text-[#002045]">{selectedProperty.bathrooms}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 rounded-[1.5rem] border border-[#f2f4f6] p-6 bg-[#fafbfc]">
+                    <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Location</p>
+                    <p className="text-sm text-[#4b5363]">{selectedProperty.address ?? 'Address not provided'}</p>
+                    {selectedProperty.neighborhood && <p className="text-sm text-[#4b5363]">Neighborhood: {selectedProperty.neighborhood}</p>}
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Amenities</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProperty.amenities.length > 0 ? (
+                        selectedProperty.amenities.map((amenity) => (
+                          <span key={amenity} className="rounded-full bg-[#f7f9fb] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[#002045]">
+                            {amenity}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-sm text-[#74777f]">No amenities listed.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

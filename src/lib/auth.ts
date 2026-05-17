@@ -17,25 +17,13 @@ const STORAGE_KEYS = {
   ROLE: 'userRole',
   SELECTED_PLAN: 'selectedPlan',
   IS_DEV_AUTO: 'isDevAutoLogin',
+  USER_ID: 'userId',
+  AUTO_LOGIN_DISABLED: 'autoLoginDisabled',
 };
-
-const IS_DEV = process.env.NODE_ENV === 'development';
 
 export const getAuth = (): AuthState => {
   if (typeof window === 'undefined') {
     return { isLoggedIn: false, userName: '', role: 'agent', selectedPlan: null };
-  }
-
-  // Auto-login logic for local development
-  if (IS_DEV && !localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN)) {
-    console.log('🛠️ [Auth] Local development detected. Activating auto-login.');
-    setAuth({
-      isLoggedIn: true,
-      userName: 'Dev Agent',
-      role: 'agent',
-      selectedPlan: 'Premium',
-      isDevAutoLogin: true,
-    });
   }
 
   return {
@@ -79,7 +67,23 @@ export const clearAuth = () => {
   localStorage.removeItem(STORAGE_KEYS.ROLE);
   localStorage.removeItem(STORAGE_KEYS.SELECTED_PLAN);
   localStorage.removeItem(STORAGE_KEYS.IS_DEV_AUTO);
+  localStorage.removeItem(STORAGE_KEYS.USER_ID);
+  localStorage.setItem(STORAGE_KEYS.AUTO_LOGIN_DISABLED, 'true');
 };
+
+export async function logout() {
+  if (typeof window !== 'undefined') {
+    clearAuth();
+  }
+
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    return true;
+  } catch (error) {
+    console.error('Logout failed:', error);
+    return false;
+  }
+}
 
 /**
  * Hook-like initializer for components to ensure auth is set up on mount.

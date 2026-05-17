@@ -580,8 +580,8 @@ function AuthForm() {
             Protocol · © 2024 HouseinMozambique
           </p>
           <div className="flex gap-10">
-            <a href="#" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Privacy</a>
-            <a href="#" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Terms</a>
+            <a href="/privacy" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Privacy</a>
+            <a href="/terms" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Terms</a>
             <a href="#" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Security</a>
           </div>
         </footer>

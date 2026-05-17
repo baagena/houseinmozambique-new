@@ -4,15 +4,14 @@ import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
-import { initAuth, getAuth, clearAuth } from '@/lib/auth';
+import { logout } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const navLinkKeys = [
   { href: '/', key: 'home' },
-  { href: '/properties?type=Rent', key: 'rent' },
-  { href: '/properties?type=Buy', key: 'buy' },
-  { href: '/properties?type=Short+Stay', key: 'shortStay' },
-  { href: '/properties?type=Auction', key: 'auction' },
+  { href: '/properties', key: 'properties' },
+  { href: '/news', key: 'news' },
+  { href: '/about', key: 'about' },
   { href: '/contact', key: 'contact' },
 ];
 
@@ -28,12 +27,31 @@ function NavbarContent() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Read auth state using centralized utility after mount
+  // Read auth state from server session on mount
   useEffect(() => {
-    const auth = initAuth();
-    setIsLoggedIn(auth.isLoggedIn);
-    setUserName(auth.userName);
-    setIsDevMode(!!auth.isDevAutoLogin);
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!mounted) return;
+        if (!res.ok) {
+          setIsLoggedIn(false);
+          setUserName('');
+          setIsDevMode(false);
+          return;
+        }
+        const data = await res.json();
+        setIsLoggedIn(true);
+        setUserName(data.user?.name || '');
+        setIsDevMode(false);
+      } catch (err) {
+        if (!mounted) return;
+        setIsLoggedIn(false);
+        setUserName('');
+        setIsDevMode(false);
+      }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   // Close dropdown on outside click
@@ -47,8 +65,8 @@ function NavbarContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignOut = () => {
-    clearAuth();
+  const handleSignOut = async () => {
+    await logout();
     setIsLoggedIn(false);
     setIsDevMode(false);
     setDropdownOpen(false);
@@ -74,14 +92,14 @@ function NavbarContent() {
           <div className="relative w-12 h-12 transition-transform group-hover:scale-105">
             <Image src="/logo.png" alt="House in Mozambique Ltd" fill className="object-contain" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <span className="text-xl font-black text-[#002045] tracking-tighter leading-none">House in Mozambique</span>
-            <span className="text-[10px] font-bold text-[#845326] uppercase tracking-[0.2em] leading-none mt-1">Limited</span>
+            <span className="text-sm font-bold text-[#845326] uppercase tracking-[0.2em] leading-none">Ltd</span>
           </div>
         </Link>
 
-        {/* Desktop Nav & Actions Grouped on Right */}
-        <div className="hidden md:flex items-center gap-10">
+        {/* Desktop Nav Center */}
+        <div className="hidden md:flex flex-1 justify-center items-center">
           <div className="flex items-center gap-8">
             {navLinkKeys.map((link) => {
               const url = new URL(link.href, 'http://localhost');
@@ -106,7 +124,28 @@ function NavbarContent() {
               );
             })}
           </div>
-  
+        </div>
+
+        {/* Desktop Actions Group */}
+        <div className="hidden md:flex items-center gap-4">
+          {/* Sign In (logged out, desktop only) */}
+          {!isLoggedIn && (
+            <Link
+              href="/auth"
+              className="text-sm font-bold text-slate-600 hover:text-[#002045] transition-colors"
+            >
+              {t.nav.signIn}
+            </Link>
+          )}
+
+          {/* Post a House — smaller button */}
+          <Link
+            href="/pricing"
+            className="bg-[#002045] text-white px-4 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-[#002045]/20"
+          >
+            {t.nav.postHouse}
+          </Link>
+
           {/* Language Switcher */}
           <div className="flex items-center bg-[#f2f4f6] rounded-lg p-1 border border-[#c4c6cf]/20">
             <button
@@ -122,29 +161,6 @@ function NavbarContent() {
               PT
             </button>
           </div>
-
-          {/* Visual Separator */}
-          <div className="hidden md:block h-6 w-px bg-slate-200 mx-1" />
-  
-          {/* CTA Group */}
-          <div className="flex items-center gap-3">
-            {/* Sign In (logged out, desktop only) */}
-            {!isLoggedIn && (
-              <Link
-                href="/auth"
-                className="hidden md:block text-sm font-bold text-slate-600 hover:text-[#002045] transition-colors"
-              >
-                {t.nav.signIn}
-              </Link>
-            )}
-
-            {/* Post a House — always visible action button */}
-            <Link
-              href="/pricing"
-              className="bg-[#002045] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#002045]/20"
-            >
-              {t.nav.postHouse}
-            </Link>
 
             {/* User avatar — to the RIGHT of the action button, only when logged in */}
             {isLoggedIn && (
@@ -226,7 +242,6 @@ function NavbarContent() {
               </div>
             )}
           </div>
-        </div>
 
         {/* Mobile hamburger */}
         <button
@@ -265,7 +280,7 @@ function NavbarContent() {
           <Link
             href="/pricing"
             onClick={() => setMobileOpen(false)}
-            className="mt-2 block text-center bg-[#002045] text-white px-6 py-3 rounded-lg font-bold text-sm hover:opacity-90 transition-all font-headline"
+            className="mt-2 block text-center bg-[#002045] text-white px-4 py-3 rounded-lg font-bold text-sm hover:opacity-90 transition-all font-headline"
           >
             {t.nav.postHouse}
           </Link>

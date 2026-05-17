@@ -4,6 +4,9 @@ export const translations = {
   en: {
     nav: {
       home: 'Home',
+      properties: 'Properties',
+      news: 'News',
+      about: 'About Us',
       rent: 'Rent',
       buy: 'Buy',
       shortStay: 'Short Stay',
@@ -208,6 +211,9 @@ export const translations = {
   pt: {
     nav: {
       home: 'Início',
+      properties: 'Propriedades',
+      news: 'Notícias',
+      about: 'Sobre Nós',
       rent: 'Alugar',
       buy: 'Comprar',
       shortStay: 'Estadia Curta',

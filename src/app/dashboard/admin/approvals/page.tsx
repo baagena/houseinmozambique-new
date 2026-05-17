@@ -21,7 +21,16 @@ export default async function AdminApprovalsPage() {
   // Fetch all PENDING properties with their host agent info
   const pendingProperties = await prisma.property.findMany({
     where: { status: 'PENDING' },
-    include: { host: { select: { name: true, initials: true } } },
+    include: {
+      host: {
+        select: {
+          name: true,
+          initials: true,
+          title: true,
+          location: true,
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' },
   });
 

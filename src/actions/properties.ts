@@ -26,6 +26,60 @@ export async function uploadSingleImage(base64: string) {
  * Creates a property record. 
  * Resolves the hosting agent from the authenticated session cookie.
  */
+async function requireAgent() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('userId')?.value;
+
+  if (!userId) {
+    return { error: 'Not authenticated.' };
+  }
+
+  const agent = await prisma.agent.findUnique({
+    where: { id: userId },
+  });
+
+  if (!agent) {
+    return { error: 'Agent not found.' };
+  }
+
+  if (agent.role === 'REVOKED') {
+    return { error: 'Agent access has been revoked.' };
+  }
+
+  return { userId: agent.id };
+}
+
+export async function deleteAgentProperty(id: string) {
+  try {
+    const auth = await requireAgent();
+    if ('error' in auth) {
+      return { success: false, error: auth.error };
+    }
+
+    const property = await prisma.property.findUnique({
+      where: { id },
+    });
+
+    if (!property || property.hostId !== auth.userId) {
+      return { success: false, error: 'Not authorized to delete this listing.' };
+    }
+
+    await prisma.property.delete({
+      where: { id },
+    });
+
+    revalidatePath('/dashboard/agent/listings');
+    revalidatePath('/dashboard/agent');
+    revalidatePath('/properties');
+    revalidatePath(`/properties/${id}`);
+
+    return { success: true, property };
+  } catch (error: any) {
+    console.error('Failed to delete agent property:', error);
+    return { success: false, error: error.message || 'Delete failed.' };
+  }
+}
+
 export async function createProperty(formData: any, imageUrls: string[]) {
   try {
     console.log('Finalizing property publication with', imageUrls.length, 'assets');

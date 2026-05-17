@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import { logout } from '@/lib/auth';
 
 interface SessionUser {
   id: string;
@@ -41,7 +42,7 @@ export default function DashboardLayout({
   const handleLogout = useCallback(async () => {
     setIsLoggingOut(true);
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await logout();
     } finally {
       router.push('/auth');
     }

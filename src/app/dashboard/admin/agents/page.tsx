@@ -1,5 +1,6 @@
 import { getAgents } from '@/lib/data';
 import Image from 'next/image';
+import AdminAgentActions from '@/components/dashboard/AdminAgentActions';
 
 export default async function AdminAgentsPage() {
   const allAgents = await getAgents();
@@ -54,10 +55,7 @@ export default async function AdminAgentsPage() {
                    </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                   <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="text-[10px] font-black text-red-500 uppercase">Revoke Access</button>
-                      <button className="text-[10px] font-black text-[#002045] uppercase hover:underline">Full Analytics</button>
-                   </div>
+                     <AdminAgentActions agentId={agent.id} />
                 </td>
               </tr>
             ))}

@@ -162,12 +162,12 @@ export default async function PropertyDetailPage({ params }: Props) {
                         {agent.rating} Rating
                       </div>
                     </div>
-                    <Link
-                      href="/agents"
-                      className="bg-[#002045] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+                    <a
+                      href={`mailto:${agent.email}?subject=${encodeURIComponent(`Inquiry about ${property.title}`)}&body=${encodeURIComponent(`Hello ${agent.name},\n\nI am interested in your property listing "${property.title}". Please send me more information and available viewing times.\n\nThank you,\n`)}`}
+                      className="bg-[#002045] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity block text-center"
                     >
                       Contact Curator
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -210,12 +210,18 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full bg-[#002045] text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-all">
+                <a
+                  href={`mailto:${agent.email}?subject=${encodeURIComponent(`Inquiry about ${property.title}`)}&body=${encodeURIComponent(`Hello ${agent.name},\n\nI am interested in your property listing "${property.title}". Please send me more information and available viewing times.\n\nThank you,\n`)}`}
+                  className="w-full inline-flex justify-center bg-[#002045] text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-all"
+                >
                   Contact Agent
-                </button>
-                <button className="w-full border-2 border-[#845326] text-[#845326] py-4 rounded-lg font-bold text-lg hover:bg-[#845326]/5 transition-all">
+                </a>
+                <a
+                  href={`mailto:${agent.email}?subject=${encodeURIComponent(`Viewing request for ${property.title}`)}&body=${encodeURIComponent(`Hello ${agent.name},\n\nI would like to book a viewing for "${property.title}". Please let me know your available dates and times.\n\nThank you,\n`)}`}
+                  className="w-full inline-flex justify-center border-2 border-[#845326] text-[#845326] py-4 rounded-lg font-bold text-lg hover:bg-[#845326]/5 transition-all"
+                >
                   Book a Viewing
-                </button>
+                </a>
               </div>
               <p className="text-center text-xs text-[#43474e] mt-6">You won&apos;t be charged yet. Inquiries are free.</p>
             </div>

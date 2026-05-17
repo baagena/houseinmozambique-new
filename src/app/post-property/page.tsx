@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { initAuth } from '@/lib/auth';
 import { createProperty, uploadSingleImage } from '@/actions/properties';
 import Image from 'next/image';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -83,12 +82,21 @@ function PostPropertyForm() {
   const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number } | null>(null);
 
   useEffect(() => {
-    const auth = initAuth();
-    if (!auth.isLoggedIn) {
-      router.push('/auth?redirect=/post-property');
-    } else {
-      setIsAuthorized(true);
-    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) {
+          if (!cancelled) router.push('/auth?redirect=/post-property');
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) setIsAuthorized(true);
+      } catch (err) {
+        if (!cancelled) router.push('/auth?redirect=/post-property');
+      }
+    })();
+    return () => { cancelled = true; };
   }, [router]);
 
   function update<K extends keyof FormData>(key: K, value: FormData[K]) {
@@ -216,6 +224,14 @@ function PostPropertyForm() {
             <Link href="/properties" className="flex-1 border-2 border-[#002045] text-[#002045] py-4 rounded-xl font-bold text-center hover:bg-[#002045]/5 transition-colors">
               Browse Properties
             </Link>
+            <a
+              href={`mailto:hello@houseinmoz.com?subject=${encodeURIComponent('New house request submitted')}&body=${encodeURIComponent(
+                `A new property request has been submitted through the platform. Please review the dashboard for details.`
+              )}`}
+              className="flex-1 border-2 border-[#845326] text-[#845326] py-4 rounded-xl font-bold text-center hover:bg-[#845326]/5 transition-colors"
+            >
+              Email Admin
+            </a>
           </div>
         </div>
       </div>
