@@ -32,7 +32,7 @@ export const translations = {
       stayUpdated: 'Stay Updated',
       newsletterDesc: 'Get the latest agent listings and market insights delivered to your inbox.',
       emailPlaceholder: 'Your email',
-      copyright: '© 2024 HouseinMozambique. The Modern Estate Agent.',
+      copyright: '© 2026 House in Mozambique. The Modern Estate Agent.',
       privacy: 'Privacy',
       terms: 'Terms',
     },

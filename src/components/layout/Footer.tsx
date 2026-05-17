@@ -14,7 +14,7 @@ export default function Footer() {
               href="/"
               className="text-2xl font-black text-[#002045] tracking-tighter mb-6 block"
             >
-              HouseinMozambique
+              House in Mozambique
             </Link>
             <p className="text-[#43474e] mb-8 max-w-sm leading-relaxed text-sm">
               {t.footer.brandDesc}
