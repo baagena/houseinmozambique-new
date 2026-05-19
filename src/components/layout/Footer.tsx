@@ -84,7 +84,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-[#191c1e] mb-6">Get in touch</h4>
+            <h4 className="font-bold text-[#191c1e] mb-6">{t.footer.getInTouch}</h4>
 <ul className="space-y-4">
   <li>
     <a

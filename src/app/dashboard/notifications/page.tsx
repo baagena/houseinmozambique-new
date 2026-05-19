@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 interface Notification {
   id: string;
@@ -47,6 +48,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 ];
 
 export default function NotificationsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
 
@@ -73,25 +75,25 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-[#002045] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-            Notification Center
+            {t.dashboard.notifications.title}
           </h1>
           <p className="text-[#74777f] font-medium font-serif leading-relaxed italic">
-            Keep track of your professional engagement and platform status.
+            {t.dashboard.notifications.desc}
           </p>
         </div>
         <button 
           onClick={markAllAsRead}
           className="text-[10px] font-black text-[#845326] uppercase tracking-[0.2em] hover:underline whitespace-nowrap"
         >
-          Mark all as read
+          {t.dashboard.notifications.markAllAsRead}
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-4 border-b border-[#f2f4f6]">
         {[
-          { id: 'all', label: 'All Notifications' },
-          { id: 'unread', label: 'Unread' },
+          { id: 'all', label: t.dashboard.notifications.allNotifications },
+          { id: 'unread', label: t.dashboard.notifications.unread },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -137,7 +139,7 @@ export default function NotificationsPage() {
         ) : (
           <div className="py-20 text-center">
             <span className="material-symbols-outlined text-6xl text-[#f2f4f6] mb-4">notifications_off</span>
-            <p className="text-[#c4c6cf] font-black text-[10px] uppercase tracking-widest">No notifications found</p>
+            <p className="text-[#c4c6cf] font-black text-[10px] uppercase tracking-widest">{t.dashboard.notifications.noNotifications}</p>
           </div>
         )}
       </div>

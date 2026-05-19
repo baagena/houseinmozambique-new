@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createProperty, uploadSingleImage } from '@/actions/properties';
+import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
 import Image from 'next/image';
+import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 
@@ -50,16 +51,24 @@ function PostPropertyForm() {
     { id: 3, label: t.pricing.heroBadge, icon: 'payments', description: t.postProperty.publishAsset },
   ];
 
-  const PLAN_META: Record<string, { label: string; icon: string; color: string }> = {
-    standard: { label: lang === 'en' ? 'Standard Plan' : 'Plano Standard', icon: 'home', color: '#43474e' },
-    premium:  { label: lang === 'en' ? 'Premium Plan' : 'Plano Premium',  icon: 'stars', color: '#845326' },
+  const PLAN_META: Record<string, { label: string; icon: string; color: string; isPaid: boolean; amount: number }> = {
+    standard: { label: lang === 'en' ? 'Standard Plan' : 'Plano Standard', icon: 'home', color: '#43474e', isPaid: false, amount: 0 },
+    premium:  { label: lang === 'en' ? 'Premium Plan' : 'Plano Premium',  icon: 'stars', color: '#845326', isPaid: true, amount: 7000 },
+    boost:    { label: lang === 'en' ? 'Premium Ad Boost' : 'Anúncio Premium', icon: 'local_fire_department', color: '#f59e0b', isPaid: true, amount: 2000 },
+    pro:      { label: lang === 'en' ? 'Agency Pro' : 'Pro Agência', icon: 'business_center', color: '#0f766e', isPaid: true, amount: 30000 },
   };
 
   const selectedPlan = searchParams.get('plan') || 'standard';
   const planMeta = PLAN_META[selectedPlan] || PLAN_META.standard;
+  const planRequiresPayment = planMeta.isPaid && planMeta.amount > 0;
+
+  const [pendingUploadUrls, setPendingUploadUrls] = useState<string[] | null>(null);
+  const [paymentPhase, setPaymentPhase] = useState(false);
+  const [paymentPrepError, setPaymentPrepError] = useState<string | null>(null);
 
   const [step, setStep] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<string[]>([]);
@@ -80,6 +89,8 @@ function PostPropertyForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number } | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const editId = searchParams.get('edit');
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +110,55 @@ function PostPropertyForm() {
     return () => { cancelled = true; };
   }, [router]);
 
+  useEffect(() => {
+    if (!editId) return;
+    let cancelled = false;
+    setIsEditLoading(true);
+    setEditError(null);
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/property/${editId}`, { credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error('/api/property fetch failed', res.status, data);
+          throw new Error(data?.error || 'Property not found or you are not authorized.');
+        }
+        if (cancelled) return;
+
+        const property = data.property;
+        if (!property) {
+          throw new Error('Property data missing.');
+        }
+
+        setForm({
+          title: property.title || '',
+          listingType: property.listingType || 'Buy',
+          propertyType: property.type || 'Villa',
+          bedrooms: property.bedrooms || 3,
+          bathrooms: property.bathrooms || 2,
+          area: property.area || 0,
+          description: property.description || '',
+          city: property.city || '',
+          neighborhood: property.neighborhood || '',
+          address: property.address || '',
+          amenities: property.amenities || [],
+          price: property.price?.toString() || '',
+          priceUnit: property.priceUnit || 'sale',
+        });
+        setImages(property.images || []);
+      } catch (error: any) {
+        if (cancelled) return;
+        console.error('Failed to load property:', error);
+        setEditError(error.message || 'Unable to load property for editing.');
+      } finally {
+        if (!cancelled) setIsEditLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [editId]);
+
   function update<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -112,8 +172,76 @@ function PostPropertyForm() {
     }));
   }
 
+  async function finalizeListing(imageUrls: string[]) {
+    setIsSubmitting(true);
+    try {
+      const result = editId
+        ? await updateProperty(editId, form, imageUrls)
+        : await createProperty(form, imageUrls);
+
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        alert(result.error || 'Failed to publish asset. Please verify details.');
+      }
+    } catch (error: any) {
+      console.error('Finalization failed:', error);
+      alert(`Publication error: ${error.message || 'Unable to complete the listing.'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function preparePayment() {
+    setIsSubmitting(true);
+    setPaymentPrepError(null);
+    setUploadStatus({ current: 0, total: images.length });
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (let i = 0; i < images.length; i++) {
+        setUploadStatus({ current: i + 1, total: images.length });
+
+        if (!images[i].startsWith('data:')) {
+          uploadedUrls.push(images[i]);
+          continue;
+        }
+
+        const uploadResult = await uploadSingleImage(images[i]);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || `Failed to upload image ${i + 1}`);
+        }
+        uploadedUrls.push(uploadResult.url!);
+      }
+
+      setPendingUploadUrls(uploadedUrls);
+      setPaymentPhase(true);
+    } catch (error: any) {
+      console.error('Payment prep failed:', error);
+      setPaymentPrepError(error.message || 'Unable to prepare payment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+      setUploadStatus(null);
+    }
+  }
+
+  async function handlePaymentSuccess(transactionId: string) {
+    if (!pendingUploadUrls) {
+      setPaymentPrepError('Missing upload data for payment completion.');
+      return;
+    }
+
+    await finalizeListing(pendingUploadUrls);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (planRequiresPayment) {
+      await preparePayment();
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadStatus({ current: 0, total: images.length });
 
@@ -138,7 +266,9 @@ function PostPropertyForm() {
       }
 
       // Finalize Property Creation
-      const result = await createProperty(form, uploadedUrls);
+      const result = editId
+        ? await updateProperty(editId, form, uploadedUrls)
+        : await createProperty(form, uploadedUrls);
       
       if (result.success) {
         setSubmitted(true);
@@ -204,6 +334,26 @@ function PostPropertyForm() {
     );
   }
 
+  if (isEditLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f9fb]">
+        <div className="animate-pulse text-[#002045] font-bold">{lang === 'en' ? 'Loading listing details...' : 'Carregando detalhes do anúncio...'}</div>
+      </div>
+    );
+  }
+
+  if (editError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f9fb] px-6">
+        <div className="max-w-xl text-center rounded-3xl bg-white p-12 shadow-xl border border-[#eef0f2]">
+          <p className="text-xl font-extrabold text-[#002045] mb-4">{lang === 'en' ? 'Unable to load listing' : 'Não foi possível carregar o anúncio'}</p>
+          <p className="text-[#43474e] mb-8">{editError}</p>
+          <Link href="/dashboard/agent/listings" className="inline-flex px-8 py-4 bg-[#002045] text-white font-black rounded-xl hover:bg-[#003061] transition">{lang === 'en' ? 'Back to listings' : 'Voltar às listagens'}</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
       <div className="pt-24 min-h-screen flex items-center justify-center bg-[#f7f9fb]">
@@ -239,7 +389,7 @@ function PostPropertyForm() {
   }
 
   return (
-    <div className="pt-24 min-h-screen bg-[#f7f9fb]">
+    <div className="py-12 bg-[#f7f9fb]">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-20">
         <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
           
@@ -430,8 +580,8 @@ function PostPropertyForm() {
                             value={form.city}
                             onChange={(e) => update('city', e.target.value)}
                           >
-                            <option value="">Select enclave</option>
-                            {CITIES.map((c) => <option key={c}>{c}</option>)}
+                            <option value="">{t.postProperty.enclavePlaceholder}</option>
+                            {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                           <span className="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-[#002045] group-hover:scale-110 transition-transform">
                             location_city
@@ -665,30 +815,56 @@ function PostPropertyForm() {
                         <span className="material-symbols-outlined transition-transform group-hover:translate-x-2 text-xl">arrow_forward_ios</span>
                       </button>
                     ) : (
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`flex-1 md:flex-none group bg-[#845326] text-white px-10 py-4 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-3 shadow-lg hover:bg-[#965f2c] hover:-translate-y-1 transition-all active:scale-95 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {isSubmitting ? (
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest">
-                              {uploadStatus ? `${lang === 'en' ? 'Syncing Image' : 'Sincronizando Imagem'} ${uploadStatus.current}/${uploadStatus.total}` : lang === 'en' ? 'Finalizing...' : 'Finalizando...'}
-                            </span>
-                            <span className="material-symbols-outlined text-xl animate-spin">sync</span>
+                      <>
+                        {planRequiresPayment && paymentPhase ? (
+                          <div className="flex-1 md:flex-none rounded-xl bg-[#f7f9fb] border border-[#eef0f2] p-4 text-sm text-[#43474e]">
+                            {lang === 'en'
+                              ? 'Payment is ready. Complete the payment form below to finish your listing.'
+                              : 'Pagamento pronto. Complete o formulário de pagamento abaixo para finalizar seu anúncio.'}
                           </div>
                         ) : (
-                          <>
-                            {t.postProperty.publishAsset}
-                            <span className="material-symbols-outlined text-xl animate-pulse">publish</span>
-                          </>
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`flex-1 md:flex-none group bg-[#845326] text-white px-10 py-4 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-3 shadow-lg hover:bg-[#965f2c] hover:-translate-y-1 transition-all active:scale-95 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {isSubmitting ? (
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest">
+                                  {uploadStatus ? `${lang === 'en' ? 'Syncing Image' : 'Sincronizando Imagem'} ${uploadStatus.current}/${uploadStatus.total}` : lang === 'en' ? 'Finalizing...' : 'Finalizando...' }
+                                </span>
+                                <span className="material-symbols-outlined text-xl animate-spin">sync</span>
+                              </div>
+                            ) : (
+                              <>
+                                {planRequiresPayment ? (lang === 'en' ? 'Proceed to Payment' : 'Ir para Pagamento') : t.postProperty.publishAsset}
+                                <span className="material-symbols-outlined text-xl animate-pulse">publish</span>
+                              </>
+                            )}
+                          </button>
                         )}
-                      </button>
+                      </>
                     )}
                   </div>
                 </div>
               </div>
             </form>
+
+            {paymentPhase && planRequiresPayment && pendingUploadUrls && (
+              <div className="mt-12">
+                <PaymentForm
+                  planType={selectedPlan}
+                  amount={planMeta.amount}
+                  onSuccess={handlePaymentSuccess}
+                />
+
+                {paymentPrepError && (
+                  <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                    {paymentPrepError}
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       </div>

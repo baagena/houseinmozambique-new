@@ -19,15 +19,19 @@ export default function AdminAgentActions({ agentId }: AdminAgentActionsProps) {
     }
 
     setIsPending(true);
-    const response = await revokeAgentAccess(agentId);
-    setIsPending(false);
-
-    if (!response.success) {
-      alert(response.error || 'Unable to revoke agent access.');
-      return;
+    try {
+      const res = await fetch(`/api/admin/agent/${agentId}/revoke`, { method: 'POST', credentials: 'include' }).then(r => r.json());
+      setIsPending(false);
+      if (!res.success) {
+        alert(res.error || 'Unable to revoke agent access.');
+        return;
+      }
+      router.refresh();
+    } catch (err) {
+      setIsPending(false);
+      console.error(err);
+      alert('Unable to revoke agent access.');
     }
-
-    router.refresh();
   };
 
   return (

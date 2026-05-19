@@ -52,7 +52,7 @@ function NavbarContent() {
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [pathname]);
 
   // Close dropdown on outside click
   useEffect(() => {

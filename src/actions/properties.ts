@@ -134,3 +134,49 @@ export async function createProperty(formData: any, imageUrls: string[]) {
     };
   }
 }
+
+export async function updateProperty(id: string, formData: any, imageUrls: string[]) {
+  try {
+    const auth = await requireAgent();
+    if ('error' in auth) {
+      return { success: false, error: auth.error };
+    }
+
+    const property = await prisma.property.findUnique({ where: { id } });
+    if (!property || property.hostId !== auth.userId) {
+      return { success: false, error: 'Not authorized to edit this listing.' };
+    }
+
+    const updated = await prisma.property.update({
+      where: { id },
+      data: {
+        title: formData.title,
+        description: formData.description,
+        location: formData.address || formData.neighborhood || formData.city,
+        city: formData.city,
+        neighborhood: formData.neighborhood,
+        address: formData.address,
+        price: parseFloat(formData.price),
+        priceUnit: formData.priceUnit,
+        type: formData.propertyType,
+        listingType: formData.listingType,
+        bedrooms: parseInt(formData.bedrooms.toString()),
+        bathrooms: parseInt(formData.bathrooms.toString()),
+        area: parseFloat(formData.area.toString()) || 0,
+        amenities: formData.amenities,
+        images: imageUrls,
+        status: 'PENDING',
+        isNew: true,
+      },
+    });
+
+    revalidatePath('/dashboard/agent/listings');
+    revalidatePath('/properties');
+    revalidatePath(`/properties/${id}`);
+
+    return { success: true, property: updated };
+  } catch (error: any) {
+    console.error('Update property failed:', error);
+    return { success: false, error: error.message || 'Failed to update property.' };
+  }
+}

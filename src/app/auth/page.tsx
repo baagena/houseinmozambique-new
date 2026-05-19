@@ -83,6 +83,7 @@ function AuthForm() {
       const endpoint = tab === 'signin' ? '/api/auth/login' : '/api/auth/register';
       const response = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -132,6 +133,7 @@ function AuthForm() {
       const devEmail = role === 'admin' ? 'admin@houseinmoz.com' : 'agent-1@houseinmoz.com';
       const response = await fetch('/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: devEmail, password: 'password123' }),
       });
@@ -199,29 +201,28 @@ function AuthForm() {
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-1000">
               <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/10">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Agent Access</span>
+                <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{t.auth.accessBadge}</span>
               </div>
-              
+
               <h2 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
-                Grow your business <br />
-                as a <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fab983] to-[#845326]">Professional</span> Agent.
+                {t.auth.signInHeroTitle}
               </h2>
-              
+
               <p className="text-lg lg:text-xl text-[#86a0cd] font-medium leading-relaxed max-w-md">
-                Join Mozambique's most exclusive network of real estate professionals. Access premium listings, powerful tools, and a global clientele.
+                {t.auth.signInHeroDesc}
               </p>
 
               <footer className="pt-12 border-t border-white/10 flex items-center gap-12 mt-12">
                 <div className="flex -space-x-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="w-12 h-12 rounded-xl border-2 border-[#002045] bg-[#f2f4f6] flex items-center justify-center overflow-hidden">
-                       <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-400" />
+                      <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-400" />
                     </div>
                   ))}
                 </div>
                 <div>
                   <p className="text-white font-black text-sm tracking-tight leading-none mb-1">Agency Network</p>
-                  <p className="text-[10px] text-[#74777f] uppercase tracking-widest">Premium Agent</p>
+                  <p className="text-[10px] text-[#74777f] uppercase tracking-widest">{t.auth.premiumAgent}</p>
                   <p className="text-[10px] text-[#86a0cd] uppercase tracking-widest font-bold">280+ Certified Partners</p>
                 </div>
               </footer>
@@ -232,10 +233,10 @@ function AuthForm() {
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#845326]/20 backdrop-blur-xl border border-[#845326]/30">
                   <span className="w-2 h-2 rounded-full bg-[#fab983] animate-pulse" />
-                  <span className="text-[10px] font-black text-[#fab983] uppercase tracking-[0.2em]">Registration Journey</span>
+                  <span className="text-[10px] font-black text-[#fab983] uppercase tracking-[0.2em]">{t.auth.registrationBadge}</span>
                 </div>
                 <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-[1.1]" style={{ fontFamily: 'var(--font-headline)' }}>
-                   Create your <br /> Agent Profile.
+                   {t.auth.registrationTitle}
                 </h2>
               </div>
 

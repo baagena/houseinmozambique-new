@@ -16,73 +16,109 @@ export default function PricingPage() {
 
   const plans = [
     {
-      name: lang === 'en' ? 'Standard' : 'Standard',
-      price: '$29',
-      unit: lang === 'en' ? '/ listing' : '/ anúncio',
-      description: lang === 'en' ? 'Perfect for individual homeowners looking for a quick sale.' : 'Perfeito para proprietários individuais que procuram uma venda rápida.',
+      name: lang === 'en' ? 'Standard (Free)' : 'Standard (Grátis)',
+      price: 'Grátis',
+      unit: '',
+      type: 'standard',
+      description: lang === 'en' ? 'Perfect for individual homeowners looking to populate initial inventory.' : 'Perfeito para proprietários individuais que procuram listar seu imóvel.',
       features: [
-        { label: lang === 'en' ? 'Single Property Listing' : 'Listagem de Imóvel Único', included: true, star: false },
+        { label: lang === 'en' ? '1 Free Property Listing' : '1 Listagem de Imóvel Grátis', included: true, star: false },
         { label: lang === 'en' ? '15 High-res Photos' : '15 Fotos em Alta Resolução', included: true, star: false },
+        { label: lang === 'en' ? 'Basic Property Information' : 'Informações Básicas do Imóvel', included: true, star: false },
+        { label: lang === 'en' ? 'Email Support' : 'Suporte por Email', included: true, star: false },
         { label: lang === 'en' ? 'Featured Listing' : 'Listagem em Destaque', included: false, star: false },
-        { label: lang === 'en' ? 'Professional Photography' : 'Fotografia Profissional', included: false, star: false },
+        { label: lang === 'en' ? 'Analytics Dashboard' : 'Painel de Análise', included: false, star: false },
       ],
       highlighted: false,
+      cta: lang === 'en' ? 'List Now' : 'Publicar Agora',
     },
     {
-      name: 'Premium',
-      price: '$99',
-      unit: lang === 'en' ? '/ listing' : '/ anúncio',
-      description: lang === 'en' ? 'Our most popular choice for serious sellers and boutiques.' : 'A nossa escolha mais popular para vendedores sérios e boutiques.',
-      badge: lang === 'en' ? 'Recommended' : 'Recomendado',
+      name: lang === 'en' ? 'Premium' : 'Premium',
+      price: '7,000 - 15,000',
+      unit: lang === 'en' ? 'MZN / month' : 'MZN / mês',
+      type: 'premium',
+      description: lang === 'en' ? 'For small real estate agencies wanting to establish their presence.' : 'Para pequenas agências imobiliárias que querem estabelecer sua presença.',
+      badge: lang === 'en' ? 'Popular' : 'Popular',
       features: [
-        { label: lang === 'en' ? 'Featured Listing (7 Days)' : 'Listagem em Destaque (7 Dias)', included: true, star: true },
-        { label: lang === 'en' ? '30 High-res Photos' : '30 Fotos em Alta Resolução', included: true, star: false },
+        { label: lang === 'en' ? 'Up to 15 Listings' : 'Até 15 Anúncios', included: true, star: true },
+        { label: lang === 'en' ? 'Featured Exposure (7 Days)' : 'Exposição em Destaque (7 Dias)', included: true, star: true },
+        { label: lang === 'en' ? '30 Photos per Property' : '30 Fotos por Imóvel', included: true, star: false },
         { label: lang === 'en' ? 'Social Media Promotion' : 'Promoção nas Redes Sociais', included: true, star: false },
-        { label: lang === 'en' ? 'Priority Support' : 'Suporte Prioritário', included: true, star: false },
+        { label: lang === 'en' ? 'Priority Email Support' : 'Suporte Prioritário', included: true, star: false },
+        { label: lang === 'en' ? 'Basic Analytics' : 'Análise Básica', included: true, star: false },
       ],
       highlighted: true,
+      cta: lang === 'en' ? 'Get Started' : 'Começar',
     },
     {
-      name: 'Enterprise',
-      price: lang === 'en' ? 'Contact' : 'Contacto',
-      unit: lang === 'en' ? '/ custom' : '/ personalizado',
-      description: lang === 'en' ? 'Tailored solutions for real estate agencies and developers.' : 'Soluções sob medida para agências imobiliárias e promotores.',
+      name: lang === 'en' ? 'Agency Pro' : 'Pro Agência',
+      price: '30,000 - 50,000',
+      unit: lang === 'en' ? 'MZN / month' : 'MZN / mês',
+      type: 'pro',
+      description: lang === 'en' ? 'Enterprise-grade solutions for established real estate agencies.' : 'Soluções para agências imobiliárias estabelecidas.',
       features: [
-        { label: lang === 'en' ? 'Unlimited Listings' : 'Listagens Ilimitadas', included: true, star: false },
-        { label: lang === 'en' ? 'Agent Dashboard & Analytics' : 'Painel de Agente e Analítica', included: true, star: false },
-        { label: lang === 'en' ? 'Professional Photography' : 'Fotografia Profissional', included: true, star: false },
+        { label: lang === 'en' ? 'Unlimited Listings' : 'Anúncios Ilimitados', included: true, star: false },
+        { label: lang === 'en' ? 'Premium Placement & CRM' : 'CRM Integrado', included: true, star: false },
+        { label: lang === 'en' ? 'Unlimited Photos' : 'Fotos Ilimitadas', included: true, star: false },
+        { label: lang === 'en' ? 'Advanced Analytics & Reporting' : 'Análise Avançada', included: true, star: false },
         { label: lang === 'en' ? 'Dedicated Account Manager' : 'Gestor de Conta Dedicado', included: true, star: false },
+        { label: lang === 'en' ? 'Priority Phone Support' : 'Suporte Telefônico 24/7', included: true, star: false },
       ],
       highlighted: false,
+      cta: lang === 'en' ? 'Contact Sales' : 'Contato',
+    },
+    {
+      name: lang === 'en' ? 'Premium Ad Boost' : 'Anúncio Premium',
+      price: '2,000',
+      unit: lang === 'en' ? 'MZN / week' : 'MZN / semana',
+      type: 'boost',
+      description: lang === 'en' ? 'For immediate visibility and top placement of your listings.' : 'Para visibilidade imediata e destaque de seus anúncios.',
+      features: [
+        { label: lang === 'en' ? 'Top Placement for 1 Property' : 'Destaque de 1 Imóvel', included: true, star: true },
+        { label: lang === 'en' ? 'Featured on Homepage' : 'Em Destaque na Home', included: true, star: true },
+        { label: lang === 'en' ? 'Social Media Boost' : 'Impulsionamento nas Redes', included: true, star: false },
+        { label: lang === 'en' ? '7-Day Duration' : 'Duração: 7 Dias', included: true, star: false },
+        { label: lang === 'en' ? 'Email Alerts to Leads' : 'Alertas para Interessados', included: true, star: false },
+        { label: lang === 'en' ? 'Performance Analytics' : 'Análise de Performance', included: true, star: false },
+      ],
+      highlighted: false,
+      cta: lang === 'en' ? 'Boost Now' : 'Impulsionar Agora',
     },
   ];
 
   const faqs = [
     {
-      q: lang === 'en' ? 'How much does it cost to list?' : 'Quanto custa para publicar?',
-      a: lang === 'en' ? 'Listing costs vary based on the tier you select. Our Standard tier starts at $29 per listing.' : 'Os custos de listagem variam com base no nível que selecionar. Nosso nível Standard começa em $29 por anúncio.',
+      q: lang === 'en' ? 'What payment methods do you accept?' : 'Quais métodos de pagamento vocês aceitam?',
+      a: lang === 'en' ? 'We accept M-Pesa, e-Mola, debit cards, credit cards, and bank transfers. All payments are processed in local currency (MZN) with direct conversion from foreign currencies.' : 'Aceitamos M-Pesa, e-Mola, cartões de débito e crédito, e transferências bancárias. Todos os pagamentos são processados em moeda local (MZN) com conversão direta de moedas estrangeiras.',
     },
     {
-      q: lang === 'en' ? 'How do I contact agents?' : 'Como contacto os agentes?',
-      a: lang === 'en' ? 'Each property listing features a dedicated contact module.' : 'Cada listagem de propriedade apresenta um módulo de contacto dedicado.',
+      q: lang === 'en' ? 'Can I cancel my subscription anytime?' : 'Posso cancelar minha subscrição a qualquer momento?',
+      a: lang === 'en' ? 'Yes, you can cancel your subscription at any time from your dashboard. Premium and Agency Pro subscriptions will remain active until the end of the billing period.' : 'Sim, você pode cancelar sua subscrição a qualquer momento. A subscrição permanecerá ativa até o final do período de faturamento.',
     },
     {
-      q: lang === 'en' ? 'Can I list multiple properties?' : 'Posso publicar várias propriedades?',
-      a: lang === 'en' ? 'Absolutely. Individual owners can purchase single listings.' : 'Com certeza. Os proprietários individuais podem comprar listagens individuais.',
+      q: lang === 'en' ? 'Do I need to pay for the Standard (Free) tier?' : 'Preciso pagar pela categoria Standard (Grátis)?',
+      a: lang === 'en' ? 'No! The Standard tier is completely free. You can list 1 property for free. Upgrade anytime to access more listings and features.' : 'Não! A categoria Standard é completamente grátis. Você pode publicar 1 imóvel gratuitamente. Atualize sua conta a qualquer momento para acessar mais recursos.',
+    },
+    {
+      q: lang === 'en' ? 'How do Premium Ad Boosts work?' : 'Como funcionam os Anúncios Premium?',
+      a: lang === 'en' ? 'Premium Ad Boosts give your property top placement on our platform for 7 days. You pay 2,000 MZN per week to gain immediate visibility on the homepage and across our social media channels.' : 'Os Anúncios Premium colocam seu imóvel em destaque por 7 dias. Você paga 2.000 MZN por semana para ganhar visibilidade imediata na página inicial e em nossas redes sociais.',
+    },
+    {
+      q: lang === 'en' ? 'Is there a transaction fee?' : 'Existe uma taxa de transação?',
+      a: lang === 'en' ? 'Payment processing fees vary by method. M-Pesa and e-Mola have minimal fees. Please contact our support team for detailed information about fees for your chosen payment method.' : 'As taxas de processamento variam por método. M-Pesa e e-Mola têm taxas mínimas. Entre em contato com nossa equipe de suporte para mais detalhes.',
     },
     {
       q: lang === 'en' ? 'What is the curation process?' : 'Qual é o processo de curadoria?',
-      a: lang === 'en' ? 'Every listing submitted goes through a quality review.' : 'Cada listagem submetida passa por uma revisão de qualidade.',
+      a: lang === 'en' ? 'Every listing submitted goes through a quality review to ensure accuracy and protect our community. Listings are verified within 24 hours.' : 'Cada listagem passa por uma revisão de qualidade. As listagens são verificadas dentro de 24 horas.',
     },
   ];
 
-  function handlePlanSelect(planName: string) {
-    const slug = planName.toLowerCase();
+  function handlePlanSelect(planType: string) {
     const auth = getAuth();
     if (auth.isLoggedIn) {
-      router.push(`/post-property?plan=${slug}`);
+      router.push(`/post-property?plan=${planType}`);
     } else {
-      router.push(`/auth?redirect=/post-property&plan=${slug}`);
+      router.push(`/auth?redirect=/post-property&plan=${planType}`);
     }
   }
 
@@ -110,14 +146,14 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`flex flex-col p-8 rounded-xl relative ${
+              className={`flex flex-col p-8 rounded-xl relative transition-all duration-300 ${
                 plan.highlighted
-                  ? 'bg-[#002045] text-white shadow-2xl scale-105 z-10'
-                  : 'bg-white hover:bg-[#e6e8ea] transition-colors duration-300'
+                  ? 'bg-[#002045] text-white shadow-2xl scale-105 z-10 lg:col-span-1'
+                  : 'bg-white hover:shadow-lg'
               }`}
             >
               {plan.badge && (
@@ -125,24 +161,26 @@ export default function PricingPage() {
                   {plan.badge}
                 </div>
               )}
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
+              <div className="mb-6">
+                <h3 className="text-xl font-black mb-2 tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
                   {plan.name}
                 </h3>
-                <p className={`text-sm ${plan.highlighted ? 'text-[#86a0cd]' : 'text-[#43474e]'}`}>
+                <p className={`text-xs ${plan.highlighted ? 'text-[#fab983]/80' : 'text-[#74777f]'}`}>
                   {plan.description}
                 </p>
               </div>
               <div className="mb-8">
-                <span className="text-4xl font-extrabold" style={{ fontFamily: 'var(--font-headline)' }}>
+                <span className="text-3xl font-black" style={{ fontFamily: 'var(--font-headline)' }}>
                   {plan.price}
                 </span>
-                <span className={plan.highlighted ? 'text-[#86a0cd]' : 'text-[#43474e]'}>{plan.unit}</span>
+                <span className={`text-xs ml-2 ${plan.highlighted ? 'text-[#fab983]/80' : 'text-[#74777f]'}`}>
+                  {plan.unit}
+                </span>
               </div>
-              <ul className="mb-12 space-y-4 flex-grow">
+              <ul className="mb-8 space-y-3 flex-grow">
                 {plan.features.map((f) => (
-                  <li key={f.label} className={`flex items-center gap-3 text-sm ${!f.included ? 'opacity-40' : ''}`}>
-                    <span className={`material-symbols-outlined text-xl ${
+                  <li key={f.label} className={`flex items-start gap-3 text-xs leading-relaxed ${!f.included ? 'opacity-40' : ''}`}>
+                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${
                       f.included
                         ? plan.highlighted ? 'text-[#fab983]' : 'text-[#845326]'
                         : 'text-[#74777f]'
@@ -153,27 +191,27 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              {plan.name === 'Enterprise' ? (
+              {plan.type === 'pro' ? (
                 <a
                   href="/contact"
-                  className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
+                  className={`w-full py-3 rounded-lg font-bold text-center block transition-all duration-300 text-sm ${
                     plan.highlighted
                       ? 'bg-[#845326] text-white hover:opacity-90'
-                      : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
+                      : 'bg-[#f2f4f6] text-[#002045] hover:bg-[#002045] hover:text-white'
                   }`}
                 >
-                  {t.pricing.contactTeam}
+                  {plan.cta}
                 </a>
               ) : (
                 <button
-                  onClick={() => handlePlanSelect(plan.name)}
-                  className={`w-full py-4 rounded-lg font-bold text-center block transition-all duration-300 ${
+                  onClick={() => handlePlanSelect(plan.type)}
+                  className={`w-full py-3 rounded-lg font-bold text-center block transition-all duration-300 text-sm ${
                     plan.highlighted
                       ? 'bg-[#845326] text-white hover:opacity-90'
-                      : 'bg-[#e0e3e5] text-[#002045] hover:bg-[#002045] hover:text-white'
+                      : 'bg-[#f2f4f6] text-[#002045] hover:bg-[#002045] hover:text-white'
                   }`}
                 >
-                  {t.pricing.postHouseBtn}
+                  {plan.cta}
                 </button>
               )}
             </div>

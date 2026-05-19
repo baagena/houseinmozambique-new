@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const CONTACT_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
 
 export default function ContactPage() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,20 +18,36 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const mailto = `mailto:hello@houseinmoz.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(
-      `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
-    )}`;
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
 
-    window.location.href = mailto;
-    setTimeout(() => {
+      if (res.ok) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        alert('Failed to send inquiry. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to submit form', error);
+      alert('An error occurred. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 500);
+    }
   };
 
   return (
@@ -41,13 +59,13 @@ export default function ContactPage() {
           <header className="mb-20 text-center">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#845326]/10 border border-[#845326]/20 mb-6">
               <span className="w-2 h-2 rounded-full bg-[#845326] animate-pulse" />
-              <span className="text-[10px] font-black text-[#845326] uppercase tracking-[0.2em]">Contact Us</span>
+              <span className="text-[10px] font-black text-[#845326] uppercase tracking-[0.2em]">{t.contact.title}</span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-black text-[#002045] tracking-tighter leading-[1.1] mb-6" style={{ fontFamily: 'var(--font-headline)' }}>
-              Let's start a <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#845326] to-[#fab983]">conversation</span>.
+              {t.contact.heading1} <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#845326] to-[#fab983]">{t.contact.heading2}</span>.
             </h1>
             <p className="text-xl text-[#74777f] font-medium max-w-2xl mx-auto leading-relaxed">
-              Whether you're looking for your next home, an investment opportunity, or a professional partnership, our team is here to help.
+              {t.contact.desc}
             </p>
           </header>
 
@@ -55,7 +73,7 @@ export default function ContactPage() {
             {/* Form Column */}
             <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-[0_32px_64px_rgba(0,32,69,0.08)] border border-[#f2f4f6]">
               <h2 className="text-3xl font-black text-[#002045] mb-8 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
-                Send us a message
+                {t.contact.sendMessage}
               </h2>
 
               {submitted ? (
@@ -63,20 +81,20 @@ export default function ContactPage() {
                   <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span className="material-symbols-outlined text-4xl">check_circle</span>
                   </div>
-                  <h3 className="text-2xl font-black text-[#002045] mb-2 tracking-tight">Message Sent!</h3>
-                  <p className="text-[#74777f] font-medium mb-8">We'll get back to you within 24 hours.</p>
+                  <h3 className="text-2xl font-black text-[#002045] mb-2 tracking-tight">{t.contact.messageSent}</h3>
+                  <p className="text-[#74777f] font-medium mb-8">{t.contact.messageSentDesc}</p>
                   <button 
                     onClick={() => setSubmitted(false)}
                     className="text-[#845326] font-black text-sm uppercase tracking-widest hover:underline"
                   >
-                    Send another message
+                    {t.contact.sendAnother}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Full Name</label>
+                      <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.fullName}</label>
                       <input
                         type="text"
                         required
@@ -87,7 +105,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Email Address</label>
+                      <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.emailAddress}</label>
                       <input
                         type="email"
                         required
@@ -100,7 +118,7 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Subject</label>
+                    <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.subject}</label>
                     <input
                       type="text"
                       required
@@ -112,7 +130,7 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">Your Message</label>
+                    <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.yourMessage}</label>
                     <textarea
                       rows={6}
                       required
@@ -127,7 +145,7 @@ export default function ContactPage() {
                     disabled={isSubmitting}
                     className="w-full h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:translate-y-0"
                   >
-                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                    {isSubmitting ? t.contact.btnSending : t.contact.btnSend}
                     <span className="material-symbols-outlined text-xl">send</span>
                   </button>
                 </form>
@@ -138,7 +156,7 @@ export default function ContactPage() {
             <div className="space-y-12 lg:pl-12">
               <div className="space-y-8">
                 <h2 className="text-3xl font-black text-[#002045] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
-                  Our Offices
+                  {t.contact.ourOffices}
                 </h2>
                 
                 <div className="space-y-6">
@@ -148,7 +166,7 @@ export default function ContactPage() {
                       <span className="material-symbols-outlined text-2xl">location_on</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight mb-1">Maputo Headquarters</h3>
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.headquarters}</h3>
                       <p className="text-[#74777f] font-medium leading-relaxed">
                         Av. Marginal, 145 <br />
                         Polana District, Maputo, Mozambique
@@ -162,7 +180,7 @@ export default function ContactPage() {
                       <span className="material-symbols-outlined text-2xl">call</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight mb-1">Direct Line</h3>
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.directLine}</h3>
                       <p className="text-[#002045] font-black text-lg">+258 84 123 4567</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Mon - Fri, 8am - 6pm</p>
                     </div>
@@ -174,7 +192,7 @@ export default function ContactPage() {
                       <span className="material-symbols-outlined text-2xl">mail</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight mb-1">General Inquiries</h3>
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.generalInquiries}</h3>
                       <p className="text-[#002045] font-black text-lg underline decoration-[#fab983]/30">hello@houseinmoz.com</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Avg. response time: 2h</p>
                     </div>
@@ -184,7 +202,7 @@ export default function ContactPage() {
 
               {/* Socials */}
               <div className="pt-12 border-t border-[#c4c6cf]/20">
-                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">Follow Our Agents</h3>
+                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">{t.contact.followAgents}</h3>
                 <div className="flex gap-4">
                   {['Instagram', 'LinkedIn', 'Facebook', 'X'].map((social) => (
                     <Link 
@@ -202,16 +220,16 @@ export default function ContactPage() {
               <div className="bg-[#002045] rounded-[2rem] p-8 text-white relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-all duration-700" />
                 <h3 className="text-xl font-black mb-4 relative z-10" style={{ fontFamily: 'var(--font-headline)' }}>
-                  Join our agent network?
+                  {t.contact.joinNetwork}
                 </h3>
                 <p className="text-[#86a0cd] text-sm font-medium mb-8 leading-relaxed relative z-10">
-                  We're always looking for talented agents to join Mozambique's agency network.
+                  {t.contact.joinNetworkDesc}
                 </p>
                 <Link 
                   href="/auth"
                   className="inline-flex items-center gap-2 text-[#fab983] font-black text-xs uppercase tracking-widest group/btn relative z-10"
                 >
-                  Apply Here
+                  {t.contact.applyHere}
                   <span className="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </Link>
               </div>

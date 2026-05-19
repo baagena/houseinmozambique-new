@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import AgentCard from '@/components/agents/AgentCard';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 interface AgentCarouselProps {
   agents: any[];
@@ -15,6 +16,7 @@ export default function AgentCarousel({
   title = "Our Featured Agents",
   subtitle = "Work with Mozambique's most experienced and trusted real estate professionals"
 }: AgentCarouselProps) {
+  const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -127,7 +129,7 @@ export default function AgentCarousel({
           href="/agents" 
           className="group flex items-center gap-4 bg-[#002045] text-white px-10 py-5 rounded-[2rem] font-black text-lg transition-all duration-300 hover:bg-[#003066] hover:shadow-[0_20px_40px_rgba(0,32,69,0.3)] hover:-translate-y-1"
         >
-          <span>View All Agents</span>
+          <span>{t.agents.showMore}</span>
           <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-[#002045]">
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </div>

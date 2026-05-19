@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteProperty, updatePropertyStatus } from '@/actions/admin';
+import { deleteProperty as serverDeleteProperty } from '@/actions/admin';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -17,7 +17,12 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
   const handleStatusUpdate = async (newStatus: 'PUBLISHED' | 'REJECTED') => {
     setIsPending(true);
     try {
-      const res = await updatePropertyStatus(propertyId, newStatus);
+      const res = await fetch(`/api/admin/property/${propertyId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+        credentials: 'include',
+      }).then(r => r.json());
       if (!res.success) {
         alert(res.error);
         return;
@@ -38,7 +43,8 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
 
     setIsPending(true);
     try {
-      const res = await deleteProperty(propertyId);
+      // Use server action deleteProperty as fallback for delete (keeps same behavior)
+      const res = await serverDeleteProperty(propertyId);
       if (!res.success) {
         alert(res.error);
         return;

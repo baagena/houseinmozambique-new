@@ -69,7 +69,12 @@ export async function getFeaturedAgents() {
 export async function getAgentById(id: string) {
   return await prisma.agent.findUnique({
     where: { id },
-    include: { properties: true },
+    include: { 
+      properties: true,
+      inquiries: {
+        orderBy: { createdAt: 'desc' }
+      }
+    },
   });
 }
 
@@ -84,13 +89,79 @@ export async function getPropertiesByCity(city: string) {
 }
 
 export async function getPlatformStats() {
-  const [propertyCount, agentCount] = await Promise.all([
+  const [propertyCount, agentCount, totalInquiries, totalRevenue] = await Promise.all([
     prisma.property.count({ where: { status: 'PUBLISHED' } }),
     prisma.agent.count(),
+    prisma.inquiry.count(),
+    prisma.property.aggregate({
+      _sum: { price: true },
+      where: { status: 'PUBLISHED' }
+    })
   ]);
 
   return {
     propertyCount,
     agentCount,
+    totalInquiries,
+    totalRevenue: totalRevenue._sum.price || 0,
   };
+}
+
+export async function getChartData() {
+  // Get properties created in last 30 days grouped by day
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  
+  const properties = await prisma.property.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true, price: true, status: true }
+  });
+
+  const agents = await prisma.agent.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true }
+  });
+
+  const inquiries = await prisma.inquiry.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true }
+  });
+
+  // Group by date
+  const dateMap = new Map();
+  
+  properties.forEach(p => {
+    const date = p.createdAt.toISOString().split('T')[0];
+    if (!dateMap.has(date)) {
+      dateMap.set(date, { properties: 0, agents: 0, inquiries: 0, revenue: 0 });
+    }
+    const data = dateMap.get(date);
+    data.properties++;
+    data.revenue += p.price || 0;
+  });
+
+  agents.forEach(a => {
+    const date = a.createdAt.toISOString().split('T')[0];
+    if (!dateMap.has(date)) {
+      dateMap.set(date, { properties: 0, agents: 0, inquiries: 0, revenue: 0 });
+    }
+    dateMap.get(date).agents++;
+  });
+
+  inquiries.forEach(i => {
+    const date = i.createdAt.toISOString().split('T')[0];
+    if (!dateMap.has(date)) {
+      dateMap.set(date, { properties: 0, agents: 0, inquiries: 0, revenue: 0 });
+    }
+    dateMap.get(date).inquiries++;
+  });
+
+  // Convert to array sorted by date
+  const chartData = Array.from(dateMap.entries())
+    .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+    .map(([date, data]) => ({
+      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      ...data
+    }));
+
+  return chartData;
 }

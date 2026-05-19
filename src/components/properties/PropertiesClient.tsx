@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import PropertyCard from '@/components/properties/PropertyCard';
 import { Property } from '@/types';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 interface Props {
   initialProperties: Property[];
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function PropertiesClient({ initialProperties, initialType, initialLocation }: Props) {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -22,7 +24,12 @@ export default function PropertiesClient({ initialProperties, initialType, initi
   const [selectedTypes, setSelectedTypes] = useState<string[]>(['Villa', 'Apartment', 'Penthouse', 'Lodge']);
   const [bedrooms, setBedrooms] = useState<number | null>(null);
   const [bathrooms, setBathrooms] = useState<number | null>(null);
-  const [sortBy, setSortBy] = useState('Curated Selection');
+  const [sortBy, setSortBy] = useState(t.propertiesList.curatedSelection);
+
+  // Sync sorting option names if language changes
+  useEffect(() => {
+    setSortBy(t.propertiesList.curatedSelection);
+  }, [t]);
 
   // Unified Filter Sync to URL
   const syncFilters = (newParams: Record<string, string | null>) => {
@@ -69,10 +76,10 @@ export default function PropertiesClient({ initialProperties, initialType, initi
   }, [initialProperties, dealType, location, selectedTypes, bedrooms, bathrooms, minPrice, maxPrice]);
 
   const sorted = useMemo(() => {
-    if (sortBy === 'Price: High to Low') return [...filtered].sort((a, b) => b.price - a.price);
-    if (sortBy === 'Price: Low to High') return [...filtered].sort((a, b) => a.price - b.price);
+    if (sortBy === t.propertiesList.priceHighToLow) return [...filtered].sort((a, b) => b.price - a.price);
+    if (sortBy === t.propertiesList.priceLowToHigh) return [...filtered].sort((a, b) => a.price - b.price);
     return filtered;
-  }, [filtered, sortBy]);
+  }, [filtered, sortBy, t]);
 
   return (
     <div className="flex max-w-[1920px] mx-auto">
@@ -80,22 +87,22 @@ export default function PropertiesClient({ initialProperties, initialType, initi
       <aside className="hidden lg:block w-80 sticky top-20 h-[calc(100vh-80px)] bg-white border-r border-[#c4c6cf]/10 overflow-y-auto custom-scrollbar p-8 space-y-8">
         
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-[#002045] uppercase tracking-[0.2em]">Refine Search</h3>
+          <h3 className="text-xs font-black text-[#002045] uppercase tracking-[0.2em]">{t.propertiesList.refineSearch}</h3>
           <button 
             onClick={clearFilters}
             className="text-[10px] font-bold text-[#845326] hover:underline uppercase tracking-widest"
           >
-            Clear All
+            {t.propertiesList.clearAll}
           </button>
         </div>
 
         {/* Location Search */}
         <div>
-          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">Discovery Zone</h3>
+          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">{t.propertiesList.discoveryZone}</h3>
           <div className="relative">
             <input
               type="text"
-              placeholder="Search City or Enclave..."
+              placeholder={t.propertiesList.searchPlaceholder}
               value={location}
               onChange={(e) => {
                 setLocation(e.target.value);
@@ -109,14 +116,14 @@ export default function PropertiesClient({ initialProperties, initialType, initi
 
         {/* Deal Type */}
         <div>
-          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">Transaction Model</h3>
+          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">{t.propertiesList.transactionModel}</h3>
           <div className="flex flex-col gap-3">
             {[
-              { id: '', label: 'All Categories' },
-              { id: 'Buy', label: 'Ownership' },
-              { id: 'Rent', label: 'Long Term Lease' },
-              { id: 'Short Stay', label: 'Hospitality & Stays' },
-              { id: 'Auction', label: 'Competitive Bidding' },
+              { id: '', label: t.propertiesList.allCategories },
+              { id: 'Buy', label: t.propertiesList.ownership },
+              { id: 'Rent', label: t.propertiesList.longTermLease },
+              { id: 'Short Stay', label: t.propertiesList.hospitality },
+              { id: 'Auction', label: t.propertiesList.competitiveBidding },
             ].map((t) => (
               <label key={t.id} className="flex items-center gap-3 cursor-pointer group">
                 <div className="relative flex items-center justify-center">
@@ -142,13 +149,13 @@ export default function PropertiesClient({ initialProperties, initialType, initi
 
         {/* Price Range */}
         <div>
-          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">Budgetary Parameters</h3>
+          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">{t.propertiesList.budgetaryParameters}</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c4c6cf] font-bold text-xs">$</span>
               <input
                 type="number"
-                placeholder="Min"
+                placeholder={t.propertiesList.min}
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 className="w-full pl-7 pr-3 py-3 bg-[#f2f4f6]/50 border-none rounded-xl text-xs font-bold text-[#002045] focus:outline-none"
@@ -158,7 +165,7 @@ export default function PropertiesClient({ initialProperties, initialType, initi
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c4c6cf] font-bold text-xs">$</span>
               <input
                 type="number"
-                placeholder="Max"
+                placeholder={t.propertiesList.max}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 className="w-full pl-7 pr-3 py-3 bg-[#f2f4f6]/50 border-none rounded-xl text-xs font-bold text-[#002045] focus:outline-none"
@@ -169,7 +176,7 @@ export default function PropertiesClient({ initialProperties, initialType, initi
 
         {/* Property Type */}
         <div>
-          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">Architectural Style</h3>
+          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">{t.propertiesList.architecturalStyle}</h3>
           <div className="grid grid-cols-1 gap-3">
             {['Villa', 'Apartment', 'Penthouse', 'Land', 'Lodge'].map((t) => (
               <label key={t} className="flex items-center gap-3 cursor-pointer group">
@@ -187,7 +194,7 @@ export default function PropertiesClient({ initialProperties, initialType, initi
 
         {/* Bedrooms */}
         <div>
-          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">Accommodation</h3>
+          <h3 className="text-[10px] font-black text-[#002045] uppercase tracking-widest mb-4 opacity-40">{t.propertiesList.accommodation}</h3>
           <div className="space-y-4">
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -209,7 +216,7 @@ export default function PropertiesClient({ initialProperties, initialType, initi
 
         <div className="pt-4 border-t border-[#c4c6cf]/10">
           <p className="text-[10px] text-[#74777f] font-medium leading-relaxed italic">
-            Found {sorted.length} curated assets matching your parameters.
+            {t.propertiesList.foundAssets} {sorted.length} {t.propertiesList.curatedAssets}
           </p>
         </div>
       </aside>
@@ -223,27 +230,27 @@ export default function PropertiesClient({ initialProperties, initialType, initi
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-[#845326] uppercase tracking-[0.2em] mb-3">
                   <span className="material-symbols-outlined text-sm">location_on</span>
-                  {location || initialLocation ? `Discovery / ${location || initialLocation}` : 'Mozambique'}
+                  {location || initialLocation ? `${t.propertiesList.discovery} / ${location || initialLocation}` : t.propertiesList.mozambique}
                 </div>
                 <h1
                   className="text-4xl font-extrabold text-[#002045] tracking-tighter"
                   style={{ fontFamily: 'var(--font-headline)' }}
                 >
-                  {location || initialLocation ? `Estates in ${location || initialLocation}` : `Property Inventory`}
+                  {location || initialLocation ? `${t.propertiesList.estatesIn} ${location || initialLocation}` : t.propertiesList.propertyInventory}
                 </h1>
                 <p className="text-[#43474e] text-sm mt-2 font-medium opacity-60">
-                  Exploration phase: {sorted.length} premium results identified
+                  {t.propertiesList.explorationPhase} {sorted.length} {t.propertiesList.premiumResults}
                 </p>
               </div>
               <div className="flex items-center gap-4 text-[10px] font-black tracking-widest uppercase">
-                <span className="text-[#74777f]">Display Logic:</span>
+                <span className="text-[#74777f]">{t.propertiesList.displayLogic}</span>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="appearance-none bg-white border border-[#c4c6cf]/20 rounded-xl px-6 py-3 pr-10 focus:ring-4 focus:ring-[#002045]/5 text-[#002045] cursor-pointer font-black focus:outline-none transition-all shadow-sm"
                   >
-                    {['Curated Selection', 'Newest Arrivals', 'Price: High to Low', 'Price: Low to High'].map((o) => (
+                    {[t.propertiesList.curatedSelection, t.propertiesList.newestArrivals, t.propertiesList.priceHighToLow, t.propertiesList.priceLowToHigh].map((o) => (
                       <option key={o}>{o}</option>
                     ))}
                   </select>
@@ -264,15 +271,15 @@ export default function PropertiesClient({ initialProperties, initialType, initi
             {sorted.length === 0 && (
               <div className="text-center py-24">
                 <span className="material-symbols-outlined text-6xl text-[#c4c6cf]">search_off</span>
-                <h3 className="text-2xl font-bold text-[#002045] mt-4">No properties found</h3>
-                <p className="text-[#43474e] mt-2">Try adjusting your filters</p>
+                <h3 className="text-2xl font-bold text-[#002045] mt-4">{t.propertiesList.noProperties}</h3>
+                <p className="text-[#43474e] mt-2">{t.propertiesList.tryAdjusting}</p>
               </div>
             )}
 
             {sorted.length > 0 && (
               <div className="mt-16 flex justify-center">
                 <button className="px-12 py-4 border-2 border-[#002045] text-[#002045] font-extrabold rounded-full hover:bg-[#002045] hover:text-white transition-all duration-300 tracking-widest uppercase text-xs">
-                  Load More Properties
+                  {t.propertiesList.loadMore}
                 </button>
               </div>
             )}
