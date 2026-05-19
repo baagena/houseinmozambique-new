@@ -3,8 +3,9 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     const isDev = process.env.NODE_ENV !== 'production';
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
@@ -18,7 +19,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { status } = body;
     if (!status) return NextResponse.json({ error: 'Missing status' }, { status: 400 });
 
-    const property = await prisma.property.update({ where: { id: params.id }, data: { status } });
+    const property = await prisma.property.update({ where: { id }, data: { status } });
 
     return NextResponse.json({ success: true, property });
   } catch (err: any) {

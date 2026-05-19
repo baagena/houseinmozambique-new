@@ -4,11 +4,12 @@ import Image from 'next/image';
 import { getAgentById } from '@/lib/data';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function AdminAgentAnalyticsPage({ params }: Props) {
-  const agent = await getAgentById(params.id);
+  const { id } = await params;
+  const agent = await getAgentById(id);
 
   if (!agent) {
     notFound();

@@ -4,19 +4,20 @@ import { prisma } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.info('/api/property/[id] GET invoked', { params, url: String(request.url) });
+    const resolvedParams = await params;
+    console.info('/api/property/[id] GET invoked', { params: resolvedParams, url: String(request.url) });
     const isDev = process.env.NODE_ENV !== 'production';
     const cookieStore = await cookies();
     const cookieNames = cookieStore.getAll().map(c => c.name);
     console.info('/api/property/[id] cookies available', { cookieNames });
     // Ensure we have an id: Next should pass it via params, but in some dev
     // server situations `params` may be empty. Fall back to parsing the URL.
-    let id = params?.id;
+    let id = resolvedParams?.id;
     if (!id) {
-      console.warn('/api/property/[id] GET — params.id missing, attempting fallback from URL', { url: String(request.url), params });
+      console.warn('/api/property/[id] GET — params.id missing, attempting fallback from URL', { url: String(request.url), params: resolvedParams });
       try {
         const u = new URL(request.url);
         const parts = u.pathname.split('/').filter(Boolean);
@@ -31,14 +32,14 @@ export async function GET(
     }
 
     if (!id) {
-      console.warn('/api/property/[id] GET — missing route param id after fallback', { params, url: String(request.url) });
-      return NextResponse.json({ error: 'Missing property id in route', debug: isDev ? { params, url: String(request.url) } : undefined }, { status: 400 });
+      console.warn('/api/property/[id] GET — missing route param id after fallback', { params: resolvedParams, url: String(request.url) });
+      return NextResponse.json({ error: 'Missing property id in route', debug: isDev ? { params: resolvedParams, url: String(request.url) } : undefined }, { status: 400 });
     }
 
     const userId = cookieStore.get('userId')?.value;
 
     if (!userId) {
-      console.info('/api/property/[id] GET — missing cookie userId', { paramsId: params.id });
+      console.info('/api/property/[id] GET — missing cookie userId', { paramsId: resolvedParams.id });
       return NextResponse.json(
         { error: 'Not authenticated', debug: isDev ? { userId: userId ?? null } : undefined },
         { status: 401 }
@@ -51,15 +52,15 @@ export async function GET(
     });
 
     if (!property) {
-      console.info('/api/property/[id] GET — property not found', { paramsId: params.id, userId });
+      console.info('/api/property/[id] GET — property not found', { paramsId: resolvedParams.id, userId });
       return NextResponse.json(
-        { error: 'Property not found', debug: isDev ? { paramsId: params.id } : undefined },
+        { error: 'Property not found', debug: isDev ? { paramsId: resolvedParams.id } : undefined },
         { status: 404 }
       );
     }
 
     if (property.hostId !== userId) {
-      console.info('/api/property/[id] GET — forbidden: host mismatch', { paramsId: params.id, userId, hostId: property.hostId });
+      console.info('/api/property/[id] GET — forbidden: host mismatch', { paramsId: resolvedParams.id, userId, hostId: property.hostId });
       return NextResponse.json(
         { error: 'Forbidden', debug: isDev ? { userId, hostId: property.hostId } : undefined },
         { status: 403 }
