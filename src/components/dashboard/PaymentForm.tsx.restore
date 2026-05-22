@@ -1,0 +1,840 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/components/i18n/LanguageContext';
+
+interface PaymentFormProps {
+  planType: string;
+  amount: number;
+  onSuccess?: (transactionId: string) => void;
+}
+
+const localT = {
+  en: {
+    completePayment: 'Complete Payment',
+    chooseMethod: 'Choose your preferred payment method',
+    plan: 'Plan',
+    amount: 'Amount',
+    paymentMethod: 'Payment Method',
+    information: 'Receipt Information',
+    fullName: 'Full Name',
+    email: 'Email Address',
+    phone: 'Phone Number',
+    processing: 'Processing...',
+    secureNotice: 'Your payment information is secure and encrypted. We accept M-Pesa, e-Mola, and international cards.',
+    // Mobile money
+    mpesaNumber: 'M-Pesa Number',
+    emolaNumber: 'e-Mola Number',
+    enterMpesa: 'Enter M-Pesa number (Vodacom, e.g., 84/85XXXXXXX)',
+    enterEmola: 'Enter e-Mola number (Movitel, e.g., 86/87XXXXXXX)',
+    validMpesaErr: 'Please enter a valid Vodacom M-Pesa number (starts with 84 or 85, 9 digits)',
+    validEmolaErr: 'Please enter a valid Movitel e-Mola number (starts with 86 or 87, 9 digits)',
+    // Card money
+    cardholderName: 'Holder Name',
+    cardNumber: 'Card Digits',
+    expiryDate: 'Expiration',
+    cvc: 'Security Code',
+    validCardErr: 'Please enter a valid 16-digit card number',
+    validExpiryErr: 'Please enter a valid expiry date (MM/YY)',
+    validCvcErr: 'Please enter a valid 3 or 4 digit CVC',
+    validNameErr: "Please enter the cardholder's name",
+    // Simulation
+    connecting: 'Connecting to secure gateway...',
+    sendingUssd: 'Sending M-Pesa push notification...',
+    sendingEmola: 'Sending e-Mola push notification...',
+    checkPhone: 'Please check your phone for the PIN prompt.',
+    enterPinUssd: 'Enter your 4-digit PIN in the simulator below to confirm payment of',
+    simulatingTitle: 'Mobile Money Gateway',
+    approveBtn: 'Approve Payment',
+    cancelBtn: 'Cancel',
+    pinPlaceholder: 'Enter PIN',
+    // Card simulation
+    securingConnection: 'Securing card transaction...',
+    authorizing: 'Authorizing with card issuer (3D Secure)...',
+    cardVerification: 'Card Verification Check',
+    enterOtp: 'Enter the 6-digit One-Time Password (OTP) sent to your phone to authorize this transaction of',
+    otpPlaceholder: 'Enter OTP',
+    submitOtp: 'Submit OTP',
+    resendOtp: 'Resend OTP',
+    paymentApproved: 'Payment Approved!',
+    redirecting: 'Finalizing details...',
+    paymentCompleted: 'Payment completed successfully!',
+    validReferenceErr: 'Please enter the transaction reference or receipt ID',
+    manualPaymentTitle: 'Manual / Bank Transfer',
+    transactionReferenceLabel: 'Transaction ID / Reference',
+    enterReferencePlaceholder: 'e.g. TXN2026...',
+    manualSubmit: 'Submit Payment Details',
+    manualCancel: 'Cancel',
+    manualSuccessMessage: 'Payment details submitted. We will verify and activate your listing once confirmed.',
+    receiptNotice: 'A digital receipt will be sent to the email registered in your profile:',
+  },
+  pt: {
+    completePayment: 'Concluir Pagamento',
+    chooseMethod: 'Escolha o seu método de pagamento preferido',
+    plan: 'Plano',
+    amount: 'Valor',
+    paymentMethod: 'Método de Pagamento',
+    information: 'Informações do Recibo',
+    fullName: 'Nome Completo',
+    email: 'Endereço de E-mail',
+    phone: 'Número de Telefone',
+    processing: 'Processando...',
+    secureNotice: 'As suas informações de pagamento estão seguras e encriptadas. Aceitamos M-Pesa, e-Mola e cartões internacionais.',
+    // Mobile money
+    mpesaNumber: 'Número M-Pesa',
+    emolaNumber: 'Número e-Mola',
+    enterMpesa: 'Digite o número M-Pesa (Vodacom, ex: 84/85XXXXXXX)',
+    enterEmola: 'Digite o número e-Mola (Movitel, ex: 86/87XXXXXXX)',
+    validMpesaErr: 'Por favor, insira um número M-Pesa válido da Vodacom (começa com 84 ou 85, 9 dígitos)',
+    validEmolaErr: 'Por favor, insira um número e-Mola válido da Movitel (começa com 86 ou 87, 9 dígitos)',
+    // Card money
+    cardholderName: 'Nome do Titular',
+    cardNumber: 'Dígitos do Cartão',
+    expiryDate: 'Validade',
+    cvc: 'Código de Segurança',
+    validCardErr: 'Por favor, insira um número de cartão de 16 dígitos válido',
+    validExpiryErr: 'Por favor, insira uma data de validade válida (MM/AA)',
+    validCvcErr: 'Por favor, insira um CVC de 3 ou 4 dígitos válido',
+    validNameErr: 'Por favor, insira o nome do titular do cartão',
+    // Simulation
+    connecting: 'Conectando ao gateway seguro...',
+    sendingUssd: 'Enviando notificação push M-Pesa...',
+    sendingEmola: 'Enviando notificação push e-Mola...',
+    checkPhone: 'Por favor, verifique o seu telefone para introduzir o PIN.',
+    enterPinUssd: 'Insira o seu PIN de 4 dígitos no simulador abaixo para confirmar o pagamento de',
+    simulatingTitle: 'Gateway de Dinheiro Móvel',
+    approveBtn: 'Aprovar Pagamento',
+    cancelBtn: 'Cancelar',
+    pinPlaceholder: 'PIN',
+    // Card simulation
+    securingConnection: 'Segurando a transação do cartão...',
+    authorizing: 'Autorizando com o emissor do cartão (3D Secure)...',
+    cardVerification: 'Verificação de Cartão',
+    enterOtp: 'Insira o código de verificação (OTP) de 6 dígitos enviado para o seu telemóvel para autorizar esta transação de',
+    otpPlaceholder: 'OTP',
+    submitOtp: 'Enviar OTP',
+    resendOtp: 'Reenviar OTP',
+    paymentApproved: 'Pagamento Aprovado!',
+    redirecting: 'Finalizando detalhes...',
+    paymentCompleted: 'Pagamento concluído com sucesso!',
+    receiptNotice: 'Um recibo digital será enviado para o e-mail registrado no seu perfil:',
+  }
+};
+
+export default function PaymentForm({ planType, amount, onSuccess }: PaymentFormProps) {
+  const router = useRouter();
+  const { lang } = useLanguage();
+  const curT = localT[lang === 'pt' ? 'pt' : 'en'];
+
+  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'emola' | 'card'>('mpesa');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const [showManual, setShowManual] = useState(false);
+  const [payerName, setPayerName] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [manualPhone, setManualPhone] = useState('');
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  
+  // User profile loaded from backend
+  const [userProfile, setUserProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+
+  // Dynamic payment fields
+  const [mobilePhone, setMobilePhone] = useState('');
+  const [cardData, setCardData] = useState({
+    cardholderName: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: '',
+  });
+
+  // Simulated gateway UI steps
+  // 'form' -> 'connecting' -> 'verification_prompt' -> 'verifying_credentials' -> 'success_banner'
+  const [simulationState, setSimulationState] = useState<'form' | 'connecting' | 'verification_prompt' | 'verifying_credentials' | 'success_banner'>('form');
+  const [ussdPin, setUssdPin] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [mockTxId, setMockTxId] = useState('');
+
+  // Fetch user profile on mount to prefill receipt info and cardholder name
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            setUserProfile({
+              name: data.user.name || '',
+              email: data.user.email || '',
+              phone: data.user.phone || '',
+            });
+            setCardData(prev => ({
+              ...prev,
+              cardholderName: data.user.name || '',
+            }));
+            // Prefill mobile money with user's phone if valid
+            const cleanPhone = (data.user.phone || '').replace(/[^0-9]/g, '');
+            if (cleanPhone.length >= 9) {
+              const last9 = cleanPhone.slice(-9);
+              setMobilePhone(last9);
+              setManualPhone(last9);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load user profile for payments:', err);
+      }
+    }
+    loadProfile();
+  }, []);
+
+  async function handleManualSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (!paymentReference.trim()) {
+      setError(curT.validReferenceErr);
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          currency: 'MZN',
+          method: 'manual',
+          planType,
+          userId: localStorage.getItem('userId') || '',
+          customerName: payerName || userProfile.name || 'Anonymous',
+          customerEmail: userProfile.email || 'billing@houseinmoz.com',
+          customerPhone: manualPhone ? `+258${manualPhone}` : userProfile.phone || undefined,
+          paymentReference,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Submission failed');
+
+      setPaymentSubmitted(true);
+      setShowManual(false);
+      setIsProcessing(false);
+      setError('');
+      setPayerName('');
+      setPaymentReference('');
+      onSuccess?.(data.transactionId || data.orderRef || 'manual');
+    } catch (err: any) {
+      setError(err?.message || 'Submission failed');
+      setIsProcessing(false);
+    }
+  }
+
+  // Format Card Number (adds spaces every 4 digits)
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length > 16) value = value.substring(0, 16);
+    const parts: string[] = [];
+    for (let i = 0; i < value.length; i += 4) {
+      parts.push(value.substring(i, i + 4));
+    }
+    setCardData(prev => ({ ...prev, cardNumber: parts.join(' ') }));
+  };
+
+  // Format Expiry Date (MM/YY with auto slash)
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length > 4) value = value.substring(0, 4);
+    if (value.length > 2) {
+      value = `${value.substring(0, 2)}/${value.substring(2, 4)}`;
+    }
+    setCardData(prev => ({ ...prev, cardExpiry: value }));
+  };
+
+  // Format CVC (3-4 digits)
+  const handleCvcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length > 4) value = value.substring(0, 4);
+    setCardData(prev => ({ ...prev, cardCvc: value }));
+  };
+
+  const handleMobilePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length > 9) value = value.substring(0, 9);
+    setMobilePhone(value);
+  };
+
+  // Get Card Type based on first digit
+  const getCardType = () => {
+    const clean = cardData.cardNumber.replace(/\s+/g, '');
+    if (clean.startsWith('4')) return 'Visa';
+    if (clean.startsWith('5')) return 'Mastercard';
+    return '';
+  };
+
+  // Local validation before starting mock gateway
+  const handleStartSimulation = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (paymentMethod === 'mpesa') {
+      if (!/^(84|85)\d{7}$/.test(mobilePhone)) {
+        setError(curT.validMpesaErr);
+        return;
+      }
+    } else if (paymentMethod === 'emola') {
+      if (!/^(86|87)\d{7}$/.test(mobilePhone)) {
+        setError(curT.validEmolaErr);
+        return;
+      }
+    } else if (paymentMethod === 'card') {
+      const cleanCard = cardData.cardNumber.replace(/\s+/g, '');
+      if (cleanCard.length !== 16) {
+        setError(curT.validCardErr);
+        return;
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardData.cardExpiry)) {
+        setError(curT.validExpiryErr);
+        return;
+      }
+      if (cardData.cardCvc.length < 3) {
+        setError(curT.validCvcErr);
+        return;
+      }
+      if (!cardData.cardholderName.trim()) {
+        setError(curT.validNameErr);
+        return;
+      }
+    }
+
+    // Trigger simulation sequence
+    setSimulationState('connecting');
+    setTimeout(() => {
+      setSimulationState('verification_prompt');
+    }, 1500);
+  };
+
+  // Submits the actual API request to register payment in database
+  const handleFinalizePayment = async () => {
+    setIsProcessing(true);
+    setError('');
+    setSimulationState('verifying_credentials');
+
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          currency: 'MZN',
+          method: paymentMethod,
+          planType,
+          userId: localStorage.getItem('userId') || '',
+          customerName: paymentMethod === 'card' ? cardData.cardholderName : userProfile.name || 'Anonymous User',
+          customerEmail: userProfile.email || 'billing@houseinmoz.com',
+          customerPhone: paymentMethod === 'card' ? userProfile.phone : `+258${mobilePhone}`,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Payment processing failed');
+      }
+
+      if (data.success) {
+        setMockTxId(data.transactionId || `TX-${Date.now()}`);
+        setSimulationState('success_banner');
+        setTimeout(() => {
+          onSuccess?.(data.transactionId);
+        }, 2500);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Payment failed');
+      setSimulationState('form');
+      setIsProcessing(false);
+    }
+  };
+
+  const paymentMethods = [
+    {
+      id: 'mpesa',
+      name: 'M-Pesa',
+      description: 'Vodacom mobile money transaction',
+      icon: '📱',
+      brandColor: 'bg-emerald-600',
+    },
+    {
+      id: 'emola',
+      name: 'e-Mola',
+      description: 'Movitel mobile money wallet',
+      icon: '💳',
+      brandColor: 'bg-orange-500',
+    },
+    {
+      id: 'card',
+      name: 'Debit/Credit Card',
+      description: 'Visa or Mastercard global card network',
+      icon: '🔐',
+      brandColor: 'bg-slate-800',
+    },
+  ];
+
+  return (
+    <div className="max-w-2xl mx-auto p-8 bg-white rounded-3xl shadow-xl border border-[#f2f4f6] relative overflow-hidden">
+      
+      {/* Simulation Screen Wrapper */}
+      {simulationState !== 'form' && (
+        <div className="absolute inset-0 bg-[#002045]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-white text-center animate-in fade-in duration-300">
+          
+          {/* STEP 1: CONNECTING */}
+          {simulationState === 'connecting' && (
+            <div className="space-y-6">
+              <div className="relative flex items-center justify-center">
+                <div className="w-16 h-16 border-4 border-[#845326]/30 border-t-[#845326] rounded-full animate-spin"></div>
+                <span className="material-symbols-outlined absolute text-xl text-white">vpn_lock</span>
+              </div>
+              <h3 className="text-xl font-bold font-mono tracking-wide">{curT.connecting}</h3>
+              <p className="text-sm text-slate-400 max-w-xs mx-auto">
+                {paymentMethod === 'card' ? curT.securingConnection : curT.sendingUssd}
+              </p>
+            </div>
+          )}
+
+          {/* STEP 2: VERIFICATION PROMPT (USSD or OTP) */}
+          {simulationState === 'verification_prompt' && (
+            <div className="w-full max-w-sm bg-white text-slate-800 rounded-2xl p-6 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
+              
+              {/* Mobile Money USSD Simulator */}
+              {(paymentMethod === 'mpesa' || paymentMethod === 'emola') && (
+                <div className="space-y-5 text-left">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <span className="text-2xl">📱</span>
+                    <div>
+                      <h4 className="font-black text-lg text-[#002045]">{paymentMethod === 'mpesa' ? 'M-Pesa SIM Alert' : 'e-Mola SIM Alert'}</h4>
+                      <p className="text-xs text-slate-400">USSD Push Push-to-Pay API</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100">
+                    <p className="text-sm font-semibold text-slate-700">
+                      {curT.enterPinUssd} <strong className="text-[#845326]">{amount.toLocaleString()} MZN</strong>
+                    </p>
+                    <p className="text-xs text-slate-400 font-mono">Merchant: House in Moz, Lda</p>
+                    <p className="text-xs text-slate-400 font-mono">Ref: HIM-{Date.now().toString().slice(-6)}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">
+                      {curT.pinPlaceholder}
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      value={ussdPin}
+                      onChange={(e) => setUssdPin(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="••••"
+                      className="w-full text-center tracking-[1em] text-xl font-bold py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#845326]"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSimulationState('form')}
+                      className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200"
+                    >
+                      {curT.cancelBtn}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={ussdPin.length !== 4}
+                      onClick={handleFinalizePayment}
+                      className="flex-1 py-3 text-sm font-bold text-white bg-[#845326] hover:opacity-95 rounded-xl transition-opacity disabled:opacity-40"
+                    >
+                      {curT.approveBtn}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Card 3D Secure Simulator */}
+              {paymentMethod === 'card' && (
+                <div className="space-y-5 text-left">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h4 className="font-mono text-xs font-black tracking-widest text-[#002045]">3D SECURE v2.1</h4>
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-black uppercase text-blue-600 border border-blue-500 px-1.5 rounded">Visa Secure</span>
+                      <span className="text-[10px] font-black uppercase text-orange-600 border border-orange-500 px-1.5 rounded">Identity Check</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h5 className="font-bold text-slate-800 text-sm">{curT.cardVerification}</h5>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {curT.enterOtp} <strong className="text-slate-800">{amount.toLocaleString()} MZN</strong>.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-xl flex justify-between text-xs font-mono text-slate-600 border border-slate-100">
+                    <div>
+                      <p>Card: **** **** **** {cardData.cardNumber.slice(-4)}</p>
+                      <p>Merchant: House in Mozambique</p>
+                    </div>
+                    <div className="text-right">
+                      <p>OTP: <strong className="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">123456</strong></p>
+                      <p className="text-[9px] text-slate-400 mt-1">(Dummy Test Code)</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder={curT.otpPlaceholder}
+                      className="w-full text-center tracking-[0.5em] text-lg font-bold py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#845326]"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSimulationState('form')}
+                      className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200"
+                    >
+                      {curT.cancelBtn}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={otpCode.length !== 6}
+                      onClick={handleFinalizePayment}
+                      className="flex-1 py-3 text-sm font-bold text-white bg-[#002045] hover:opacity-95 rounded-xl transition-opacity disabled:opacity-40"
+                    >
+                      {curT.submitOtp}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* STEP 3: VERIFYING CREDENTIALS */}
+          {simulationState === 'verifying_credentials' && (
+            <div className="space-y-6">
+              <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+              <h3 className="text-xl font-bold font-mono tracking-wide">{curT.authorizing}</h3>
+              <p className="text-sm text-slate-400">{curT.processing}</p>
+            </div>
+          )}
+
+          {/* STEP 4: SUCCESS BANNER */}
+          {simulationState === 'success_banner' && (
+            <div className="space-y-6 animate-in zoom-in-95 duration-300">
+              <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20 text-white">
+                <span className="material-symbols-outlined text-4xl font-bold animate-bounce-slow">done</span>
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white">{curT.paymentApproved}</h3>
+                <p className="text-sm text-slate-300 mt-2 font-medium">{curT.paymentCompleted}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 max-w-xs mx-auto space-y-1 font-mono text-xs text-slate-400">
+                <p>REF: HIM-{mockTxId.split('-')[1] || Date.now()}</p>
+                <p>TXID: {mockTxId}</p>
+              </div>
+              <p className="text-xs text-slate-500 tracking-wider uppercase animate-pulse">{curT.redirecting}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Title Header */}
+      <h2 className="text-3xl font-black text-[#002045] mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
+        {curT.completePayment}
+      </h2>
+      <p className="text-sm text-[#74777f] mb-8 font-medium">{curT.chooseMethod}</p>
+
+      <form onSubmit={handleStartSimulation} className="space-y-8">
+        
+        {/* Payment Amount Summary */}
+        <div className="bg-[#f7f9fb] rounded-[1.5rem] p-6 border-l-4 border-[#845326] flex justify-between items-center">
+          <div>
+            <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-black mb-1">{curT.plan}</p>
+            <h3 className="text-2xl font-black text-[#002045] capitalize">
+              {planType}
+            </h3>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-black mb-1">{curT.amount}</p>
+            <p className="text-3xl font-black text-[#845326]">
+              {amount.toLocaleString('pt-MZ', {
+                style: 'currency',
+                currency: 'MZN',
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/* Payment Method Selection */}
+        <div className="space-y-4">
+          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">
+            {curT.paymentMethod}
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {paymentMethods.map(method => (
+              <div
+                key={method.id}
+                className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between h-36 ${
+                  paymentMethod === method.id
+                    ? 'border-[#845326] bg-[#845326]/5 shadow-sm'
+                    : 'border-[#f2f4f6] hover:border-[#845326]/20'
+                }`}
+                onClick={() => setPaymentMethod(method.id as 'mpesa' | 'emola' | 'card')}
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-3xl">{method.icon}</span>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={method.id}
+                    checked={paymentMethod === method.id}
+                    onChange={() => setPaymentMethod(method.id as 'mpesa' | 'emola' | 'card')}
+                    className="accent-[#845326] h-4 w-4"
+                  />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-[#002045] mb-1">{method.name}</p>
+                  <p className="text-[10px] text-[#74777f] font-medium leading-tight">{method.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Payment Details Input */}
+        <div className="space-y-6 border-t border-[#f2f4f6] pt-8">
+          
+          {/* M-Pesa / e-Mola Number Fields */}
+          {(paymentMethod === 'mpesa' || paymentMethod === 'emola') && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center gap-3 mb-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${paymentMethod === 'mpesa' ? 'bg-emerald-600' : 'bg-orange-500'}`}></span>
+                <label className="block text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">
+                  {paymentMethod === 'mpesa' ? curT.mpesaNumber : curT.emolaNumber}
+                </label>
+              </div>
+              <div className="relative">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-sm text-slate-400 font-mono">+258</span>
+                <input
+                  type="tel"
+                  required
+                  value={mobilePhone}
+                  onChange={handleMobilePhoneChange}
+                  placeholder={paymentMethod === 'mpesa' ? '84XXXXXXX' : '86XXXXXXX'}
+                  className="w-full h-14 pl-16 pr-6 border border-[#f2f4f6] bg-[#f7f9fb]/30 rounded-xl focus:outline-none focus:border-[#845326] text-lg font-bold font-mono tracking-wider transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-[#74777f] font-medium pl-1">
+                {paymentMethod === 'mpesa' ? curT.enterMpesa : curT.enterEmola}
+              </p>
+            </div>
+          )}
+
+          {/* Debit/Credit Card Fields */}
+          {paymentMethod === 'card' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              
+              {/* Virtual Card Graphic */}
+              <div className="relative w-full max-w-sm aspect-[1.586/1] mx-auto rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-6 shadow-xl flex flex-col justify-between overflow-hidden relative group">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-36 h-36 bg-indigo-500/10 rounded-full translate-y-1/3 -translate-x-1/3 pointer-events-none filter blur-xl" />
+                
+                <div className="flex justify-between items-start z-10">
+                  <div className="w-12 h-9 bg-amber-400/20 border border-amber-300/30 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-amber-200 text-xl">credit_card_heart</span>
+                  </div>
+                  {getCardType() ? (
+                    <span className="font-mono text-sm font-black italic tracking-widest text-slate-200 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                      {getCardType()}
+                    </span>
+                  ) : (
+                    <span className="material-symbols-outlined text-2xl text-slate-400">payments</span>
+                  )}
+                </div>
+
+                <div className="z-10">
+                  <p className="font-mono text-lg font-black tracking-widest text-center text-slate-200 select-all">
+                    {cardData.cardNumber || '•••• •••• •••• ••••'}
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-end z-10">
+                  <div className="max-w-[70%]">
+                    <p className="text-[8px] font-black tracking-widest text-slate-400 uppercase mb-0.5">Cardholder</p>
+                    <p className="font-mono text-xs font-bold truncate text-slate-200 capitalize">
+                      {cardData.cardholderName || 'Cardholder Name'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[8px] font-black tracking-widest text-slate-400 uppercase mb-0.5">Expires</p>
+                    <p className="font-mono text-xs font-bold text-slate-200">
+                      {cardData.cardExpiry || 'MM/YY'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2 md:col-span-2">
+                  <label className="block text-[10px] font-black text-[#002045] uppercase tracking-wider pl-1">
+                    {curT.cardholderName}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoComplete="new-password"
+                    value={cardData.cardholderName}
+                    onChange={(e) => setCardData(prev => ({ ...prev, cardholderName: e.target.value }))}
+                    placeholder="John Doe"
+                    className="w-full h-12 px-4 border border-[#f2f4f6] rounded-xl focus:outline-none focus:border-[#845326] text-sm font-semibold transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="block text-[10px] font-black text-[#002045] uppercase tracking-wider pl-1">
+                    {curT.cardNumber}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoComplete="new-password"
+                    value={cardData.cardNumber}
+                    onChange={handleCardNumberChange}
+                    placeholder="•••• •••• •••• ••••"
+                    className="w-full h-12 px-4 border border-[#f2f4f6] rounded-xl focus:outline-none focus:border-[#845326] text-sm font-semibold font-mono tracking-wider transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-[#002045] uppercase tracking-wider pl-1">
+                    {curT.expiryDate}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoComplete="new-password"
+                    value={cardData.cardExpiry}
+                    onChange={handleExpiryChange}
+                    placeholder="MM/YY"
+                    className="w-full h-12 px-4 border border-[#f2f4f6] rounded-xl focus:outline-none focus:border-[#845326] text-sm font-semibold font-mono tracking-wider transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-[#002045] uppercase tracking-wider pl-1">
+                    {curT.cvc}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    autoComplete="new-password"
+                    value={cardData.cardCvc}
+                    onChange={handleCvcChange}
+                    placeholder="•••"
+                    className="w-full h-12 px-4 border border-[#f2f4f6] rounded-xl focus:outline-none focus:border-[#845326] text-sm font-semibold font-mono tracking-wider transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Receipt Info Auto-Fill notice */}
+          {userProfile.email && (
+            <div className="bg-slate-50 border border-[#f2f4f6] rounded-2xl p-4 flex gap-4 items-center">
+              <span className="material-symbols-outlined text-[#845326] text-xl">receipt_long</span>
+              <div className="text-left">
+                <p className="text-[10px] text-[#74777f] font-semibold mb-0.5 leading-tight">{curT.receiptNotice}</p>
+                <p className="text-xs text-[#002045] font-black font-mono">{userProfile.email}</p>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm text-left flex gap-3 items-center">
+            <span className="material-symbols-outlined text-lg">error</span>
+            <span className="font-semibold">{error}</span>
+          </div>
+        )}
+
+        {/* Manual Payment Section */}
+        <div className="space-y-4">
+          {!paymentSubmitted ? (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowManual((s) => !s)}
+                className="inline-flex items-center gap-3 px-5 py-3 text-sm font-bold rounded-xl border border-[#dde3e8] hover:bg-[#f7f9fb]"
+              >
+                {showManual ? curT.manualCancel : curT.manualPaymentTitle}
+              </button>
+            </div>
+          ) : (
+            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 text-sm">{curT.manualSuccessMessage}</div>
+          )}
+
+          {showManual && !paymentSubmitted && (
+            <div className="space-y-4 bg-white p-4 rounded-2xl border border-[#f2f4f6]">
+              <div>
+                <label className="block text-xs font-black text-[#74777f] uppercase tracking-widest mb-1">{curT.fullName}</label>
+                <input value={payerName} onChange={(e) => setPayerName(e.target.value)} placeholder="Full name" className="w-full h-12 px-4 border rounded-xl" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-[#74777f] uppercase tracking-widest mb-1">{curT.transactionReferenceLabel}</label>
+                <input value={paymentReference} onChange={(e) => setPaymentReference(e.target.value)} placeholder={curT.enterReferencePlaceholder} className="w-full h-12 px-4 border rounded-xl" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-[#74777f] uppercase tracking-widest mb-1">{curT.phone}</label>
+                <input value={manualPhone} onChange={(e) => setManualPhone(e.target.value.replace(/[^0-9]/g, '').slice(-9))} placeholder="84XXXXXXX" className="w-full h-12 px-4 border rounded-xl" />
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={handleManualSubmit} disabled={isProcessing} className="flex-1 py-3 text-white bg-[#845326] rounded-xl font-bold">{curT.manualSubmit}</button>
+                <button type="button" onClick={() => setShowManual(false)} className="flex-1 py-3 rounded-xl border">{curT.manualCancel}</button>
+              </div>
+            </div>
+          )}
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isProcessing}
+          className="w-full h-16 bg-[#845326] text-white font-black rounded-2xl hover:opacity-90 transition-all disabled:opacity-50 text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-[#845326]/10"
+        >
+          {isProcessing ? (
+            <>
+              <span>{curT.processing}</span>
+              <span className="material-symbols-outlined text-lg animate-spin">sync</span>
+            </>
+          ) : (
+            <>
+              <span>Pay {amount.toLocaleString()} MZN</span>
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </>
+          )}
+        </button>
+
+        {/* Security Notice */}
+        <p className="text-[10px] text-[#74777f] text-center font-medium leading-relaxed max-w-sm mx-auto">
+          {curT.secureNotice}
+        </p>
+      </form>
+    </div>
+  );
+}

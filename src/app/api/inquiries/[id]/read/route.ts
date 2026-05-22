@@ -16,7 +16,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const inquiry = await prisma.inquiry.findUnique({ where: { id } });
     if (!inquiry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    if (actor.role !== 'ADMIN' && inquiry.agentId && inquiry.agentId !== userId) {
+    if (actor.role !== 'ADMIN' && inquiry.agentId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -158,23 +158,7 @@ export default function AdminDashboardClient({ stats, chartData, latestAgents, r
                     )}
                   </div>
            </div>
-
-           {/* Platform Status Card */}
-           <div className="bg-gradient-to-br from-[#1a365d] to-[#002045] rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-all duration-700" />
-              <h3 className="text-xl font-black mb-6 relative z-10" style={{ fontFamily: 'var(--font-headline)' }}>{t.dashboard.admin.infrastructure}</h3>
-              <div className="space-y-4 relative z-10">
-                 <div className="flex justify-between items-center bg-white/5 rounded-2xl p-4 border border-white/5">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{t.dashboard.admin.database}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#fab983]">{t.dashboard.admin.active}</span>
-                 </div>
-                 <div className="flex justify-between items-center bg-white/5 rounded-2xl p-4 border border-white/5">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{t.dashboard.admin.cdnNodes}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#fab983]">{t.dashboard.admin.stable}</span>
-                 </div>
-              </div>
-           </div>
-        </div>
+         </div>
       </div>
     </div>
   );

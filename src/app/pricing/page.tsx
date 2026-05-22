@@ -67,7 +67,7 @@ export default function PricingPage() {
       highlighted: false,
       cta: lang === 'en' ? 'Contact Sales' : 'Contato',
     },
-    {
+    /* {
       name: lang === 'en' ? 'Premium Ad Boost' : 'Anúncio Premium',
       price: '2,000',
       unit: lang === 'en' ? 'MZN / week' : 'MZN / semana',
@@ -83,7 +83,7 @@ export default function PricingPage() {
       ],
       highlighted: false,
       cta: lang === 'en' ? 'Boost Now' : 'Impulsionar Agora',
-    },
+    }, */
   ];
 
   const faqs = [
@@ -145,8 +145,8 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-24 px-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}

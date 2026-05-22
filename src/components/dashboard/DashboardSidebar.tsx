@@ -27,7 +27,7 @@ const AGENT_LINKS: SidebarLink[] = [
 const ADMIN_LINKS: SidebarLink[] = [
   { label: 'Hub Overview', href: '/dashboard/admin', icon: 'analytics' },
   { label: 'Manage Agents', href: '/dashboard/admin/agents', icon: 'group' },
-    { label: 'Activities', href: '/dashboard/admin/activities', icon: 'history' },
+  { label: 'Contact Messages', href: '/dashboard/admin/activities', icon: 'mail' },
   { label: 'All Properties', href: '/dashboard/admin/properties', icon: 'domain' },
   { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'verified' },
   { label: 'System Settings', href: '/dashboard/admin/settings', icon: 'tune' },

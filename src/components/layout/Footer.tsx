@@ -116,7 +116,7 @@ export default function Footer() {
 
   <li>
     <a
-      href="mailto:nshimiyimanac@gmail.com"
+      href="mailto:info@houseinmozambique.com"
       className="group flex items-center gap-3 transition-all duration-300"
     >
       <span>
@@ -137,14 +137,14 @@ export default function Footer() {
         </svg>
       </span>
 
-      <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045]">
-        nshimiyimanac@gmail.com
-      </span>
+      <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045] break-all">
+  info@houseinmozambique.com
+</span>
     </a>
   </li>
 
   <li className="flex items-center gap-3">
-    <span>
+    <span> 
       <svg
         viewBox="0 0 24 24"
         strokeWidth="2"

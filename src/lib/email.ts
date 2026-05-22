@@ -1,11 +1,24 @@
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const NOTIFICATION_FROM_EMAIL = process.env.NOTIFICATION_FROM_EMAIL || RESEND_FROM_EMAIL;
+const VERIFY_FROM_EMAIL = process.env.VERIFY_FROM_EMAIL || RESEND_FROM_EMAIL;
+export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || process.env.ADMIN_EMAIL || 'admin@houseinmozambique.com';
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || CONTACT_EMAIL;
+export const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houseinmozambique.com';
 
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
+let resend: Resend | null = null;
+if (RESEND_API_KEY) {
+  resend = new Resend(RESEND_API_KEY);
 }
+
+console.info('Resend config loaded:', {
+  hasApiKey: Boolean(RESEND_API_KEY),
+  resendFromEmail: RESEND_FROM_EMAIL,
+  notificationFromEmail: NOTIFICATION_FROM_EMAIL,
+  verifyFromEmail: VERIFY_FROM_EMAIL,
+});
 
 interface EmailOptions {
   to: string;
@@ -13,29 +26,120 @@ interface EmailOptions {
   html: string;
   text?: string;
   from?: string;
+  reply_to?: string | string[];
 }
 
-export async function sendEmail(options: EmailOptions) {
-  if (!SENDGRID_API_KEY || !FROM_EMAIL) {
-    console.warn('SendGrid not configured. Skipping email send.');
-    return null;
+async function sendEmail(options: EmailOptions) {
+  if (!resend) {
+    throw new Error('Resend email provider not configured. Set RESEND_API_KEY in your environment.');
   }
 
-  try {
-    const msg = {
-      to: options.to,
-      from: options.from || FROM_EMAIL,
-      subject: options.subject,
-      html: options.html,
-      text: options.text,
-    };
+  const msg = {
+    to: options.to,
+    from: options.from || RESEND_FROM_EMAIL,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+    reply_to: options.reply_to,
+  };
 
-    const response = await sgMail.send(msg);
-    return response;
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+  console.info('Resend request:', { to: msg.to, from: msg.from, subject: msg.subject });
+  const response = await resend.emails.send(msg as any);
+  console.info('Resend response received for:', { to: msg.to, subject: msg.subject });
+  return response;
+}
+
+export async function sendAdminNotificationEmail(options: EmailOptions) {
+  return sendEmail({ ...options, from: options.from || NOTIFICATION_FROM_EMAIL });
+}
+
+export async function sendContactNotificationEmail(data: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  propertyId?: string | null;
+  agentName?: string;
+  to?: string;
+}) {
+  const to = data.to || CONTACT_EMAIL;
+  const agentName = data.agentName || 'Admin';
+
+  return sendAdminNotificationEmail({
+    to,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: data.email,
+    subject: `New Contact Inquiry: ${data.subject}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045;">New Contact Inquiry</h1>
+        <p style="color: #43474e;">A new inquiry was submitted by <strong>${data.name}</strong> and assigned to <strong>${agentName}</strong>.</p>
+        <ul style="color: #43474e; line-height: 1.8;">
+          <li><strong>From:</strong> <a href="mailto:${data.email}">${data.email}</a></li>
+          <li><strong>Subject:</strong> ${data.subject}</li>
+          ${data.propertyId ? `<li><strong>Property ID:</strong> ${data.propertyId}</li>` : ''}
+        </ul>
+        <div style="background: #f7f9fb; padding: 20px; border-radius: 12px; margin: 16px 0;">
+          <strong>Message:</strong>
+          <p style="white-space: pre-wrap;">${data.message}</p>
+        </div>
+        <p style="color: #74777f;">Please review this inquiry in the admin dashboard or contact the agent directly.</p>
+      </div>
+    `,
+    text: `New Contact Inquiry
+
+From: ${data.name} <${data.email}>
+Subject: ${data.subject}
+${data.propertyId ? `Property ID: ${data.propertyId}
+` : ''}
+Assigned to: ${agentName}
+
+Message:
+${data.message}
+`,
+  });
+}
+
+export async function sendContactConfirmationEmail(data: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    subject: 'We received your inquiry - House in Mozambique',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045;">Thanks for contacting House in Mozambique</h1>
+        <p style="color: #43474e;">Hi ${data.name},</p>
+        <p style="color: #43474e;">We have received your message and an agent will review it shortly.</p>
+        <div style="background: #f7f9fb; padding: 20px; border-radius: 12px; margin: 16px 0;">
+          <h2 style="color: #002045;">Your Inquiry</h2>
+          <p><strong>Subject:</strong> ${data.subject}</p>
+          <p><strong>Message:</strong></p>
+          <p style="white-space: pre-wrap;">${data.message}</p>
+        </div>
+        <p style="color: #74777f;">If you need immediate assistance, please reply to this email or call our team.</p>
+        <p style="color: #74777f;">Best regards,<br/>House in Mozambique Team</p>
+      </div>
+    `,
+    text: `Thanks for contacting House in Mozambique.
+
+Hi ${data.name},
+
+We have received your message and an agent will review it shortly.
+
+Subject: ${data.subject}
+
+Message:
+${data.message}
+
+Best regards,
+House in Mozambique Team
+`,
+  });
 }
 
 export async function sendContactFormEmail(data: {
@@ -43,110 +147,86 @@ export async function sendContactFormEmail(data: {
   email: string;
   subject: string;
   message: string;
+  propertyId?: string | null;
+  agentName?: string;
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@houseinmozambique.com';
-  
-  // Send to admin
-  await sendEmail({
-    to: adminEmail,
-    subject: `New Contact Form Submission: ${data.subject}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #002045; border-bottom: 3px solid #845326; padding-bottom: 10px;">
-          New Contact Form Submission
-        </h2>
-        
-        <div style="background-color: #f7f9fb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-          <p><strong>Subject:</strong> ${data.subject}</p>
-          <p><strong>Message:</strong></p>
-          <p style="white-space: pre-wrap; background-color: white; padding: 15px; border-left: 4px solid #845326;">
-            ${data.message}
-          </p>
-        </div>
-        
-        <p style="color: #74777f; font-size: 12px; margin-top: 20px;">
-          Received from House in Mozambique contact form
-        </p>
-      </div>
-    `,
-    text: `
-New Contact Form Submission
-
-Name: ${data.name}
-Email: ${data.email}
-Subject: ${data.subject}
-
-Message:
-${data.message}
-    `,
+  await sendContactNotificationEmail({
+    ...data,
+    agentName: data.agentName,
+    to: CONTACT_EMAIL,
   });
+  await sendContactConfirmationEmail(data);
+}
 
-  // Send confirmation to user
-  await sendEmail({
-    to: data.email,
-    subject: 'We Received Your Message - House in Mozambique',
+export async function sendPropertySubmissionNotification(property: {
+  id: string;
+  title: string;
+  listingType: string;
+  type: string;
+  city: string;
+  location: string;
+  price: number;
+  priceUnit: string;
+}, agent: { name: string; email: string; }) {
+  return sendAdminNotificationEmail({
+    to: ADMIN_EMAIL,
+    subject: `New Listing Submitted: ${property.title}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #002045; margin: 0;">House in Mozambique</h1>
-          <p style="color: #845326; margin: 5px 0 0 0; font-weight: bold;">Real Estate Excellence</p>
-        </div>
-        
-        <h2 style="color: #002045;">Thank You for Contacting Us!</h2>
-        
-        <p style="color: #74777f; line-height: 1.6;">
-          Dear ${data.name},
-        </p>
-        
-        <p style="color: #74777f; line-height: 1.6;">
-          Thank you for reaching out to House in Mozambique. We have received your message and appreciate your interest.
-        </p>
-        
-        <div style="background-color: #f7f9fb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #002045; margin-top: 0;">Your Message Summary:</h3>
-          <p><strong>Subject:</strong> ${data.subject}</p>
-          <p><strong>Message:</strong></p>
-          <p style="white-space: pre-wrap; background-color: white; padding: 15px; border-left: 4px solid #845326; margin: 10px 0;">
-            ${data.message}
-          </p>
-        </div>
-        
-        <p style="color: #74777f; line-height: 1.6;">
-          Our team will review your inquiry and get back to you as soon as possible. If your matter is urgent, please feel free to call us directly.
-        </p>
-        
-        <div style="background-color: #f2f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-          <h3 style="color: #002045; margin-top: 0;">Contact Information</h3>
-          <p style="margin: 5px 0;"><strong>Email:</strong> contact@houseinmozambique.com</p>
-          <p style="margin: 5px 0;"><strong>Phone:</strong> +258 (21) XXX-XXXX</p>
-          <p style="margin: 5px 0;"><strong>Website:</strong> www.houseinmozambique.com</p>
-        </div>
-        
-        <p style="color: #74777f; font-size: 12px; margin-top: 20px; border-top: 1px solid #f2f4f6; padding-top: 20px;">
-          Best regards,<br>
-          The House in Mozambique Team
-        </p>
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045;">New Property Submission</h1>
+        <p style="color: #43474e;">A new property has been posted by ${agent.name}. Please review and approve in the admin dashboard.</p>
+        <ul style="color: #43474e; line-height: 1.8;">
+          <li><strong>Title:</strong> ${property.title}</li>
+          <li><strong>Type:</strong> ${property.type}</li>
+          <li><strong>Listing:</strong> ${property.listingType}</li>
+          <li><strong>Location:</strong> ${property.location}, ${property.city}</li>
+          <li><strong>Price:</strong> ${property.price.toLocaleString()} ${property.priceUnit}</li>
+          <li><strong>Review URL:</strong> <a href="${SITE_URL}/dashboard/admin/approvals">Admin approvals</a></li>
+        </ul>
       </div>
     `,
-    text: `
-Thank you for contacting us!
+    text: `New Property Submission
 
-Dear ${data.name},
+Title: ${property.title}
+Type: ${property.type}
+Listing: ${property.listingType}
+Location: ${property.location}, ${property.city}
+Price: ${property.price.toLocaleString()} ${property.priceUnit}
 
-Thank you for reaching out to House in Mozambique. We have received your message and appreciate your interest.
+Review URL: ${SITE_URL}/dashboard/admin/approvals
+`,
+  });
+}
 
-Your Message Summary:
-Subject: ${data.subject}
-
-Message:
-${data.message}
-
-Our team will review your inquiry and get back to you as soon as possible.
-
-Best regards,
-The House in Mozambique Team
+export async function sendAgentVerificationEmail(agent: {
+  name: string;
+  email: string;
+}) {
+  return sendEmail({
+    to: agent.email,
+    from: VERIFY_FROM_EMAIL,
+    subject: 'Verify your House in Mozambique account',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045;">Verify Your Agent Registration</h1>
+        <p style="color: #43474e;">Hello ${agent.name},</p>
+        <p style="color: #43474e;">Thanks for registering as an agent on House in Mozambique.</p>
+        <p style="color: #43474e;">This message comes from our verification sender so that we can confirm your account is valid and secure.</p>
+        <p style="color: #43474e;">One of our team members will review your profile and approve your account shortly.</p>
+        <p style="color: #74777f;">If you did not sign up, please ignore this email.</p>
+      </div>
     `,
+    text: `Verify Your Agent Registration
+
+Hello ${agent.name},
+
+Thanks for registering as an agent on House in Mozambique.
+
+This message is sent from our verification sender so we can confirm your account is valid.
+
+Our team will review your profile and approve your account shortly.
+
+If you did not sign up, please ignore this email.
+`,
   });
 }

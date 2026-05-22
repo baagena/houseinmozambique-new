@@ -16,7 +16,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!inquiry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // admin can delete any; agent can delete only their own assigned inquiries
-    if (actor.role !== 'ADMIN' && inquiry.agentId && inquiry.agentId !== userId) {
+    if (actor.role !== 'ADMIN' && inquiry.agentId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

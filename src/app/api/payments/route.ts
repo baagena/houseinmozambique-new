@@ -5,6 +5,7 @@ import { processPayment, convertCurrency } from '@/lib/payment';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    console.debug('/api/payments incoming body:', JSON.stringify(body));
     const {
       amount,
       currency,
@@ -16,15 +17,28 @@ export async function POST(req: Request) {
       customerPhone,
     } = body;
 
-    if (!amount || !method || !planType || !userId) {
+    // Attempt to derive userId from cookies if not provided in body
+    let resolvedUserId = userId;
+    if (!resolvedUserId) {
+      try {
+        const cookieHeader = req.headers.get('cookie') || '';
+        // If the backend sets a userId cookie, try to parse it from the cookie string
+        const match = cookieHeader.match(/userId=([^;\s]+)/);
+        if (match) resolvedUserId = decodeURIComponent(match[1]);
+      } catch (err) {
+        console.warn('Could not parse cookies for userId fallback', err);
+      }
+    }
+
+    if (!amount || !method || !planType || !resolvedUserId) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: amount, method, planType, or userId' },
         { status: 400 }
       );
     }
 
     // Validate payment method
-    if (!['mpesa', 'emola', 'card'].includes(method)) {
+    if (!['mpesa', 'emola', 'card', 'manual'].includes(method)) {
       return NextResponse.json(
         { error: 'Invalid payment method' },
         { status: 400 }
@@ -41,22 +55,48 @@ export async function POST(req: Request) {
     const orderRef = `HIM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Create payment record in database
-    const payment = await prisma.payment?.create({
-      data: {
-        orderRef,
-        amount: amountInMZN,
-        currency: 'MZN',
-        method,
-        planType,
-        userId,
-        customerName,
-        customerEmail,
-        customerPhone: customerPhone || null,
-        status: 'PENDING',
-      },
-    });
+    // Create payment record in database
+    const customerNameSafe = customerName || 'Unknown Payer';
+    const customerEmailSafe = customerEmail || 'billing@houseinmoz.com';
 
-    // Process payment based on method
+    let payment = null;
+    try {
+      payment = await prisma.payment.create({
+        data: {
+          orderRef,
+          amount: amountInMZN,
+          currency: 'MZN',
+          method,
+          planType,
+          userId: resolvedUserId,
+          customerName: customerNameSafe,
+          customerEmail: customerEmailSafe,
+          customerPhone: customerPhone || null,
+          status: 'PENDING',
+        },
+      });
+    } catch (err: any) {
+      console.error('Failed to create payment record:', err);
+      // Return DB error message in non-production for debugging
+      const message = process.env.NODE_ENV === 'production' ? 'Database error creating payment record' : (err?.message || String(err));
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+
+    // If method is manual, do not call external gateway — treat as PENDING and return success
+    if (method === 'manual') {
+      return NextResponse.json(
+        {
+          success: true,
+          orderRef,
+          transactionId: null,
+          redirectUrl: null,
+          message: 'Payment recorded as manual. Awaiting confirmation.',
+        },
+        { status: 201 }
+      );
+    }
+
+    // Process payment based on method for supported gateways
     const paymentResponse = await processPayment({
       amount: amountInMZN,
       currency: 'MZN',
@@ -77,11 +117,15 @@ export async function POST(req: Request) {
       return NextResponse.json(paymentResponse, { status: 400 });
     }
 
-    // Update payment record with transaction ID
+    // Update payment record with transaction ID and mark as COMPLETED in dummy mode
     if (payment && paymentResponse.transactionId) {
       await prisma.payment?.update({
         where: { id: payment.id },
-        data: { transactionId: paymentResponse.transactionId },
+        data: { 
+          transactionId: paymentResponse.transactionId,
+          status: 'COMPLETED',
+          completedAt: new Date(),
+        },
       });
     }
 

@@ -20,16 +20,7 @@ export default async function AgentLeadsPage() {
     redirect('/auth');
   }
 
-  const generalInquiries = await prisma.inquiry.findMany({
-    where: { agentId: null },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  const mergedInquiries = [...(agent.inquiries || []), ...generalInquiries].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  );
-
-  const myInquiries = mergedInquiries.map(inq => ({
+  const myInquiries = (agent.inquiries || []).map(inq => ({
     id: inq.id,
     name: inq.name,
     subject: inq.subject,

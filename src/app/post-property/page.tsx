@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
 import Image from 'next/image';
 import PaymentForm from '@/components/dashboard/PaymentForm';
+import dynamic from 'next/dynamic';
+const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false });
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 
@@ -65,9 +67,11 @@ function PostPropertyForm() {
   const [pendingUploadUrls, setPendingUploadUrls] = useState<string[] | null>(null);
   const [paymentPhase, setPaymentPhase] = useState(false);
   const [paymentPrepError, setPaymentPrepError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number; altitude?: number } | null>(null);
 
   const [step, setStep] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userName, setUserName] = useState('');
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,7 +106,10 @@ function PostPropertyForm() {
           return;
         }
         const data = await res.json();
-        if (!cancelled) setIsAuthorized(true);
+        if (!cancelled) {
+          setIsAuthorized(true);
+          setUserName(data.user?.name || '');
+        }
       } catch (err) {
         if (!cancelled) router.push('/auth?redirect=/post-property');
       }
@@ -175,9 +182,16 @@ function PostPropertyForm() {
   async function finalizeListing(imageUrls: string[]) {
     setIsSubmitting(true);
     try {
+      // If coordinates are selected, append to description so location is preserved until DB schema is extended
+      const formCopy = { ...form };
+      if (coords) {
+        const alt = coords.altitude !== undefined && coords.altitude !== null ? `, Altitude: ${Number(coords.altitude).toFixed(2)}m` : '';
+        formCopy.description = `${form.description}\n\nCoordinates: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}${alt}`;
+      }
+
       const result = editId
-        ? await updateProperty(editId, form, imageUrls)
-        : await createProperty(form, imageUrls);
+        ? await updateProperty(editId, formCopy, imageUrls)
+        : await createProperty(formCopy, imageUrls);
 
       if (result.success) {
         setSubmitted(true);
@@ -390,8 +404,8 @@ function PostPropertyForm() {
 
   return (
     <div className="py-12 bg-[#f7f9fb]">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-20">
-        <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-20">
+          <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
           
           {/* Sidebar Navigation */}
           <aside className="w-full lg:w-80 lg:sticky lg:top-28 order-2 lg:order-1">
@@ -613,15 +627,13 @@ function PostPropertyForm() {
                       />
                     </div>
 
-                    <div className="relative aspect-[21/9] rounded-2xl overflow-hidden bg-[#f2f4f6] border border-[#c4c6cf]/10 flex items-center justify-center group cursor-crosshair shadow-inner">
-                      <div className="absolute inset-0 bg-[#002045]/5 backdrop-blur-[2px]" />
-                      <div className="relative z-10 text-center transition-transform group-hover:scale-110 duration-700">
-                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl text-[#002045] animate-bounce-slow">
-                          <span className="material-symbols-outlined text-4xl">my_location</span>
-                        </div>
-                        <h4 className="text-xl font-black text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>{t.postProperty.precisionPlotting}</h4>
-                        <p className="text-[11px] text-[#43474e] mt-2 font-bold tracking-widest uppercase">Cartographic Engine Initializing</p>
-                      </div>
+                    <div className="space-y-4">
+                      <MapPicker value={coords || null} onChange={(c) => setCoords(c)} />
+                      <p className="text-sm text-[#74777f]">{
+                        coords
+                          ? `Selected: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}${coords.altitude ? ` · Altitude: ${Number(coords.altitude).toFixed(2)}m` : ''}`
+                          : t.postProperty.precisionPlotting
+                      }</p>
                     </div>
                   </div>
                 )}
@@ -874,7 +886,7 @@ function PostPropertyForm() {
 
 export default function PostPropertyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#f7f9fb]"><div className="animate-pulse text-[#002045] font-bold">Loading...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f7f9fb]" />}>
       <PostPropertyForm />
     </Suspense>
   );

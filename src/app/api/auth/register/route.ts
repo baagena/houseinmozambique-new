@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { sendAgentVerificationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -56,9 +57,18 @@ export async function POST(request: Request) {
 
     const { password: _, ...agentWithoutPassword } = newAgent;
 
+    try {
+      await sendAgentVerificationEmail({
+        name: newAgent.name,
+        email: newAgent.email,
+      });
+    } catch (emailError) {
+      console.error('Agent verification email failed:', emailError);
+    }
+
     const response = NextResponse.json({
       user: agentWithoutPassword,
-      message: 'Agent registered successfully'
+      message: 'Agent registered successfully. A verification email has been sent.',
     });
 
     response.cookies.set('userId', newAgent.id, {

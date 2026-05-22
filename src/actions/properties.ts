@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { uploadImage, FOLDERS } from '@/lib/cloudinary';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { sendPropertySubmissionNotification } from '@/lib/email';
 
 /**
  * Uploads a single image to Cloudinary.
@@ -124,6 +125,12 @@ export async function createProperty(formData: any, imageUrls: string[]) {
 
     revalidatePath('/');
     revalidatePath('/properties');
+
+    try {
+      await sendPropertySubmissionNotification(property, { name: agent.name, email: agent.email });
+    } catch (error: any) {
+      console.error('Property notification email failed:', error);
+    }
     
     return { success: true, property };
   } catch (error: any) {
