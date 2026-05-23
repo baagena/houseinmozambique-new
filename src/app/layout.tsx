@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
+import Script from 'next/script';
 
 const dmsans = DM_Sans({
   subsets: ['latin'],
@@ -43,6 +44,10 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <FooterWrapper />
         </LanguageProvider>
+        <Script
+          src="//code.tidio.co/dskhwbtaf4xshe1pluqs7ilizketnylv.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
