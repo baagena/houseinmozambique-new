@@ -142,6 +142,33 @@ House in Mozambique Team
   });
 }
 
+export async function sendNewsletterConfirmationEmail(data: {
+  email: string;
+}) {
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    subject: 'You are subscribed - House in Mozambique',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045;">You are on the update list</h1>
+        <p style="color: #43474e;">Thanks for subscribing to House in Mozambique updates.</p>
+        <p style="color: #43474e;">We will send selected property listings, agent updates, and market insights to this inbox.</p>
+        <p style="color: #74777f;">Best regards,<br/>House in Mozambique Team</p>
+      </div>
+    `,
+    text: `You are on the update list
+
+Thanks for subscribing to House in Mozambique updates.
+
+We will send selected property listings, agent updates, and market insights to this inbox.
+
+Best regards,
+House in Mozambique Team
+`,
+  });
+}
+
 export async function sendContactFormEmail(data: {
   name: string;
   email: string;

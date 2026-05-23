@@ -22,7 +22,13 @@ interface InquiriesListProps {
 export default function InquiriesList({ initialInquiries }: InquiriesListProps) {
   const router = useRouter();
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
+  const [filter, setFilter] = useState<'all' | 'messages' | 'newsletter'>('all');
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const visibleInquiries = inquiries.filter((inq) => {
+    if (filter === 'newsletter') return inq.subject === 'Newsletter subscription';
+    if (filter === 'messages') return inq.subject !== 'Newsletter subscription';
+    return true;
+  });
 
   const handleMarkRead = async (id: string) => {
     setIsProcessing(id);
@@ -65,13 +71,34 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
 
   return (
     <div className="space-y-4">
-      {inquiries.length === 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {([
+          { id: 'all', label: 'All Activity' },
+          { id: 'messages', label: 'Messages' },
+          { id: 'newsletter', label: 'Newsletter' },
+        ] as const).map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setFilter(item.id)}
+            className={`rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+              filter === item.id ? 'bg-[#002045] text-white' : 'bg-white text-[#74777f] border border-[#f2f4f6]'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {visibleInquiries.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-[#f2f4f6] text-[#74777f]">
           <span className="material-symbols-outlined text-4xl mb-3 text-slate-300 block">mail_outline</span>
-          <p className="font-semibold">No inquiries found</p>
+          <p className="font-semibold">No activity found</p>
         </div>
       ) : (
-        inquiries.map((inq) => (
+        visibleInquiries.map((inq) => {
+          const isNewsletter = inq.subject === 'Newsletter subscription';
+
+          return (
           <div 
             key={inq.id} 
             className={`bg-white p-6 rounded-2xl border transition-all duration-300 ${
@@ -81,9 +108,14 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
             }`}
           >
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-              <div className="space-y-2 flex-1">
+              <div className="space-y-2 flex-1 min-w-0">
                 <div className="flex items-center flex-wrap gap-2.5">
                   <span className="font-extrabold text-[#002045] text-lg tracking-tight">{inq.subject}</span>
+                  {isNewsletter && (
+                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-black rounded-full uppercase tracking-wider">
+                      Newsletter
+                    </span>
+                  )}
                   {!inq.isRead && (
                     <span className="px-2.5 py-0.5 bg-[#845326]/10 text-[#845326] text-[9px] font-black rounded-full uppercase tracking-wider">
                       New
@@ -91,19 +123,19 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
                   )}
                 </div>
                 
-                <p className="text-xs text-[#74777f] font-medium flex flex-wrap items-center gap-1.5">
+                <p className="text-xs text-[#74777f] font-medium flex flex-wrap items-center gap-1.5 min-w-0">
                   <span>From:</span>
                   <strong className="text-[#002045]">{inq.name}</strong>
                   <span className="text-slate-300">|</span>
-                  <span className="font-mono text-slate-600">{inq.email}</span>
+                  <span className="font-mono text-slate-600 break-all">{inq.email}</span>
                 </p>
 
-                <p className="text-sm text-[#43474e] whitespace-pre-wrap leading-relaxed pt-3 border-t border-[#f2f4f6] mt-3">
+                <p className="text-sm text-[#43474e] whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-relaxed pt-3 border-t border-[#f2f4f6] mt-3">
                   {inq.message}
                 </p>
               </div>
 
-              <div className="text-left md:text-right flex flex-row md:flex-col justify-between md:justify-start items-center md:items-end gap-4 min-w-full md:min-w-[180px] pt-4 md:pt-0 border-t border-dashed border-[#f2f4f6] md:border-t-0">
+              <div className="text-left md:text-right flex flex-row md:flex-col justify-between md:justify-start items-center md:items-end gap-4 w-full md:w-auto md:min-w-[180px] pt-4 md:pt-0 border-t border-dashed border-[#f2f4f6] md:border-t-0">
                 <p className="text-xs text-[#74777f] font-mono">
                   {new Date(inq.createdAt).toLocaleString()}
                 </p>
@@ -137,7 +169,8 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
               </div>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

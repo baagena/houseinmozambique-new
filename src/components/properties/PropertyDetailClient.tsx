@@ -7,19 +7,65 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { formatPrice } from '@/lib/utils';
 import PropertyGallery from '@/components/properties/PropertyGallery';
 
-const MAP_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-ewn_dW9IjG1C7aLrbTsDUYNQX7_yv2o_9_7cCUqKV0NtaQTy4CIc71q914J-38YtE3hSvbxES6NSU300Au6dR8M98kGKcrn_G5inEMYPi6jJ7bFecchy8RSWP6GfPv0_t_dDW4QWf8CLUhs7jA0cw9xnGCTgobbkFoq3Q1z8RRVKpiqN1ET1M10aW3XbTEfUoU_v4NAJAGLdmww1M1BS9nk6J8_fPhQ_ekYGwsoQv9vdo2yRFs8219hM55IY8kiT63SE87rjVNQ';
-
 interface PropertyDetailClientProps {
-  property: any;
-  similar: any[];
+  property: PropertyDetail;
+  similar: SimilarProperty[];
+}
+
+interface PropertyAgent {
+  id: string;
+  name: string;
+  title: string;
+  initials: string;
+  avatar?: string | null;
+  isVerified?: boolean;
+  rating?: number;
+}
+
+interface SimilarProperty {
+  id: string;
+  title: string;
+  location: string;
+  price: number;
+  priceUnit: string;
+  images: string[];
+  isNew?: boolean;
+  rating?: number | null;
+}
+
+interface PropertyDetail extends SimilarProperty {
+  description: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  amenities: string[];
+  listingType: string;
+  isSuperhost?: boolean;
+  isRareFind?: boolean;
+  isPremium?: boolean;
+  host?: PropertyAgent | null;
+}
+
+function getCoordinates(description: string | null | undefined) {
+  const match = description?.match(/Coordinates:\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
+  if (!match) return null;
+
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+  return { lat, lng };
 }
 
 export default function PropertyDetailClient({ property, similar }: PropertyDetailClientProps) {
   const { t } = useLanguage();
   const agent = property.host;
+  const coords = getCoordinates(property.description);
+  const mapSrc = coords
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - 0.01}%2C${coords.lat - 0.01}%2C${coords.lng + 0.01}%2C${coords.lat + 0.01}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`
+    : null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const handleInquiry = async (type: 'contact' | 'viewing') => {
     setIsSubmitting(true);
@@ -51,12 +97,11 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
       });
 
       if (res.ok) {
-        setSubmitted(true);
         alert('Your inquiry has been sent successfully!');
       } else {
         alert('Failed to send inquiry.');
       }
-    } catch (e) {
+    } catch {
       alert('An error occurred while sending the inquiry.');
     } finally {
       setIsSubmitting(false);
@@ -256,18 +301,29 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
             {t.propertyDetails.whereYoullBe}
           </h2>
           <div className="w-full h-[450px] rounded-xl overflow-hidden bg-[#e6e8ea] relative">
-            <Image src={MAP_IMG} alt="Map" fill className="object-cover opacity-50 mix-blend-multiply" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-[#002045] p-4 rounded-full shadow-2xl relative">
-                <span className="material-symbols-outlined text-white text-3xl">home</span>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#002045] rotate-45" />
+            {mapSrc ? (
+              <iframe
+                title={`Map location for ${property.title}`}
+                src={mapSrc}
+                className="h-full w-full border-0"
+                loading="lazy"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#eef0f2] text-center px-6">
+                <span className="material-symbols-outlined text-5xl text-[#845326] mb-3">location_off</span>
+                <p className="text-sm font-bold text-[#002045]">Exact coordinates have not been added for this listing.</p>
+                <p className="text-xs text-[#74777f] mt-2 max-w-md">
+                  Ask the listing agent to edit the house post and add latitude and longitude so this map can show the exact location.
+                </p>
               </div>
-            </div>
+            )}
           </div>
           <div className="mt-6">
             <h3 className="font-bold text-lg mb-2">{property.location}</h3>
             <p className="text-[#43474e] leading-relaxed">
-              {t.propertyDetails.locationDesc}
+              {coords
+                ? `Exact map point: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+                : t.propertyDetails.locationDesc}
             </p>
           </div>
         </section>

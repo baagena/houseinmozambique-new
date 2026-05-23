@@ -1,8 +1,57 @@
+"use client";
+
+import type { FormEvent } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
 export default function Footer() {
   const { t } = useLanguage();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+
+  const handleNewsletterSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const email = newsletterEmail.trim();
+    if (!email) {
+      setNewsletterStatus("error");
+      setNewsletterMessage(t.footer.newsletterRequired);
+      return;
+    }
+
+    setNewsletterStatus("submitting");
+    setNewsletterMessage("");
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload.error || t.footer.newsletterError);
+      }
+
+      setNewsletterEmail("");
+      setNewsletterStatus("success");
+      setNewsletterMessage(
+        payload.alreadySubscribed
+          ? t.footer.newsletterAlreadySubscribed
+          : t.footer.newsletterSuccess
+      );
+    } catch (error) {
+      setNewsletterStatus("error");
+      setNewsletterMessage(
+        error instanceof Error ? error.message : t.footer.newsletterError
+      );
+    }
+  };
 
   return (
     <footer className="w-full bg-[#f2f4f6] border-t border-[#c4c6cf]/10">
@@ -83,12 +132,12 @@ export default function Footer() {
           </div> */}
 
           {/* Legal */}
-          <div>
+          <div className="mr-4">
             <h4 className="font-bold text-[#191c1e] mb-6">{t.footer.getInTouch}</h4>
-<ul className="space-y-4">
+<ul className="space-y-4 ">
   <li>
     <a
-      href="tel:+250788308665"
+      href="tel:+258841234567"
       className="group flex items-center gap-3 transition-all duration-300"
     >
       <span>
@@ -109,7 +158,7 @@ export default function Footer() {
       </span>
 
       <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045]">
-        +250 788 308 665
+        +258 84 123 4567
       </span>
     </a>
   </li>
@@ -137,7 +186,7 @@ export default function Footer() {
         </svg>
       </span>
 
-      <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045] break-all">
+      <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045] ">
   info@houseinmozambique.com
 </span>
     </a>
@@ -170,25 +219,53 @@ export default function Footer() {
           </div>
 
           {/* Newsletter */}
-          <div>
+          <div >
             <h4 className="font-bold text-[#191c1e] mb-6">
               {t.footer.stayUpdated}
             </h4>
             <p className="text-[#43474e] text-sm mb-4 leading-relaxed">
               {t.footer.newsletterDesc}
             </p>
-            <div className="flex gap-2">
+            <form className="flex gap-2" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
+                value={newsletterEmail}
+                onChange={(event) => {
+                  setNewsletterEmail(event.target.value);
+                  if (newsletterStatus !== "submitting") {
+                    setNewsletterStatus("idle");
+                    setNewsletterMessage("");
+                  }
+                }}
                 placeholder={t.footer.emailPlaceholder}
+                aria-label={t.footer.emailPlaceholder}
+                disabled={newsletterStatus === "submitting"}
+                required
                 className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#c4c6cf]/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#002045]/20"
               />
-              <button className="bg-[#002045] text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">
+              <button
+                type="submit"
+                disabled={newsletterStatus === "submitting"}
+                aria-label={t.footer.subscribe}
+                className="bg-[#002045] text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 <span className="material-symbols-outlined text-sm">
-                  arrow_forward
+                  {newsletterStatus === "submitting" ? "progress_activity" : "arrow_forward"}
                 </span>
               </button>
-            </div>
+            </form>
+            {newsletterMessage ? (
+              <p
+                className={`mt-3 text-xs font-medium leading-relaxed ${
+                  newsletterStatus === "success"
+                    ? "text-green-700"
+                    : "text-red-700"
+                }`}
+                role="status"
+              >
+                {newsletterMessage}
+              </p>
+            ) : null}
           </div>
         </div>
 

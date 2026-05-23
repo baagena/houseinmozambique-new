@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Image from 'next/image';
 import { prisma } from '@/lib/db';
-import AdminPropertyActions from '@/components/dashboard/AdminPropertyActions';
 import AdminApprovalsClient from '@/components/dashboard/AdminApprovalsClient';
 
 export default async function AdminApprovalsPage() {
@@ -24,7 +22,9 @@ export default async function AdminApprovalsPage() {
     include: {
       host: {
         select: {
+          id: true,
           name: true,
+          email: true,
           initials: true,
           title: true,
           location: true,
@@ -34,11 +34,38 @@ export default async function AdminApprovalsPage() {
     orderBy: { createdAt: 'desc' },
   });
 
+  const hostIds = Array.from(new Set(pendingProperties.map((property) => property.hostId)));
+  const payments = hostIds.length > 0
+    ? await prisma.payment.findMany({
+        where: { userId: { in: hostIds } },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      })
+    : [];
+
+  const paymentsByUserId = payments.reduce<Record<string, typeof payments>>((acc, payment) => {
+    acc[payment.userId] = acc[payment.userId] || [];
+    acc[payment.userId].push(payment);
+    return acc;
+  }, {});
+
+  const propertiesWithPayments = pendingProperties.map((property) => ({
+    ...property,
+    createdAt: property.createdAt.toISOString(),
+    updatedAt: property.updatedAt.toISOString(),
+    payments: (paymentsByUserId[property.hostId] || []).map((payment) => ({
+      ...payment,
+      createdAt: payment.createdAt.toISOString(),
+      updatedAt: payment.updatedAt.toISOString(),
+      completedAt: payment.completedAt?.toISOString() || null,
+    })),
+  }));
+
   // Fetch recently registered agents (last 30 days) — "Agent Applications"
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const newAgents = await prisma.agent.findMany({
+  const newAgentsRaw = await prisma.agent.findMany({
     where: {
       role: 'AGENT',
       createdAt: { gte: thirtyDaysAgo },
@@ -47,9 +74,15 @@ export default async function AdminApprovalsPage() {
     take: 20,
   });
 
+  const newAgents = newAgentsRaw.map((agent) => ({
+    ...agent,
+    createdAt: agent.createdAt.toISOString(),
+    updatedAt: agent.updatedAt.toISOString(),
+  }));
+
   return (
     <AdminApprovalsClient
-      pendingProperties={pendingProperties}
+      pendingProperties={propertiesWithPayments}
       newAgents={newAgents}
     />
   );

@@ -27,10 +27,10 @@ export default async function AdminActivitiesPage() {
     <div className="p-8 max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-black text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
-          Contact Messages
+          Messages & Newsletter Signups
         </h1>
         <p className="text-sm text-[#74777f] font-medium mt-1">
-          Monitor and manage incoming property inquiries and customer leads
+          Monitor contact messages, property leads, and footer Stay Updated subscriptions.
         </p>
       </div>
 

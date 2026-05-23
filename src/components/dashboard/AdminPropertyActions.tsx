@@ -8,9 +8,10 @@ interface Props {
   propertyId: string;
   currentStatus: string;
   onView?: () => void;
+  onEdit?: () => void;
 }
 
-export default function AdminPropertyActions({ propertyId, currentStatus, onView }: Props) {
+export default function AdminPropertyActions({ propertyId, currentStatus, onView, onEdit }: Props) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
@@ -67,6 +68,14 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
             className="text-[10px] font-black text-[#002045] uppercase tracking-widest hover:underline cursor-pointer"
           >
             View
+          </button>
+        )}
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="text-[10px] font-black text-[#002045] uppercase tracking-widest hover:underline cursor-pointer"
+          >
+            Edit
           </button>
         )}
         <button

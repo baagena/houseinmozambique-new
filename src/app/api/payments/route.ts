@@ -15,6 +15,7 @@ export async function POST(req: Request) {
       customerName,
       customerEmail,
       customerPhone,
+      paymentReference,
     } = body;
 
     // Attempt to derive userId from cookies if not provided in body
@@ -72,13 +73,16 @@ export async function POST(req: Request) {
           customerName: customerNameSafe,
           customerEmail: customerEmailSafe,
           customerPhone: customerPhone || null,
+          transactionId: paymentReference || null,
           status: 'PENDING',
         },
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to create payment record:', err);
       // Return DB error message in non-production for debugging
-      const message = process.env.NODE_ENV === 'production' ? 'Database error creating payment record' : (err?.message || String(err));
+      const message = process.env.NODE_ENV === 'production'
+        ? 'Database error creating payment record'
+        : err instanceof Error ? err.message : String(err);
       return NextResponse.json({ error: message }, { status: 500 });
     }
 
@@ -88,7 +92,7 @@ export async function POST(req: Request) {
         {
           success: true,
           orderRef,
-          transactionId: null,
+          transactionId: paymentReference || null,
           redirectUrl: null,
           message: 'Payment recorded as manual. Awaiting confirmation.',
         },

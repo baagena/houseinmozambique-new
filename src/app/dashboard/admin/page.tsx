@@ -33,5 +33,22 @@ export default async function AdminDashboard() {
     orderBy: { createdAt: 'desc' },
   });
 
-  return <AdminDashboardClient stats={stats} chartData={chartData} latestAgents={latestAgents} recentInquiries={recentInquiries} />;
+  const [newsletterCount, pendingPayments, recentPayments] = await Promise.all([
+    prisma.inquiry.count({ where: { subject: 'Newsletter subscription' } }),
+    prisma.payment.count({ where: { status: 'PENDING' } }),
+    prisma.payment.findMany({
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+    }),
+  ]);
+
+  return (
+    <AdminDashboardClient
+      stats={{ ...stats, newsletterCount, pendingPayments }}
+      chartData={chartData}
+      latestAgents={latestAgents}
+      recentInquiries={recentInquiries}
+      recentPayments={recentPayments}
+    />
+  );
 }
