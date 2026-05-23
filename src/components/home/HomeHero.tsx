@@ -1,28 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const HERO_IMG =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBnVQfCtu9Dd90Gdaa2jDdkQ2z_Xeq6krQV6VJSeeyr13PvW80MmDQcH-QeJC6-1GKkzV5nE8eC-oB960jNWV5NYzaMhoQgOBB_ED4LDUKHYjKwZsumdyys8aRuChvRvDjuHfbLGt1QSdJYKQAeL8abuA-5Ig01BoaOcMtiY0uz_ScZ6QCDlYyJ86LBji7ohI7-8f8rVevJejxSG_Ix29FhghbOU5HOZO5N5eNnpEQybQLaXXWyNNLP6GDDoAs0pkHE0QaBbHYyynY';
 
 export default function HomeHero() {
-  const router = useRouter();
-  const { lang, t } = useLanguage();
-  const [listingType, setListingType] = useState<'Buy' | 'Rent' | 'Short Stay' | 'Auction'>('Buy');
-  const [location, setLocation] = useState('');
-  const [propertyType, setPropertyType] = useState(t.home.allTypes);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (listingType) params.set('type', listingType);
-    if (location) params.set('location', location);
-    if (propertyType && propertyType !== t.home.allTypes) params.set('propertyType', propertyType);
-    router.push(`/properties?${params.toString()}`);
-  }
+  const { t } = useLanguage();
 
   return (
     <section className="px-4 md:px-8 mb-16 pt-24 relative">
@@ -48,78 +34,22 @@ export default function HomeHero() {
       {/* ── Search Bar Wrapper ── */}
       <div className="max-w-6xl mx-auto -mt-16 md:-mt-20 relative z-20 px-4">
         <div className="bg-white/90 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,32,69,0.15)] p-3 md:p-4 border border-white">
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-col lg:flex-row items-stretch gap-4"
-          >
-            {/* Buy / Rent Toggle */}
-            <div className="bg-[#f2f4f6] rounded-2xl p-1.5 flex lg:w-fit">
-              {[
-                { label: t.nav.buy, value: 'Buy' },
-                { label: t.nav.rent, value: 'Rent' },
-                { label: t.nav.shortStay, value: 'Short Stay' },
-                { label: t.nav.auction, value: 'Auction' }
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setListingType(opt.value as any)}
-                  className={`flex-1 lg:flex-none px-8 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 ${
-                    listingType === opt.value
-                      ? 'bg-white shadow-lg text-[#002045]'
-                      : 'text-[#43474e] hover:text-[#002045]'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Location */}
-              <div className="relative group px-6 py-3 bg-[#f2f4f6]/50 rounded-2xl border border-transparent hover:border-[#002045]/10 hover:bg-white transition-all duration-300">
-                <label className="text-[9px] font-black text-[#845326] uppercase tracking-[0.2em] block mb-1 opacity-60">
-                  {t.home.locationLabel}
-                </label>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-[#002045] opacity-40">location_on</span>
-                  <input
-                    className="bg-transparent border-none p-0 focus:outline-none text-[#002045] placeholder-[#c4c6cf] w-full text-sm font-bold"
-                    placeholder={t.home.searchPlaceholder}
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Property Type */}
-              <div className="relative group px-6 py-3 bg-[#f2f4f6]/50 rounded-2xl border border-transparent hover:border-[#002045]/10 hover:bg-white transition-all duration-300">
-                <label className="text-[9px] font-black text-[#845326] uppercase tracking-[0.2em] block mb-1 opacity-60">
-                  {t.home.propertyAssetLabel}
-                </label>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-[#002045] opacity-40">roofing</span>
-                  <select
-                    className="bg-transparent border-none p-0 focus:outline-none text-[#002045] w-full text-sm font-bold appearance-none cursor-pointer"
-                    value={propertyType}
-                    onChange={(e) => setPropertyType(e.target.value)}
-                  >
-                    {[t.home.allTypes, 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'].map((opt) => (
-                      <option key={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-[#002045] text-[#febc85] px-10 py-5 rounded-[1.5rem] flex items-center justify-center hover:bg-[#003366] hover:shadow-[0_20px_40px_rgba(0,32,69,0.3)] transition-all duration-500 font-black text-xs tracking-widest uppercase gap-3"
-            >
-              <span className="material-symbols-outlined text-[20px]">search</span>
-              <span>{t.home.findProperty}</span>
-            </button>
-          </form>
+          <nav className="bg-[#f2f4f6] rounded-2xl p-1.5 grid grid-cols-2 lg:grid-cols-4 gap-1.5">
+            {[
+              { label: t.nav.buy, value: 'Buy' },
+              { label: t.nav.rent, value: 'Rent' },
+              { label: t.nav.shortStay, value: 'Short Stay' },
+              { label: t.nav.auction, value: 'Auction' },
+            ].map((opt) => (
+              <Link
+                key={opt.value}
+                href={`/properties?type=${encodeURIComponent(opt.value)}`}
+                className="flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-center text-xs font-black uppercase tracking-widest text-[#43474e] transition-all duration-300 hover:bg-white hover:text-[#002045] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002045]/20"
+              >
+                {opt.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </section>

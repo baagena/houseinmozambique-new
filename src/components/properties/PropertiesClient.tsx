@@ -21,7 +21,7 @@ export default function PropertiesClient({ initialProperties, initialType, initi
   const [location, setLocation] = useState<string>(initialLocation || '');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['Villa', 'Apartment', 'Penthouse', 'Lodge']);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [bedrooms, setBedrooms] = useState<number | null>(null);
   const [bathrooms, setBathrooms] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState(t.propertiesList.curatedSelection);
@@ -30,6 +30,11 @@ export default function PropertiesClient({ initialProperties, initialType, initi
   useEffect(() => {
     setSortBy(t.propertiesList.curatedSelection);
   }, [t]);
+
+  useEffect(() => {
+    setDealType(searchParams.get('type') || '');
+    setLocation(searchParams.get('location') || '');
+  }, [searchParams]);
 
   // Unified Filter Sync to URL
   const syncFilters = (newParams: Record<string, string | null>) => {
