@@ -212,7 +212,7 @@ export default function Footer() {
     </span>
 
     <span className="text-[#43474e] text-sm leading-relaxed">
-      Av. MOZAMBIQUE N1 Maputo-Zimpetu
+      Av. Mozambique N1 Maputo-Zimpetu
     </span>
   </li>
 </ul>
