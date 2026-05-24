@@ -193,7 +193,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.generalInquiries}</h3>
-                      <p className="text-[#002045] font-black text-lg underline decoration-[#fab983]/30">contact@houseinmozambique.com</p>
+                      <p className="text-[#002045] font-black text-lg underline decoration-[#fab983]/30">info@houseinmozambique.com</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Avg. response time: 2h</p>
                     </div>
                   </div>

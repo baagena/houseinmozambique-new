@@ -34,8 +34,8 @@ export default function PricingPage() {
     },
     {
       name: lang === 'en' ? 'Premium' : 'Premium',
-      price: '7,000 - 15,000',
-      unit: lang === 'en' ? 'MZN / month' : 'MZN / mês',
+      price: '3,000 - 5,000',
+      unit: lang === 'en' ? 'Mt / month' : 'Mt / mês',
       type: 'premium',
       description: lang === 'en' ? 'For small real estate agencies wanting to establish their presence.' : 'Para pequenas agências imobiliárias que querem estabelecer sua presença.',
       badge: lang === 'en' ? 'Popular' : 'Popular',
@@ -52,8 +52,8 @@ export default function PricingPage() {
     },
     {
       name: lang === 'en' ? 'Agency Pro' : 'Pro Agência',
-      price: '30,000 - 50,000',
-      unit: lang === 'en' ? 'MZN / month' : 'MZN / mês',
+      price: '1,500 - 2,500',
+      unit: lang === 'en' ? 'Mt / month' : 'Mt / mês',
       type: 'pro',
       description: lang === 'en' ? 'Enterprise-grade solutions for established real estate agencies.' : 'Soluções para agências imobiliárias estabelecidas.',
       features: [
