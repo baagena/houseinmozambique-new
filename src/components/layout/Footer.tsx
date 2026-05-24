@@ -55,10 +55,10 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-[#f2f4f6] border-t border-[#c4c6cf]/10">
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-8 pt-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand */}
-          <div className="lg:col-span-2 pr-4">
+          <div className="lg:col-span-1 pr-4">
             <Link
               href="/"
               className="text-2xl font-black text-[#002045] tracking-tighter mb-6 block"
@@ -95,7 +95,7 @@ export default function Footer() {
                 { label: t.footer.propertyRealEstate, href: "/properties" },
                 { label: t.footer.assessingPictures, href: "/news" },
                 { label: t.footer.realEstateAgent, href: "/agents" },
-                { label: t.footer.pricingPlans, href: "/pricing" },
+                // { label: t.footer.pricingPlans, href: "/pricing" },
                 { label: t.footer.contactUs, href: "/contact" },
               ].map((item) => (
                 <li key={item.label}>
@@ -133,7 +133,7 @@ export default function Footer() {
           </div> */}
 
           {/* Legal */}
-          <div className="mr-4">
+          <div>
             <h4 className="font-bold text-[#191c1e] mb-6">{t.footer.getInTouch}</h4>
 <ul className="space-y-4 ">
   <li>
@@ -271,7 +271,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-[#c4c6cf]/20 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-[#c4c6cf]/20  pt-16 pb-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[#74777f] text-xs tracking-[0.15em]">
             {t.footer.copyright}
           </p>
@@ -288,7 +288,7 @@ export default function Footer() {
             >
               {t.footer.terms}
             </Link>
-            <Link
+            {/* <Link
               href="/pricing"
               className="hover:text-[#002045] transition-colors"
             >
@@ -299,7 +299,7 @@ export default function Footer() {
               className="hover:text-[#002045] transition-colors"
             >
               {t.nav.agents}
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>
