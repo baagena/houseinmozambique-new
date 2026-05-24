@@ -272,7 +272,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-[#c4c6cf]/20 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[#74777f] text-xs tracking-[0.15em] uppercase">
+          <p className="text-[#74777f] text-xs tracking-[0.15em]">
             {t.footer.copyright}
           </p>
           <div className="flex gap-6 text-xs text-[#74777f]">
