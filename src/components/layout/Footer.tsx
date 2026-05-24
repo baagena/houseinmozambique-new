@@ -93,7 +93,7 @@ export default function Footer() {
                 // { label: t.footer.marketReports, href: "#" },
                 // { label: t.footer.neighborhoodGuides, href: "#" },
                 { label: t.footer.propertyRealEstate, href: "/properties" },
-                { label: t.footer.assessingPictures, href: "/about" },
+                { label: t.footer.assessingPictures, href: "/news" },
                 { label: t.footer.realEstateAgent, href: "/agents" },
                 { label: t.footer.pricingPlans, href: "/pricing" },
                 { label: t.footer.contactUs, href: "/contact" },
