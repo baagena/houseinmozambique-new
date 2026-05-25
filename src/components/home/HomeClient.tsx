@@ -44,7 +44,7 @@ export default function HomeClient({
         <AgentCarousel agents={featuredAgents} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-24 pb-24">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 pb-16">
 
         {/* ── Featured Collection ── */}
         <CategoryCarousel
@@ -57,7 +57,7 @@ export default function HomeClient({
 
         {/* ── Explore by Location ── */}
         <div className="space-y-24">
-          <section className="space-y-24">
+          <section className="space-y-16">
             {maputoProps.length > 0 && (
               <CategoryCarousel
                 title={t.home.maputoTitle}
