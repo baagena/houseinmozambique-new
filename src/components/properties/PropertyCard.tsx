@@ -203,14 +203,14 @@ export default function PropertyCard({ property, variant = 'standard', hideLocat
         </div>
 
         {!hideLocation && (
-          <div className="flex items-center gap-1 text-[#43474e] text-sm mb-4">
+          <div className="flex items-center gap-1 text-[#43474e] text-sm">
             <span className="material-symbols-outlined text-[16px]">location_on</span>
             <span className="truncate">{property.location}</span>
           </div>
         )}
 
         {/* Metadata Grid */}
-        <div className="grid grid-cols-3 gap-2 py-4 border-y border-[#c4c6cf]/10 mb-5">
+        <div className="grid grid-cols-3 gap-2 py-4 border-y border-[#c4c6cf]/10">
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50/50">
             <span className="material-symbols-outlined text-[18px] text-[#002045] mb-1">bed</span>
             <span className="text-[10px] uppercase font-bold text-[#43474e] tracking-tighter">{property.bedrooms} {t.property.beds}</span>
