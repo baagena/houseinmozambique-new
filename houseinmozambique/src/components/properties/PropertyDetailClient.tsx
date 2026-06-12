@@ -1,0 +1,398 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
+import { formatPrice } from '@/lib/utils';
+import PropertyGallery from '@/components/properties/PropertyGallery';
+
+interface PropertyDetailClientProps {
+  property: PropertyDetail;
+  similar: SimilarProperty[];
+}
+
+interface PropertyAgent {
+  id: string;
+  name: string;
+  title: string;
+  initials: string;
+  avatar?: string | null;
+  isVerified?: boolean;
+  rating?: number;
+}
+
+interface SimilarProperty {
+  id: string;
+  title: string;
+  location: string;
+  price: number;
+  priceUnit: string;
+  images: string[];
+  isNew?: boolean;
+  rating?: number | null;
+}
+
+interface PropertyDetail extends SimilarProperty {
+  description: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  amenities: string[];
+  listingType: string;
+  isSuperhost?: boolean;
+  isRareFind?: boolean;
+  isPremium?: boolean;
+  host?: PropertyAgent | null;
+}
+
+function getCoordinates(description: string | null | undefined) {
+  const match = description?.match(/Coordinates:\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
+  if (!match) return null;
+
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+  return { lat, lng };
+}
+
+export default function PropertyDetailClient({ property, similar }: PropertyDetailClientProps) {
+  const { t } = useLanguage();
+  const agent = property.host;
+  const coords = getCoordinates(property.description);
+  const mapSrc = coords
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - 0.01}%2C${coords.lat - 0.01}%2C${coords.lng + 0.01}%2C${coords.lat + 0.01}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`
+    : null;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInquiry = async (type: 'contact' | 'viewing') => {
+    setIsSubmitting(true);
+    try {
+      const subject = type === 'viewing' 
+        ? `Viewing request for ${property.title}` 
+        : `Inquiry about ${property.title}`;
+        
+      const message = type === 'viewing'
+        ? `I would like to book a viewing for "${property.title}". Please let me know your available dates and times.`
+        : `I am interested in your property listing "${property.title}". Please send me more information and available viewing times.`;
+
+      // In a real app we'd ask for the user's details first if not logged in.
+      // For now we'll just prompt them for email and name.
+      const name = prompt('Please enter your name:') || 'Guest';
+      const email = prompt('Please enter your email address:') || 'guest@example.com';
+
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+          propertyId: property.id,
+          agentId: agent?.id
+        })
+      });
+
+      if (res.ok) {
+        alert('Your inquiry has been sent successfully!');
+      } else {
+        alert('Failed to send inquiry.');
+      }
+    } catch {
+      alert('An error occurred while sending the inquiry.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="pt-24 bg-[#f7f9fb]">
+      <main className="max-w-7xl mx-auto px-4 md:px-8">
+        <PropertyGallery
+          images={property.images}
+          title={property.title}
+          isSuperhost={property.isSuperhost || false}
+          isRareFind={property.isRareFind || false}
+          isNew={property.isNew || false}
+          isPremium={property.isPremium || false}
+        />
+
+        <div className="flex flex-col lg:flex-row gap-16 pb-24">
+          <div className="flex-1">
+            <div className="mb-10">
+              <div className="flex flex-wrap gap-2 mb-4">
+                {property.isSuperhost && (
+                  <span className="bg-[#febc85]/30 text-[#845326] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+                    {t.property.superhost}
+                  </span>
+                )}
+                {property.isRareFind && (
+                  <span className="bg-[#ffdad3] text-[#3e0500] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+                    {t.property.rareFind}
+                  </span>
+                )}
+                {property.isNew && (
+                  <span className="bg-[#002045] text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+                    {t.property.newListing}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-4xl font-extrabold text-[#002045] tracking-tight mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
+                {property.title}
+              </h1>
+              <div className="flex items-center text-[#43474e] gap-1 mb-8">
+                <span className="material-symbols-outlined text-xl">location_on</span>
+                <span className="font-medium underline decoration-[#c4c6cf] underline-offset-4 cursor-pointer">
+                  {property.location}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 bg-[#f2f4f6] rounded-xl px-6">
+                <div className="flex flex-col gap-1">
+                  <span className="material-symbols-outlined text-[#002045] mb-2">bed</span>
+                  <span className="font-bold text-[#002045]">{property.bedrooms} {t.property.beds}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="material-symbols-outlined text-[#002045] mb-2">bathtub</span>
+                  <span className="font-bold text-[#002045]">{property.bathrooms} {t.property.baths}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="material-symbols-outlined text-[#002045] mb-2">square_foot</span>
+                  <span className="font-bold text-[#002045]">{property.area} {t.property.area}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="material-symbols-outlined text-[#002045] mb-2">pool</span>
+                  <span className="font-bold text-[#002045]">{property.amenities.includes('Infinity Pool') || property.amenities.includes('Swimming Pool') ? 'Pool' : 'Garden'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-2xl font-bold text-[#002045] mb-6" style={{ fontFamily: 'var(--font-headline)' }}>
+                {t.propertyDetails.aboutHome}
+              </h2>
+              <div className="text-[#43474e] leading-relaxed space-y-4 whitespace-pre-line">
+                {property.description}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-2xl font-bold text-[#002045] mb-8" style={{ fontFamily: 'var(--font-headline)' }}>
+                {t.propertyDetails.whatThisPlaceOffers}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                {property.amenities.slice(0, 6).map((a: string) => (
+                  <div key={a} className="flex items-center gap-4 text-[#191c1e]">
+                    <span className="material-symbols-outlined text-[#845326]">check_circle</span>
+                    <span className="font-medium">{a}</span>
+                  </div>
+                ))}
+              </div>
+              {property.amenities.length > 6 && (
+                <button className="mt-10 bg-[#f7f9fb] text-[#002045] border border-[#74777f] px-8 py-3 rounded-lg font-bold hover:bg-[#f2f4f6] transition-all">
+                  {t.propertyDetails.showAllAmenities} {property.amenities.length} {t.propertyDetails.amenitiesText}
+                </button>
+              )}
+            </div>
+
+            {agent && (
+              <div className="mb-16 pt-16 border-t border-[#c4c6cf]/20">
+                <div className="flex items-start gap-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 relative">
+                      {agent.avatar ? (
+                        <Image src={agent.avatar} alt={agent.name} fill className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-[#e6e8ea] flex items-center justify-center text-[#002045] font-bold text-lg">
+                          {agent.initials}
+                        </div>
+                      )}
+                    </div>
+                    {agent.isVerified && (
+                      <div className="absolute -bottom-1 -right-1 bg-[#845326] text-white p-1 rounded-full border-2 border-[#f7f9fb]">
+                        <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+                      {t.propertyDetails.meetHost} {agent.name}
+                    </h2>
+                    <p className="text-[#43474e] mb-4">{agent.title}</p>
+                    <div className="flex gap-4 mb-6">
+                      <div className="flex items-center gap-1 bg-[#eceef0] text-xs font-bold px-2 py-1 rounded">
+                        <span className="material-symbols-outlined text-[14px]">star</span>
+                        {agent.rating} Rating
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleInquiry('contact')}
+                      disabled={isSubmitting}
+                      className="bg-[#002045] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity block text-center disabled:opacity-50"
+                    >
+                      {t.propertyDetails.contactAgent}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="w-full lg:w-[400px]">
+            <div className="sticky top-28 bg-white p-8 rounded-xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] ring-1 ring-[#c4c6cf]/10">
+              <div className="flex justify-between items-end mb-8">
+                <div>
+                  <span className="text-3xl font-extrabold text-[#002045]">{formatPrice(property.price, property.priceUnit)}</span>
+                </div>
+                {property.rating && (
+                  <div className="flex items-center gap-1 text-sm font-bold text-[#845326]">
+                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <span>{property.rating}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="bg-[#f2f4f6] p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-[#e6e8ea] transition-colors">
+                  <div>
+                    <div className="text-[10px] font-extrabold text-[#845326] uppercase tracking-wider mb-1">{t.propertyDetails.duration}</div>
+                    <div className="text-sm font-bold">
+                      {property.listingType === 'Rent' ? t.propertyDetails.longTerm :
+                       property.listingType === 'Short Stay' ? t.propertyDetails.flexibleDates : t.propertyDetails.purchase}
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined">expand_more</span>
+                </div>
+                <div className="bg-[#f2f4f6] p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-[#e6e8ea] transition-colors">
+                  <div>
+                    <div className="text-[10px] font-extrabold text-[#845326] uppercase tracking-wider mb-1">{t.propertyDetails.guests}</div>
+                    <div className="text-sm font-bold">{t.propertyDetails.upToGuests} {property.bedrooms * 2} {t.propertyDetails.guestsText}</div>
+                  </div>
+                  <span className="material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleInquiry('contact')}
+                  disabled={isSubmitting}
+                  className="w-full inline-flex justify-center bg-[#002045] text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {t.propertyDetails.contactAgent}
+                </button>
+                <button
+                  onClick={() => handleInquiry('viewing')}
+                  disabled={isSubmitting}
+                  className="w-full inline-flex justify-center border-2 border-[#845326] text-[#845326] py-4 rounded-lg font-bold text-lg hover:bg-[#845326]/5 transition-all disabled:opacity-50"
+                >
+                  {t.propertyDetails.bookViewing}
+                </button>
+              </div>
+              <p className="text-center text-xs text-[#43474e] mt-6">{t.propertyDetails.inquiriesFree}</p>
+            </div>
+          </div>
+        </div>
+
+        <section className="mb-20">
+          <h2 className="text-2xl font-bold text-[#002045] mb-8" style={{ fontFamily: 'var(--font-headline)' }}>
+            {t.propertyDetails.whereYoullBe}
+          </h2>
+          <div className="w-full h-[450px] rounded-xl overflow-hidden bg-[#e6e8ea] relative">
+            {mapSrc ? (
+              <iframe
+                title={`Map location for ${property.title}`}
+                src={mapSrc}
+                className="h-full w-full border-0"
+                loading="lazy"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#eef0f2] text-center px-6">
+                <span className="material-symbols-outlined text-5xl text-[#845326] mb-3">location_off</span>
+                <p className="text-sm font-bold text-[#002045]">Exact coordinates have not been added for this listing.</p>
+                <p className="text-xs text-[#74777f] mt-2 max-w-md">
+                  Ask the listing agent to edit the house post and add latitude and longitude so this map can show the exact location.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="mt-6">
+            <h3 className="font-bold text-lg mb-2">{property.location}</h3>
+            <p className="text-[#43474e] leading-relaxed">
+              {coords
+                ? `Exact map point: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+                : t.propertyDetails.locationDesc}
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-24 grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#c4c6cf]/20">
+          <div>
+            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.houseRules}</h3>
+            <ul className="space-y-3 text-[#43474e]">
+               <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">check</span>{t.propertyDetails.noSmoking}</li>
+               <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">check</span>{t.propertyDetails.noPets}</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.healthSafety}</h3>
+            <ul className="space-y-3 text-[#43474e]">
+              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">security</span>{t.propertyDetails.securityGuard}</li>
+              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">fire_extinguisher</span>{t.propertyDetails.smokeAlarm}</li>
+              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">emergency</span>{t.propertyDetails.generator}</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.cancellationPolicy}</h3>
+            <p className="text-[#43474e] mb-4">{t.propertyDetails.cancellationDesc}</p>
+            <a href="#" className="text-[#002045] font-bold underline underline-offset-4">{t.propertyDetails.learnMore}</a>
+          </div>
+        </section>
+
+        <section className="mb-24">
+          <h2 className="text-2xl font-bold text-[#002045] mb-10" style={{ fontFamily: 'var(--font-headline)' }}>
+            {t.propertyDetails.similarHomes}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {similar.map((p) => (
+              <Link key={p.id} href={`/properties/${p.id}`} className="group cursor-pointer block">
+                <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 relative">
+                  <Image
+                    src={p.images[0]}
+                    alt={p.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  {p.isNew && (
+                    <div className="absolute top-4 left-4 bg-[#691809] text-[#f17e66] px-3 py-1 rounded-full text-xs font-bold">
+                      {t.property.newListing}
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-[#002045] text-lg" style={{ fontFamily: 'var(--font-headline)' }}>
+                      {p.title}
+                    </h3>
+                    <p className="text-[#43474e]">{p.location}</p>
+                    <p className="mt-2">
+                      <span className="font-extrabold text-[#002045]">{formatPrice(p.price, p.priceUnit)}</span>
+                    </p>
+                  </div>
+                  {p.rating && (
+                    <div className="flex items-center gap-1 text-sm font-bold">
+                      <span className="material-symbols-outlined text-[18px]">star</span>
+                      {p.rating}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

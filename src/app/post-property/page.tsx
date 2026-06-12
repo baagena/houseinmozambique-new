@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { createProperty, uploadSingleImage } from '@/actions/properties';
 
 const planAmounts: Record<string, number> = {
   standard: 1500,
@@ -13,7 +14,7 @@ const planAmounts: Record<string, number> = {
   boost: 2500,
 };
 
-const propertyTypes = ['Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
+const propertyTypes = ['House', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
 const amenities = [
   'WiFi',
   'Pool',
@@ -40,13 +41,25 @@ function PostPropertyContent() {
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [contactMethods, setContactMethods] = useState<string[]>(['dashboard']);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [listingType, setListingType] = useState('Buy');
-  const [propertyType, setPropertyType] = useState('Villa');
+  const [propertyType, setPropertyType] = useState('House');
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [city, setCity] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [address, setAddress] = useState('');
+  const [bedrooms, setBedrooms] = useState('');
+  const [bathrooms, setBathrooms] = useState('');
+  const [area, setArea] = useState('');
   const [price, setPrice] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [agentPhone, setAgentPhone] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [responseTime, setResponseTime] = useState('');
+  const [formError, setFormError] = useState('');
 
   const editId = searchParams.get('edit');
   const planType = searchParams.get('plan') || 'standard';
@@ -59,10 +72,127 @@ function PostPropertyContent() {
       { label: t.postProperty.locationCityLabel, value: city || t.postProperty.targetNotSet },
       { label: t.postProperty.neighborhoodLabel, value: neighborhood || t.postProperty.targetNotSet },
       { label: t.postProperty.valuationLabel, value: price ? `$${Number(price).toLocaleString()}` : t.postProperty.valuationMissing },
-      { label: t.postProperty.photographyLabel, value: `${photos.length} uploaded` },
+      { label: t.postProperty.photographyLabel, value: `${photoFiles.length} uploaded` },
       { label: 'Agent contact', value: contactMethods.map((method) => contactOptions.find((option) => option.id === method)?.label).filter(Boolean).join(', ') },
     ];
-  }, [city, contactMethods, listingType, neighborhood, photos.length, price, propertyType, t]);
+  }, [city, contactMethods, listingType, neighborhood, photoFiles.length, price, propertyType, t]);
+
+  const priceUnit = listingType === 'Rent' ? 'monthly' : listingType === 'Short Stay' ? 'nightly' : 'sale';
+
+  const buildDescription = () => {
+    const lines = [description.trim()];
+    if (latitude.trim() && longitude.trim()) {
+      lines.push(`Coordinates: ${latitude.trim()}, ${longitude.trim()}`);
+    }
+
+    const contactLines = [
+      agentPhone.trim() ? `Agent phone: ${agentPhone.trim()}` : '',
+      whatsappNumber.trim() ? `WhatsApp: ${whatsappNumber.trim()}` : '',
+      contactEmail.trim() ? `Contact email: ${contactEmail.trim()}` : '',
+      responseTime.trim() ? `Preferred response time: ${responseTime.trim()}` : '',
+    ].filter(Boolean);
+
+    if (contactLines.length > 0) {
+      lines.push(contactLines.join('\n'));
+    }
+
+    return lines.filter(Boolean).join('\n\n');
+  };
+
+  const validateDetails = () => {
+    const requiredFields = [
+      { label: 'title', value: title },
+      { label: 'description', value: description },
+      { label: 'city', value: city },
+      { label: 'price', value: price },
+      { label: 'bedrooms', value: bedrooms },
+      { label: 'bathrooms', value: bathrooms },
+      { label: 'area', value: area },
+    ];
+
+    const missing = requiredFields.find((field) => !field.value.trim());
+    if (missing) {
+      return `Please enter the listing ${missing.label} before continuing.`;
+    }
+
+    const numericFields = [
+      { label: 'price', value: Number(price) },
+      { label: 'bedrooms', value: Number(bedrooms) },
+      { label: 'bathrooms', value: Number(bathrooms) },
+      { label: 'area', value: Number(area) },
+    ];
+    const invalidNumber = numericFields.find((field) => Number.isNaN(field.value) || field.value < 0);
+    if (invalidNumber) {
+      return `Please enter a valid ${invalidNumber.label}.`;
+    }
+
+    if ((latitude.trim() && Number.isNaN(Number(latitude))) || (longitude.trim() && Number.isNaN(Number(longitude)))) {
+      return 'Please enter valid latitude and longitude values.';
+    }
+
+    return '';
+  };
+
+  const handleProceedToPayment = () => {
+    const error = validateDetails();
+    if (error) {
+      setFormError(error);
+      return;
+    }
+
+    setFormError('');
+    setStep('payment');
+  };
+
+  const handlePaymentSuccess = async () => {
+    setFormError('');
+    try {
+      // Upload each photo file to Cloudinary
+      const imageUrls: string[] = [];
+      for (const file of photoFiles) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const uploadResult = await uploadSingleImage(base64);
+        if (uploadResult.success && uploadResult.url) {
+          imageUrls.push(uploadResult.url);
+        } else {
+          throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
+        }
+      }
+
+      const result = await createProperty(
+        {
+          title: title.trim(),
+          description: buildDescription(),
+          city: city.trim(),
+          neighborhood: neighborhood.trim() || null,
+          address: address.trim() || null,
+          price,
+          priceUnit,
+          propertyType,
+          listingType,
+          bedrooms,
+          bathrooms,
+          area,
+          amenities: selectedAmenities,
+        },
+        imageUrls
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
+      }
+
+      setStep('success');
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to process property submission.');
+    }
+  };
 
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities((current) =>
@@ -78,7 +208,7 @@ function PostPropertyContent() {
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setPhotos((current) => [...current, ...files.map((file) => file.name)].slice(0, 12));
+    setPhotoFiles((current) => [...current, ...files].slice(0, 12));
   };
 
   if (step === 'payment') {
@@ -96,7 +226,7 @@ function PostPropertyContent() {
             </button>
             <span className="text-xs font-black uppercase tracking-[0.2em] text-[#845326]">{planType}</span>
           </div>
-          <PaymentForm planType={planType} amount={amount} onSuccess={() => setStep('success')} />
+          <PaymentForm planType={planType} amount={amount} onSuccess={handlePaymentSuccess} />
         </div>
       </main>
     );
@@ -144,14 +274,16 @@ function PostPropertyContent() {
               </label>
               <FieldSelect label={t.postProperty.intentionLabel} value={listingType} onChange={setListingType} options={['Buy', 'Rent', 'Short Stay', 'Auction']} />
               <FieldSelect label={t.postProperty.classificationLabel} value={propertyType} onChange={setPropertyType} options={propertyTypes} />
-              <FieldInput label={t.postProperty.bedsLabel} type="number" placeholder="3" />
-              <FieldInput label={t.postProperty.bathsLabel} type="number" placeholder="2" />
-              <FieldInput label={t.postProperty.areaLabel} type="number" placeholder="320" />
+              <FieldInput label={t.postProperty.bedsLabel} type="number" value={bedrooms} onChange={setBedrooms} placeholder="3" />
+              <FieldInput label={t.postProperty.bathsLabel} type="number" value={bathrooms} onChange={setBathrooms} placeholder="2" />
+              <FieldInput label={t.postProperty.areaLabel} type="number" value={area} onChange={setArea} placeholder="320" />
               <FieldInput label={t.postProperty.valuationLabel} type="number" value={price} onChange={setPrice} placeholder="450000" />
               <label className="md:col-span-2">
                 <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#74777f]">{t.postProperty.narrativeLabel}</span>
                 <textarea
                   rows={6}
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
                   className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none"
                   placeholder={t.postProperty.narrativePlaceholder}
                 />
@@ -164,9 +296,9 @@ function PostPropertyContent() {
             <div className="grid gap-5 md:grid-cols-2">
               <FieldInput label={t.postProperty.locationCityLabel} value={city} onChange={setCity} placeholder="Maputo" />
               <FieldInput label={t.postProperty.neighborhoodLabel} value={neighborhood} onChange={setNeighborhood} placeholder="Sommerschield" />
-              <FieldInput label={t.postProperty.addressLabel} placeholder={t.postProperty.addressPlaceholder} className="md:col-span-2" />
-              <FieldInput label="Latitude" placeholder="-25.9692" />
-              <FieldInput label="Longitude" placeholder="32.5732" />
+              <FieldInput label={t.postProperty.addressLabel} value={address} onChange={setAddress} placeholder={t.postProperty.addressPlaceholder} className="md:col-span-2" />
+              <FieldInput label="Latitude" value={latitude} onChange={setLatitude} placeholder="-25.9692" />
+              <FieldInput label="Longitude" value={longitude} onChange={setLongitude} placeholder="32.5732" />
             </div>
           </div>
 
@@ -183,12 +315,12 @@ function PostPropertyContent() {
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {photos.map((photo) => (
-                <div key={photo} className="flex aspect-[4/3] items-end rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6] p-3">
-                  <p className="truncate text-[10px] font-black uppercase tracking-widest text-[#74777f]">{photo}</p>
+              {photoFiles.map((photo) => (
+                <div key={photo.name + photo.size} className="flex aspect-[4/3] items-end rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6] p-3">
+                  <p className="truncate text-[10px] font-black uppercase tracking-widest text-[#74777f]">{photo.name}</p>
                 </div>
               ))}
-              {Array.from({ length: Math.max(1, 4 - photos.length) }).map((_, index) => (
+              {Array.from({ length: Math.max(1, 4 - photoFiles.length) }).map((_, index) => (
                 <div key={index} className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-[#c4c6cf]/50 bg-[#f7f9fb]">
                   <span className="material-symbols-outlined text-[#c4c6cf]">add_photo_alternate</span>
                 </div>
@@ -214,10 +346,10 @@ function PostPropertyContent() {
               Choose how buyers and renters can reach the agent: direct phone call, WhatsApp, or the dashboard message box.
             </p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <FieldInput label="Agent phone number" placeholder="+258 84 000 0000" />
-              <FieldInput label="WhatsApp number" placeholder="+258 87 000 0000" />
-              <FieldInput label="Contact email" type="email" placeholder="agent@example.com" />
-              <FieldInput label="Preferred response time" placeholder="09:00 - 18:00" />
+              <FieldInput label="Agent phone number" value={agentPhone} onChange={setAgentPhone} placeholder="+258 84 000 0000" />
+              <FieldInput label="WhatsApp number" value={whatsappNumber} onChange={setWhatsappNumber} placeholder="+258 87 000 0000" />
+              <FieldInput label="Contact email" type="email" value={contactEmail} onChange={setContactEmail} placeholder="agent@example.com" />
+              <FieldInput label="Preferred response time" value={responseTime} onChange={setResponseTime} placeholder="09:00 - 18:00" />
             </div>
             <div className="mt-6 grid gap-3 md:grid-cols-3">
               {contactOptions.map((option) => (
@@ -241,9 +373,16 @@ function PostPropertyContent() {
             <Link href="/" className="inline-flex items-center justify-center rounded-xl border border-[#c4c6cf]/30 bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-[#74777f]">
               {t.postProperty.discardListing}
             </Link>
-            <button type="button" onClick={() => setStep('payment')} className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
-              {t.postProperty.saveAndProceed}
-            </button>
+            <div className="flex flex-col items-stretch gap-3 sm:items-end">
+              {formError && (
+                <p className="max-w-md rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
+                  {formError}
+                </p>
+              )}
+              <button type="button" onClick={handleProceedToPayment} className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
+                {t.postProperty.saveAndProceed}
+              </button>
+            </div>
           </div>
         </section>
 

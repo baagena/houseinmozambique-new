@@ -1,0 +1,295 @@
+
+> app@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.43.177:3001
+- Environments: .env
+✓ Ready in 2.7s
+⚠ Turbopack's filesystem cache has been deleted because we previously detected an internal error in Turbopack. Builds or page loads may be slower as a result.
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling / ...
+ GET / 200 in 22.3s (next.js: 10.5s, application-code: 11.8s)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+[browser] Image with src "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "/logo.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /api/auth/me 401 in 1380ms (next.js: 1314ms, application-code: 66ms)
+ GET /properties 200 in 2.2s (next.js: 1064ms, application-code: 1113ms)
+ GET /api/auth/me 401 in 32ms (next.js: 10ms, application-code: 21ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-11613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1628592102751-ba83b03144e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1580587767303-9bb6fa099951?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1506929113674-bf7ef86cc35e?q=80&w=1200&auto=format&fit=crop 404
+ GET /about 200 in 1253ms (next.js: 1179ms, application-code: 74ms)
+ GET /api/auth/me 401 in 19ms (next.js: 7ms, application-code: 13ms)
+[browser] Image with src "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=900" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /contact 200 in 969ms (next.js: 870ms, application-code: 99ms)
+ GET /api/auth/me 401 in 22ms (next.js: 7ms, application-code: 15ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].blogPost.findMany()` invocation in
+E:\Bagena\Clients\stitch_mozambique_property_hub\houseinmozambique-new\.next\dev\server\chunks\ssr\[root-of-the-server]__0.wzwwz._.js:159:144
+
+  156     }
+  157 };
+  158 async function getPublishedBlogPosts() {
+→ 159     return {imported module ./src/lib/db.ts}["prisma"].blogPost.findMany(
+The table `public.BlogPost` does not exist in the current database.
+    at <unknown> (src\lib\blog.ts:32:26)
+    at async NewsPage (src\app\news\page.tsx:8:17)
+  30 |
+  31 | export async function getPublishedBlogPosts() {
+> 32 |   return prisma.blogPost.findMany({
+     |                          ^
+  33 |     where: { status: 'PUBLISHED' },
+  34 |     select: BLOG_SELECT,
+  35 |     orderBy: [{ isFeatured: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }], {
+  code: 'P2021',
+  meta: {
+    modelName: 'BlogPost',
+    driverAdapterError: Error [DriverAdapterError]: TableDoesNotExist
+        at async NewsPage (src\app\news\page.tsx:8:17)
+       6 |
+       7 | export default async function NewsPage() {
+    >  8 |   const posts = await getPublishedBlogPosts();
+         |                 ^
+       9 |   const featured = posts.find((post) => post.isFeatured) || posts[0];
+      10 |   const remaining = featured ? posts.filter((post) => post.id !== featured.id) : posts;
+      11 | {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.7.0',
+  digest: '585089752'
+}
+ GET /news 200 in 4.7s (next.js: 875ms, application-code: 3.8s)
+[browser] Uncaught PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].blogPost.findMany()` invocation in
+E:\Bagena\Clients\stitch_mozambique_property_hub\houseinmozambique-new\.next\dev\server\chunks\ssr\[root-of-the-server]__0.wzwwz._.js:159:144
+
+  156     }
+  157 };
+  158 async function getPublishedBlogPosts() {
+→ 159     return __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].blogPost.findMany(
+The table `public.BlogPost` does not exist in the current database.
+    at <unknown> (src\lib\blog.ts:32:26)
+    at NewsPage (src\app\news\page.tsx:8:17)
+  30 |
+  31 | export async function getPublishedBlogPosts() {
+> 32 |   return prisma.blogPost.findMany({
+     |                          ^
+  33 |     where: { status: 'PUBLISHED' },
+  34 |     select: BLOG_SELECT,
+  35 |     orderBy: [{ isFeatured: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
+ GET /contact 200 in 226ms (next.js: 10ms, application-code: 216ms)
+[browser] Image with src "/logo.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /api/auth/me 401 in 27ms (next.js: 14ms, application-code: 14ms)
+ GET /about 200 in 117ms (next.js: 5ms, application-code: 111ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /api/auth/me 401 in 23ms (next.js: 9ms, application-code: 14ms)
+[browser] Image with src "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=900" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /contact 200 in 54ms (next.js: 5ms, application-code: 49ms)
+ GET /api/auth/me 401 in 27ms (next.js: 16ms, application-code: 11ms)
+ GET /properties 200 in 3.4s (next.js: 6ms, application-code: 3.4s)
+ GET /api/auth/me 401 in 16ms (next.js: 6ms, application-code: 10ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1506929113674-bf7ef86cc35e?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1628592102751-ba83b03144e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1580587767303-9bb6fa099951?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-11613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop 404
+ GET /contact 200 in 57ms (next.js: 6ms, application-code: 51ms)
+ GET /api/auth/me 401 in 26ms (next.js: 12ms, application-code: 14ms)
+ GET /api/admin/blog 405 in 900ms (next.js: 882ms, application-code: 18ms)
+ GET /news 200 in 3.0s (next.js: 8ms, application-code: 3.0s)
+ GET /api/auth/me 401 in 24ms (next.js: 9ms, application-code: 15ms)
+ GET /auth 200 in 843ms (next.js: 780ms, application-code: 63ms)
+ GET /api/auth/me 401 in 21ms (next.js: 11ms, application-code: 11ms)
+[browser] Image with src "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ POST /api/auth/login 200 in 3.3s (next.js: 448ms, application-code: 2.9s)
+ GET /api/auth/me 200 in 2.6s (next.js: 5ms, application-code: 2.6s)
+ GET /api/auth/me 200 in 468ms (next.js: 5ms, application-code: 463ms)
+ GET /dashboard/agent 200 in 4.5s (next.js: 1008ms, application-code: 3.5s)
+ GET /api/auth/me 200 in 309ms (next.js: 4ms, application-code: 306ms)
+[browser] Image with src "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /api/auth/me 200 in 319ms (next.js: 5ms, application-code: 314ms)
+ POST /api/auth/login 200 in 695ms (next.js: 4ms, application-code: 691ms)
+○ Compiling /dashboard/admin ...
+ GET /api/auth/me 200 in 2.7s (next.js: 4ms, application-code: 2.7s)
+ GET /api/auth/me 200 in 317ms (next.js: 10ms, application-code: 307ms)
+ GET /api/auth/me 200 in 311ms (next.js: 4ms, application-code: 307ms)
+ GET /dashboard/admin 200 in 9.4s (next.js: 4.2s, application-code: 5.2s)
+ GET /dashboard/admin/blog 200 in 1818ms (next.js: 804ms, application-code: 1014ms)
+ GET /api/auth/me 200 in 318ms (next.js: 5ms, application-code: 313ms)
+Admin blog create error: Error [PrismaClientKnownRequestError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].agent.findUnique()` invocation in
+E:\Bagena\Clients\stitch_mozambique_property_hub\houseinmozambique-new\.next\dev\server\chunks\[root-of-the-server]__0thxbpp._.js:160:156
+
+  157         status: 401
+  158     };
+  159 }
+→ 160 const admin = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].agent.findUnique(
+Can't reach database server at ep-royal-bonus-amd7na6c-pooler.c-5.us-east-1.aws.neon.tech
+    at <unknown> (src\app\api\admin\blog\route.ts:15:36)
+    at async requireAdmin (src\app\api\admin\blog\route.ts:15:17)
+    at async POST (src\app\api\admin\blog\route.ts:42:18)
+  13 |   }
+  14 |
+> 15 |   const admin = await prisma.agent.findUnique({
+     |                                    ^
+  16 |     where: { id: userId },
+  17 |     select: { id: true, role: true },
+  18 |   }); {
+  code: 'P1001',
+  meta: {
+    modelName: 'Agent',
+    driverAdapterError: Error [DriverAdapterError]: DatabaseNotReachable
+        at ignore-listed frames {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.7.0'
+}
+ POST /api/admin/blog 500 in 11.8s (next.js: 9ms, application-code: 11.8s)
+ GET /dashboard/admin/settings 200 in 1926ms (next.js: 1800ms, application-code: 127ms)
+ GET /api/auth/me 200 in 2.9s (next.js: 76ms, application-code: 2.9s)
+ POST /api/auth/logout 200 in 429ms (next.js: 414ms, application-code: 15ms)
+ GET /auth 200 in 130ms (next.js: 12ms, application-code: 118ms)
+ GET /api/auth/me 401 in 21ms (next.js: 9ms, application-code: 13ms)
+ POST /api/auth/login 200 in 617ms (next.js: 4ms, application-code: 613ms)
+ GET /api/auth/me 200 in 2.6s (next.js: 4ms, application-code: 2.6s)
+ GET /api/auth/me 200 in 330ms (next.js: 8ms, application-code: 323ms)
+ GET /dashboard/agent 200 in 3.7s (next.js: 7ms, application-code: 3.6s)
+ GET /api/auth/me 200 in 309ms (next.js: 4ms, application-code: 305ms)
+○ Compiling /post-property ...
+ GET /post-property 200 in 3.9s (next.js: 3.7s, application-code: 134ms)
+ GET /api/auth/me 200 in 2.6s (next.js: 4ms, application-code: 2.6s)
+ GET /api/auth/me 200 in 3.2s (next.js: 6ms, application-code: 3.2s)
+ GET /api/auth/me 200 in 318ms (next.js: 9ms, application-code: 309ms)
+/api/payments incoming body: {"amount":1500,"currency":"MZN","method":"manual","planType":"standard","userId":"agent-1","customerName":"bagena Prince","customerEmail":"agent-1@houseinmoz.com","paymentReference":"heouwe adfa"}
+ POST /api/payments 201 in 3.2s (next.js: 277ms, application-code: 2.9s)
+Resend config loaded: {
+  hasApiKey: true,
+  resendFromEmail: 'info@houseinmozambique.com',
+  notificationFromEmail: 'notification@houseinmozambique.com',
+  verifyFromEmail: 'verifyemail@houseinmozambique.com'
+}
+Finalizing property publication with 0 assets
+Asset published successfully: cmqb25269000100sgmakwyo4y
+Resend request: {
+  to: 'admin@houseinmozambique.com',
+  from: 'notification@houseinmozambique.com',
+  subject: 'New Listing Submitted: House in maputo'
+}
+Resend response received for: {
+  to: 'admin@houseinmozambique.com',
+  subject: 'New Listing Submitted: House in maputo'
+}
+ POST /post-property 200 in 1987ms (next.js: 6ms, application-code: 1982ms)
+  └─ ƒ createProperty({"address":"kk 143","amenities":["WiFi","Pool","Security"],"area":"329","...":"10 items not stringified"}, []) in 1681ms src/actions/properties.ts
+ GET /api/auth/me 200 in 2.8s (next.js: 5ms, application-code: 2.8s)
+ GET /dashboard/agent/listings 200 in 4.2s (next.js: 1194ms, application-code: 3.0s)
+ GET /api/auth/me 200 in 318ms (next.js: 8ms, application-code: 310ms)
+ GET /api/auth/me 200 in 321ms (next.js: 4ms, application-code: 317ms)
+[browser] Image with src "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1577412647305-991150c7d163?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /post-property?edit=cmqb25269000100sgmakwyo4y 200 in 59ms (next.js: 7ms, application-code: 52ms)
+ GET /api/auth/me 200 in 2.9s (next.js: 5ms, application-code: 2.8s)
+ GET /api/auth/me 200 in 314ms (next.js: 5ms, application-code: 309ms)
+ GET /api/auth/me 200 in 311ms (next.js: 4ms, application-code: 307ms)
+ GET /api/auth/me 200 in 323ms (next.js: 4ms, application-code: 319ms)
+ GET /dashboard/agent/leads 200 in 3.9s (next.js: 884ms, application-code: 3.0s)
+ GET /api/auth/me 200 in 332ms (next.js: 6ms, application-code: 326ms)
+ POST /api/auth/logout 200 in 20ms (next.js: 6ms, application-code: 14ms)
+ GET /auth 200 in 83ms (next.js: 6ms, application-code: 77ms)
+ GET /api/auth/me 401 in 28ms (next.js: 14ms, application-code: 14ms)
+ POST /api/auth/login 200 in 725ms (next.js: 7ms, application-code: 719ms)
+ GET /api/auth/me 200 in 315ms (next.js: 5ms, application-code: 311ms)
+ GET /api/auth/me 200 in 313ms (next.js: 4ms, application-code: 309ms)
+ GET /api/auth/me 200 in 321ms (next.js: 4ms, application-code: 317ms)
+ GET /dashboard/admin 200 in 4.9s (next.js: 7ms, application-code: 4.8s)
+ GET /dashboard/admin/approvals 200 in 2.8s (next.js: 1188ms, application-code: 1634ms)
+ GET /api/auth/me 200 in 340ms (next.js: 21ms, application-code: 319ms)
+ PATCH /api/admin/payments/cmph1zr200005oksg7i9f6e7y 200 in 5.5s (next.js: 2.5s, application-code: 3.0s)
+ POST /api/admin/property/cmqb25269000100sgmakwyo4y/status 200 in 5.2s (next.js: 2.2s, application-code: 3.1s)
+ GET /dashboard/admin/approvals 200 in 1284ms (next.js: 7ms, application-code: 1278ms)
+ GET / 200 in 6.1s (next.js: 5ms, application-code: 6.1s)
+[browser] An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string. 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+[browser] Image with src "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /api/auth/me 200 in 351ms (next.js: 37ms, application-code: 314ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+ GET /properties 200 in 1024ms (next.js: 5ms, application-code: 1018ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+ GET /api/auth/me 200 in 324ms (next.js: 5ms, application-code: 319ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-11613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1580587767303-9bb6fa099951?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1506929113674-bf7ef86cc35e?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1628592102751-ba83b03144e3?q=80&w=1200&auto=format&fit=crop 404
+ GET /api/auth/me 200 in 2.6s (next.js: 4ms, application-code: 2.6s)
+ GET /api/auth/me 200 in 311ms (next.js: 4ms, application-code: 307ms)
+ GET /api/auth/me 200 in 315ms (next.js: 7ms, application-code: 309ms)
+ GET /dashboard/agent/listings 200 in 5.3s (next.js: 10ms, application-code: 5.3s)
+ GET /dashboard/admin/blog 200 in 1111ms (next.js: 8ms, application-code: 1103ms)
+ GET /api/auth/me 200 in 329ms (next.js: 5ms, application-code: 323ms)
+ POST /api/admin/blog 201 in 3.2s (next.js: 8ms, application-code: 3.2s)
+ GET /dashboard/admin/blog 200 in 979ms (next.js: 5ms, application-code: 974ms)
+ PATCH /api/admin/blog/cmqb2apxl000200sg00a35lkw 200 in 5.9s (next.js: 2.2s, application-code: 3.7s)
+ GET /dashboard/admin/blog 200 in 975ms (next.js: 6ms, application-code: 969ms)
+ GET / 200 in 5.9s (next.js: 9ms, application-code: 5.9s)
+[browser] An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string. 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+ GET /api/auth/me 200 in 389ms (next.js: 6ms, application-code: 383ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+ GET /news 200 in 685ms (next.js: 5ms, application-code: 679ms)
+ GET /api/auth/me 200 in 312ms (next.js: 7ms, application-code: 305ms)
+[browser] Image with src "https://images.unsplash.com/photo-1560518883-ce09059eeffa" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+ GET /api/auth/me 200 in 324ms (next.js: 6ms, application-code: 318ms)
+ GET /news/affordable-houses-for-rent-in-maputo-best-areas-in-2026 200 in 5.6s (next.js: 2.5s, application-code: 3.1s)
+ GET / 200 in 8.0s (next.js: 5ms, application-code: 8.0s)
+[browser] An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string. 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+[browser] Image is missing required "src" property: [object HTMLImageElement] 
+ GET /api/auth/me 200 in 315ms (next.js: 3ms, application-code: 311ms)
+[browser] Image with src "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+⨯ upstream image response failed for https://images.unsplash.com/photo-1512914890251-2f96a9b092e3?q=80&w=1200&auto=format&fit=crop 404
+⨯ upstream image response failed for https://images.unsplash.com/photo-1613977257363-707ba934f246?q=80&w=1200&auto=format&fit=crop 404
+[browser] Image with src "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?q=80&w=1200&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
