@@ -126,7 +126,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
         throw new Error(uploadResult.error || 'Failed to upload cover image.');
       }
 
-      update('coverImage', uploadResult.url);
+      update('coverImage', (uploadResult as { success: true; url: string }).url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Cover image upload failed.');
     } finally {
