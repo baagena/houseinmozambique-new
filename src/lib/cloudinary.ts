@@ -10,6 +10,7 @@ cloudinary.config({
 export const FOLDERS = {
   HOUSES: 'houseinmozambique/houses',
   PROFILES: 'houseinmozambique/profiles',
+  BLOGS: 'houseinmozambique/blogs',
 };
 
 /**

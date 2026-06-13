@@ -1,11 +1,11 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { createProperty } from '@/actions/properties';
+import { createProperty, uploadSingleImage } from '@/actions/properties';
 
 const planAmounts: Record<string, number> = {
   standard: 1500,
@@ -42,6 +42,8 @@ function PostPropertyContent() {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [contactMethods, setContactMethods] = useState<string[]>(['dashboard']);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [listingType, setListingType] = useState('Buy');
   const [propertyType, setPropertyType] = useState('House');
   const [title, setTitle] = useState('');
@@ -145,30 +147,62 @@ function PostPropertyContent() {
   };
 
   const handlePaymentSuccess = async () => {
-    const result = await createProperty(
-      {
-        title: title.trim(),
-        description: buildDescription(),
-        city: city.trim(),
-        neighborhood: neighborhood.trim() || null,
-        address: address.trim() || null,
-        price,
-        priceUnit,
-        propertyType,
-        listingType,
-        bedrooms,
-        bathrooms,
-        area,
-        amenities: selectedAmenities,
-      },
-      []
-    );
+    setIsUploadingPhotos(true);
+    setFormError('');
 
-    if (!result.success) {
-      throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
+    try {
+      const uploadedImages: string[] = [];
+
+      for (const file of photoFiles) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            if (typeof reader.result === 'string') {
+              resolve(reader.result);
+            } else {
+              reject(new Error('Unable to read file as base64.'));
+            }
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(file);
+        });
+
+        const uploadResult = await uploadSingleImage(base64);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || 'Failed to upload property image.');
+        }
+        uploadedImages.push(uploadResult.url);
+      }
+
+      const result = await createProperty(
+        {
+          title: title.trim(),
+          description: buildDescription(),
+          city: city.trim(),
+          neighborhood: neighborhood.trim() || null,
+          address: address.trim() || null,
+          price,
+          priceUnit,
+          propertyType,
+          listingType,
+          bedrooms,
+          bathrooms,
+          area,
+          amenities: selectedAmenities,
+        },
+        uploadedImages
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
+      }
+
+      setStep('success');
+    } catch (error: any) {
+      setFormError(error?.message || 'Unable to upload images and submit the listing.');
+    } finally {
+      setIsUploadingPhotos(false);
     }
-
-    setStep('success');
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -185,6 +219,7 @@ function PostPropertyContent() {
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
+    setPhotoFiles((current) => [...current, ...files].slice(0, 12));
     setPhotos((current) => [...current, ...files.map((file) => file.name)].slice(0, 12));
   };
 
@@ -356,9 +391,16 @@ function PostPropertyContent() {
                   {formError}
                 </p>
               )}
-              <button type="button" onClick={handleProceedToPayment} className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
-                {t.postProperty.saveAndProceed}
-              </button>
+              <button
+            type="button"
+            onClick={handleProceedToPayment}
+            className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]"
+          >
+            {t.postProperty.saveAndProceed}
+          </button>
+          {isUploadingPhotos && (
+            <p className="mt-3 text-sm font-medium text-[#002045]">Uploading images, please wait...</p>
+          )}
             </div>
           </div>
         </section>

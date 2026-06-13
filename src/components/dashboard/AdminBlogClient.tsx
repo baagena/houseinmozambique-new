@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { formatPostDate, slugify } from '@/lib/blog-utils';
+import { uploadSingleImage } from '@/actions/properties';
 
 type AdminBlogPost = {
   id: string;
@@ -76,6 +77,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
   const router = useRouter();
   const [form, setForm] = useState<BlogForm>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [error, setError] = useState('');
 
   const stats = useMemo(() => {
@@ -98,6 +100,38 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
   const resetForm = () => {
     setForm(emptyForm);
     setError('');
+  };
+
+  const handleCoverImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingCover(true);
+    try {
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            resolve(reader.result);
+          } else {
+            reject(new Error('Unable to read file as base64.'));
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+
+      const uploadResult = await uploadSingleImage(base64, 'houseinmozambique/blogs');
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Failed to upload cover image.');
+      }
+
+      update('coverImage', uploadResult.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Cover image upload failed.');
+    } finally {
+      setIsUploadingCover(false);
+    }
   };
 
   const savePost = async () => {
@@ -206,7 +240,32 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
           <div className="space-y-4">
             <Field label="Title" value={form.title} onChange={(value) => update('title', value)} placeholder="Maputo rental yields in 2026" />
             <Field label="Slug" value={form.slug} onChange={(value) => update('slug', slugify(value))} placeholder="maputo-rental-yields" />
-            <Field label="Cover image URL" value={form.coverImage} onChange={(value) => update('coverImage', value)} placeholder="https://images.unsplash.com/..." />
+            <div>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[#74777f]">Cover Image</label>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#002045] px-4 py-3 text-xs font-black uppercase tracking-widest text-[#febc85] disabled:opacity-50">
+                    <span className="material-symbols-outlined text-lg">upload_file</span>
+                    {isUploadingCover ? 'Uploading...' : 'Upload Image'}
+                    <input type="file" accept="image/*" onChange={handleCoverImageUpload} disabled={isUploadingCover} className="sr-only" />
+                  </label>
+                  <span className="flex items-center text-[10px] font-bold text-[#c4c6cf] uppercase">OR</span>
+                </div>
+                <input
+                  type="text"
+                  value={form.coverImage}
+                  onChange={(event) => update('coverImage', event.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none focus:border-[#002045]/30"
+                />
+                {form.coverImage && (
+                  <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-[#f2f4f6] bg-[#f7f9fb]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.coverImage} alt="Cover preview" className="h-full w-full object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Category" value={form.category} onChange={(value) => update('category', value)} placeholder="Market Insight" />
               <label>

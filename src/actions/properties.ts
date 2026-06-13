@@ -1,7 +1,6 @@
 'use server';
 
 import { prisma } from '@/lib/db';
-import { uploadImage, FOLDERS } from '@/lib/cloudinary';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { sendPropertySubmissionNotification } from '@/lib/email';
@@ -10,12 +9,15 @@ import { sendPropertySubmissionNotification } from '@/lib/email';
  * Uploads a single image to Cloudinary.
  * Used for sequential uploading from the client to prevent massive payload timeouts.
  */
-export async function uploadSingleImage(base64: string) {
+export async function uploadSingleImage(base64: string, folder: string = 'houseinmozambique/houses') {
   try {
     if (!base64.startsWith('data:')) {
       return { success: false, error: 'Invalid image format. Expected base64 data string.' };
     }
-    const url = await uploadImage(base64, FOLDERS.HOUSES);
+    
+    // Import only on server-side execution
+    const { uploadImage } = await import('@/lib/cloudinary');
+    const url = await uploadImage(base64, folder);
     return { success: true, url };
   } catch (error: any) {
     console.error('Single image upload failed:', error);
@@ -115,9 +117,10 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         area: parseFloat(formData.area.toString()) || 0,
         amenities: formData.amenities,
         images: imageUrls,
+        tags: formData.tags ?? [],
         hostId: agent.id,
         status: 'PENDING',
-        isNew: true, 
+        isNew: true,
       },
     });
 
@@ -176,6 +179,7 @@ export async function updateProperty(id: string, formData: any, imageUrls: strin
         area: parseFloat(formData.area.toString()) || 0,
         amenities: formData.amenities,
         images: imageUrls,
+        tags: formData.tags ?? [],
         status: 'PENDING',
         isNew: true,
       },
