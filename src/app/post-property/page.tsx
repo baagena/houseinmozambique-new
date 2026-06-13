@@ -171,7 +171,7 @@ function PostPropertyContent() {
         if (!uploadResult.success) {
           throw new Error(uploadResult.error || 'Failed to upload property image.');
         }
-        uploadedImages.push(uploadResult.url);
+        uploadedImages.push((uploadResult as { success: true; url: string }).url);
       }
 
       const result = await createProperty(
