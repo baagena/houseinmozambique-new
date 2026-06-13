@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { formatPostDate, slugify } from '@/lib/blog-utils';
-import { uploadSingleImage } from '@/actions/properties';
 
 type AdminBlogPost = {
   id: string;
@@ -77,7 +76,6 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
   const router = useRouter();
   const [form, setForm] = useState<BlogForm>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [error, setError] = useState('');
 
   const stats = useMemo(() => {
@@ -100,32 +98,6 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
   const resetForm = () => {
     setForm(emptyForm);
     setError('');
-  };
-
-  const handleCoverImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingImage(true);
-    try {
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const uploadResult = await uploadSingleImage(base64);
-      if (uploadResult.success && uploadResult.url) {
-        update('coverImage', uploadResult.url);
-      } else {
-        setError(`Failed to upload image: ${uploadResult.error}`);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload image.');
-    } finally {
-      setIsUploadingImage(false);
-    }
   };
 
   const savePost = async () => {
@@ -234,21 +206,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
           <div className="space-y-4">
             <Field label="Title" value={form.title} onChange={(value) => update('title', value)} placeholder="Maputo rental yields in 2026" />
             <Field label="Slug" value={form.slug} onChange={(value) => update('slug', slugify(value))} placeholder="maputo-rental-yields" />
-            <div>
-              <span className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[#74777f]">Cover Image</span>
-              <div className="flex gap-2">
-                <input
-                  value={form.coverImage}
-                  onChange={(event) => update('coverImage', event.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="flex-1 rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none"
-                />
-                <label className="rounded-xl bg-[#002045] px-4 py-3 text-xs font-black uppercase tracking-widest text-white cursor-pointer hover:opacity-90 disabled:opacity-50">
-                  Upload
-                  <input type="file" accept="image/*" onChange={handleCoverImageUpload} disabled={isUploadingImage} className="sr-only" />
-                </label>
-              </div>
-            </div>
+            <Field label="Cover image URL" value={form.coverImage} onChange={(value) => update('coverImage', value)} placeholder="https://images.unsplash.com/..." />
             <div className="grid grid-cols-2 gap-3">
               <Field label="Category" value={form.category} onChange={(value) => update('category', value)} placeholder="Market Insight" />
               <label>

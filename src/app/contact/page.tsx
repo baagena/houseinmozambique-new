@@ -53,52 +53,52 @@ export default function ContactPage() {
   return (
     <div className="bg-[#f7f9fb] flex flex-col">
 
-      <main className="flex-1 pt-20 pb-16 px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto animate-in fade-in duration-1000">
+      <main className="flex-1 pt-32 pb-24 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto animate-in fade-in duration-1000">
           {/* Header */}
-          <header className="mb-12 text-center">
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#845326]/10 border border-[#845326]/20 mb-4">
+          <header className="mb-20 text-center">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#845326]/10 border border-[#845326]/20 mb-6">
               <span className="w-2 h-2 rounded-full bg-[#845326] animate-pulse" />
               <span className="text-[10px] font-black text-[#845326] uppercase tracking-[0.2em]">{t.contact.title}</span>
             </div>
-            <h1 className="text-3xl lg:text-4xl font-black text-[#002045] tracking-tight leading-tight mb-4" style={{ fontFamily: 'var(--font-headline)' }}>
+            <h1 className="text-5xl lg:text-7xl font-black text-[#002045] tracking-tighter leading-[1.1] mb-6" style={{ fontFamily: 'var(--font-headline)' }}>
               {t.contact.heading1} <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#845326] to-[#fab983]">{t.contact.heading2}</span>.
             </h1>
-            <p className="text-sm text-[#74777f] font-medium max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-[#74777f] font-medium max-w-2xl mx-auto leading-relaxed">
               {t.contact.desc}
             </p>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Form Column */}
-            <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-[#f2f4f6]">
-              <h2 className="text-lg font-black text-[#002045] mb-6 tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+            <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-[0_32px_64px_rgba(0,32,69,0.08)] border border-[#f2f4f6]">
+              <h2 className="text-3xl font-black text-[#002045] mb-8 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
                 {t.contact.sendMessage}
               </h2>
 
               {submitted ? (
-                <div className="py-8 text-center animate-in fade-in zoom-in duration-500">
-                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <span className="material-symbols-outlined text-3xl">check_circle</span>
+                <div className="py-12 text-center animate-in fade-in zoom-in duration-500">
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="material-symbols-outlined text-4xl">check_circle</span>
                   </div>
-                  <h3 className="text-base font-black text-[#002045] mb-2 tracking-tight">{t.contact.messageSent}</h3>
-                  <p className="text-[#74777f] font-medium text-sm mb-6">{t.contact.messageSentDesc}</p>
+                  <h3 className="text-2xl font-black text-[#002045] mb-2 tracking-tight">{t.contact.messageSent}</h3>
+                  <p className="text-[#74777f] font-medium mb-8">{t.contact.messageSentDesc}</p>
                   <button 
                     onClick={() => setSubmitted(false)}
-                    className="text-[#845326] font-black text-xs uppercase tracking-widest hover:underline"
+                    className="text-[#845326] font-black text-sm uppercase tracking-widest hover:underline"
                   >
                     {t.contact.sendAnother}
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.fullName}</label>
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-3 rounded-xl bg-[#f7f9fb] border border-[#c4c6cf]/30 focus:ring-2 focus:ring-[#002045]/10 text-[#002045] font-medium text-sm outline-none"
+                        className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                         placeholder="e.g. Maria Silva"
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -109,7 +109,7 @@ export default function ContactPage() {
                       <input
                         type="email"
                         required
-                        className="w-full px-4 py-3 rounded-xl bg-[#f7f9fb] border border-[#c4c6cf]/30 focus:ring-2 focus:ring-[#002045]/10 text-[#002045] font-medium text-sm outline-none"
+                        className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                         placeholder="maria@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -122,7 +122,7 @@ export default function ContactPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-[#f7f9fb] border border-[#c4c6cf]/30 focus:ring-2 focus:ring-[#002045]/10 text-[#002045] font-medium text-sm outline-none"
+                      className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
                       placeholder="How can we help?"
                       value={formData.subject}
                       onChange={(e) => setFormData({...formData, subject: e.target.value})}
@@ -132,9 +132,9 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.contact.yourMessage}</label>
                     <textarea
-                      rows={4}
+                      rows={6}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-[#f7f9fb] border border-[#c4c6cf]/30 focus:ring-2 focus:ring-[#002045]/10 text-[#002045] font-medium text-sm resize-none outline-none"
+                      className="w-full px-6 py-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold resize-none"
                       placeholder="Tell us what you're looking for..."
                       value={formData.message}
                       onChange={(e) => setFormData({...formData, message: e.target.value})}
@@ -143,31 +143,31 @@ export default function ContactPage() {
 
                   <button
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-[#002045] text-white font-black text-sm rounded-xl shadow-sm hover:bg-[#003055] transition-colors active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:translate-y-0"
                   >
                     {isSubmitting ? t.contact.btnSending : t.contact.btnSend}
-                    <span className="material-symbols-outlined text-base">send</span>
+                    <span className="material-symbols-outlined text-xl">send</span>
                   </button>
                 </form>
               )}
             </div>
 
             {/* Info Column */}
-            <div className="space-y-8 lg:pl-8">
-              <div className="space-y-5">
-                <h2 className="text-lg font-black text-[#002045] tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+            <div className="space-y-12 lg:pl-12">
+              <div className="space-y-8">
+                <h2 className="text-3xl font-black text-[#002045] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
                   {t.contact.ourOffices}
                 </h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Address */}
-                  <div className="flex gap-4 group">
-                    <div className="w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
-                      <span className="material-symbols-outlined text-lg">location_on</span>
+                  <div className="flex gap-6 group">
+                    <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
+                      <span className="material-symbols-outlined text-2xl">location_on</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight text-sm mb-1">{t.contact.headquarters}</h3>
-                      <p className="text-[#74777f] font-medium text-sm leading-relaxed">
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.headquarters}</h3>
+                      <p className="text-[#74777f] font-medium leading-relaxed">
                         Av. Marginal, 145 <br />
                         Polana District, Maputo, Mozambique
                       </p>
@@ -175,25 +175,25 @@ export default function ContactPage() {
                   </div>
 
                   {/* Phone */}
-                  <div className="flex gap-4 group">
-                    <div className="w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
-                      <span className="material-symbols-outlined text-lg">call</span>
+                  <div className="flex gap-6 group">
+                    <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
+                      <span className="material-symbols-outlined text-2xl">call</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight text-sm mb-1">{t.contact.directLine}</h3>
-                      <p className="text-[#002045] font-black text-sm">+258 84 123 4567</p>
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.directLine}</h3>
+                      <p className="text-[#002045] font-black text-lg">+258 84 123 4567</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Mon - Fri, 8am - 6pm</p>
                     </div>
                   </div>
 
                   {/* Email */}
-                  <div className="flex gap-4 group">
-                    <div className="w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
-                      <span className="material-symbols-outlined text-lg">mail</span>
+                  <div className="flex gap-6 group">
+                    <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center shrink-0 border border-[#f2f4f6] text-[#845326] group-hover:bg-[#845326] group-hover:text-white transition-all duration-300">
+                      <span className="material-symbols-outlined text-2xl">mail</span>
                     </div>
                     <div>
-                      <h3 className="font-black text-[#002045] tracking-tight text-sm mb-1">{t.contact.generalInquiries}</h3>
-                      <p className="text-[#002045] font-black text-sm underline decoration-[#fab983]/30">info@houseinmozambique.com</p>
+                      <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.generalInquiries}</h3>
+                      <p className="text-[#002045] font-black text-lg underline decoration-[#fab983]/30">info@houseinmozambique.com</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Avg. response time: 2h</p>
                     </div>
                   </div>
@@ -201,14 +201,14 @@ export default function ContactPage() {
               </div>
 
               {/* Socials */}
-              <div className="pt-6 border-t border-[#c4c6cf]/20">
-                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-4">{t.contact.followAgents}</h3>
-                <div className="flex gap-3">
+              <div className="pt-12 border-t border-[#c4c6cf]/20">
+                <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">{t.contact.followAgents}</h3>
+                <div className="flex gap-4">
                   {['Instagram', 'LinkedIn', 'Facebook', 'X'].map((social) => (
                     <Link 
                       key={social}
                       href="#"
-                      className="px-4 py-2 rounded-lg border border-[#c4c6cf]/30 flex items-center justify-center font-black text-xs text-[#002045] hover:bg-[#002045] hover:text-white hover:border-[#002045] transition-all"
+                      className="h-12 px-6 rounded-xl border border-[#c4c6cf]/30 flex items-center justify-center font-black text-xs text-[#002045] hover:bg-[#002045] hover:text-white hover:border-[#002045] transition-all"
                     >
                       {social}
                     </Link>
@@ -217,12 +217,12 @@ export default function ContactPage() {
               </div>
 
               {/* Recruitment Pitch */}
-              <div className="bg-[#002045] rounded-xl p-6 text-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700" />
-                <h3 className="text-base font-black mb-3 relative z-10" style={{ fontFamily: 'var(--font-headline)' }}>
+              <div className="bg-[#002045] rounded-[2rem] p-8 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-all duration-700" />
+                <h3 className="text-xl font-black mb-4 relative z-10" style={{ fontFamily: 'var(--font-headline)' }}>
                   {t.contact.joinNetwork}
                 </h3>
-                <p className="text-[#86a0cd] text-xs font-medium mb-4 leading-relaxed relative z-10">
+                <p className="text-[#86a0cd] text-sm font-medium mb-8 leading-relaxed relative z-10">
                   {t.contact.joinNetworkDesc}
                 </p>
                 <Link 

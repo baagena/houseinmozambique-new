@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { createProperty, uploadSingleImage } from '@/actions/properties';
+import { createProperty } from '@/actions/properties';
 
 const planAmounts: Record<string, number> = {
   standard: 1500,
@@ -41,7 +41,7 @@ function PostPropertyContent() {
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [contactMethods, setContactMethods] = useState<string[]>(['dashboard']);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [listingType, setListingType] = useState('Buy');
   const [propertyType, setPropertyType] = useState('House');
   const [title, setTitle] = useState('');
@@ -72,10 +72,10 @@ function PostPropertyContent() {
       { label: t.postProperty.locationCityLabel, value: city || t.postProperty.targetNotSet },
       { label: t.postProperty.neighborhoodLabel, value: neighborhood || t.postProperty.targetNotSet },
       { label: t.postProperty.valuationLabel, value: price ? `$${Number(price).toLocaleString()}` : t.postProperty.valuationMissing },
-      { label: t.postProperty.photographyLabel, value: `${photoFiles.length} uploaded` },
+      { label: t.postProperty.photographyLabel, value: `${photos.length} uploaded` },
       { label: 'Agent contact', value: contactMethods.map((method) => contactOptions.find((option) => option.id === method)?.label).filter(Boolean).join(', ') },
     ];
-  }, [city, contactMethods, listingType, neighborhood, photoFiles.length, price, propertyType, t]);
+  }, [city, contactMethods, listingType, neighborhood, photos.length, price, propertyType, t]);
 
   const priceUnit = listingType === 'Rent' ? 'monthly' : listingType === 'Short Stay' ? 'nightly' : 'sale';
 
@@ -145,53 +145,30 @@ function PostPropertyContent() {
   };
 
   const handlePaymentSuccess = async () => {
-    setFormError('');
-    try {
-      // Upload each photo file to Cloudinary
-      const imageUrls: string[] = [];
-      for (const file of photoFiles) {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+    const result = await createProperty(
+      {
+        title: title.trim(),
+        description: buildDescription(),
+        city: city.trim(),
+        neighborhood: neighborhood.trim() || null,
+        address: address.trim() || null,
+        price,
+        priceUnit,
+        propertyType,
+        listingType,
+        bedrooms,
+        bathrooms,
+        area,
+        amenities: selectedAmenities,
+      },
+      []
+    );
 
-        const uploadResult = await uploadSingleImage(base64);
-        if (uploadResult.success && uploadResult.url) {
-          imageUrls.push(uploadResult.url);
-        } else {
-          throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
-        }
-      }
-
-      const result = await createProperty(
-        {
-          title: title.trim(),
-          description: buildDescription(),
-          city: city.trim(),
-          neighborhood: neighborhood.trim() || null,
-          address: address.trim() || null,
-          price,
-          priceUnit,
-          propertyType,
-          listingType,
-          bedrooms,
-          bathrooms,
-          area,
-          amenities: selectedAmenities,
-        },
-        imageUrls
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
-      }
-
-      setStep('success');
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Failed to process property submission.');
+    if (!result.success) {
+      throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
     }
+
+    setStep('success');
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -208,7 +185,7 @@ function PostPropertyContent() {
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setPhotoFiles((current) => [...current, ...files].slice(0, 12));
+    setPhotos((current) => [...current, ...files.map((file) => file.name)].slice(0, 12));
   };
 
   if (step === 'payment') {
@@ -315,12 +292,12 @@ function PostPropertyContent() {
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {photoFiles.map((photo) => (
-                <div key={photo.name + photo.size} className="flex aspect-[4/3] items-end rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6] p-3">
-                  <p className="truncate text-[10px] font-black uppercase tracking-widest text-[#74777f]">{photo.name}</p>
+              {photos.map((photo) => (
+                <div key={photo} className="flex aspect-[4/3] items-end rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6] p-3">
+                  <p className="truncate text-[10px] font-black uppercase tracking-widest text-[#74777f]">{photo}</p>
                 </div>
               ))}
-              {Array.from({ length: Math.max(1, 4 - photoFiles.length) }).map((_, index) => (
+              {Array.from({ length: Math.max(1, 4 - photos.length) }).map((_, index) => (
                 <div key={index} className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-[#c4c6cf]/50 bg-[#f7f9fb]">
                   <span className="material-symbols-outlined text-[#c4c6cf]">add_photo_alternate</span>
                 </div>

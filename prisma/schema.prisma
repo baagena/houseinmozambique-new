@@ -117,3 +117,22 @@ model BlogPost {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
+
+model Advertisement {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  linkUrl     String?
+  linkText    String?
+  position    String   // "after_featured", "between_cities_1", "between_cities_2", "before_footer", "sidebar_strip"
+  type        String   @default("banner") // "banner", "card_row", "strip"
+  bgColor     String?  @default("#1a3c5e")
+  textColor   String?  @default("#ffffff")
+  accentColor String?  @default("#f4a61d")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

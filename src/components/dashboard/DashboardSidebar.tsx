@@ -31,6 +31,7 @@ const ADMIN_LINKS: SidebarLink[] = [
   { label: 'Blog', href: '/dashboard/admin/blog', icon: 'article' },
   { label: 'All Properties', href: '/dashboard/admin/properties', icon: 'domain' },
   { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'verified' },
+  { label: 'Advertisements', href: '/dashboard/admin/ads', icon: 'campaign' },
   { label: 'System Settings', href: '/dashboard/admin/settings', icon: 'tune' },
 ];
 

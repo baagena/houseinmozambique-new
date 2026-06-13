@@ -5,7 +5,22 @@ import PropertyCard from '@/components/properties/PropertyCard';
 import CategoryCarousel from '@/components/properties/CategoryCarousel';
 import HomeHero from '@/components/home/HomeHero';
 import AgentCarousel from '@/components/home/AgentCarousel';
+import AdBanner from '@/components/ads/AdBanner';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+
+interface Ad {
+  id: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  linkText?: string | null;
+  position: string;
+  type: string;
+  bgColor?: string | null;
+  textColor?: string | null;
+  accentColor?: string | null;
+}
 
 interface HomeClientProps {
   featured: any[];
@@ -19,6 +34,7 @@ interface HomeClientProps {
   rentProps: any[];
   buyProps: any[];
   shortStayProps: any[];
+  ads: Ad[];
 }
 
 export default function HomeClient({
@@ -33,30 +49,46 @@ export default function HomeClient({
   rentProps,
   buyProps,
   shortStayProps,
+  ads,
 }: HomeClientProps) {
   const { t } = useLanguage();
 
   return (
     <>
+      {/* ── Hero ── */}
       <HomeHero />
-      
+
+      {/* ── Top Banner Ad — carousel right below hero ── */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-8 mb-4">
+        <AdBanner ads={ads} position="top_banner" />
+      </div>
+
+      {/* ── Featured Agents ── */}
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <AgentCarousel agents={featuredAgents} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 pb-16">
+      {/* ── Main content blocks ── */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-20">
 
         {/* ── Featured Collection ── */}
-        <CategoryCarousel
-          title={t.home.featuredCollection}
-          badge={t.home.curatedPicks}
-          properties={featured}
-          seeAllUrl="/properties?isFeatured=true"
-          subtitle={t.home.featuredSubtitle}
-        />
+        <div className="mt-16">
+          <CategoryCarousel
+            title={t.home.featuredCollection}
+            badge={t.home.curatedPicks}
+            properties={featured}
+            seeAllUrl="/properties?isFeatured=true"
+            subtitle={t.home.featuredSubtitle}
+          />
+        </div>
+
+        {/* AD: after_featured */}
+        <div className="mt-10 mb-10">
+          <AdBanner ads={ads} position="after_featured" />
+        </div>
 
         {/* ── Explore by Location ── */}
-        <div className="space-y-24">
+        <div className="space-y-16">
           <section className="space-y-16">
             {maputoProps.length > 0 && (
               <CategoryCarousel
@@ -66,6 +98,11 @@ export default function HomeClient({
                 subtitle={t.home.maputoSubtitle}
               />
             )}
+
+            {/* AD: between_cities_1 */}
+            <div className="py-2">
+              <AdBanner ads={ads} position="between_cities_1" />
+            </div>
 
             {beiraProps.length > 0 && (
               <CategoryCarousel
@@ -84,6 +121,11 @@ export default function HomeClient({
                 subtitle={t.home.nampulaSubtitle}
               />
             )}
+
+            {/* AD: between_cities_2 */}
+            <div className="py-2">
+              <AdBanner ads={ads} position="between_cities_2" />
+            </div>
 
             {teteProps.length > 0 && (
               <CategoryCarousel
@@ -106,7 +148,7 @@ export default function HomeClient({
 
           {/* Inhambane Grid */}
           {inhamProps.length > 0 && (
-            <div className="space-y-8 pb-12">
+            <div className="space-y-8 pb-4">
               <Link href="/properties?location=Inhambane" className="flex items-center gap-2 group cursor-pointer w-fit">
                 <h3 className="text-2xl font-bold text-[#191c1e]">
                   {t.home.inhambaneTitle}
@@ -123,11 +165,15 @@ export default function HomeClient({
               </div>
             </div>
           )}
+        </div>
 
+        {/* AD: sidebar_strip — after Inhambane, before Quick Lists */}
+        <div className="mt-12 mb-12">
+          <AdBanner ads={ads} position="sidebar_strip" />
         </div>
 
         {/* ── Quick Lists ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#c4c6cf]/20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-14 border-t border-[#c4c6cf]/20">
           <div className="space-y-6">
             <h3 className="text-2xl font-bold border-l-4 border-[#002045] pl-4">
               {t.nav.rent}
@@ -160,6 +206,11 @@ export default function HomeClient({
               ))}
             </div>
           </div>
+        </div>
+
+        {/* AD: before_footer */}
+        <div className="mt-16 mb-8">
+          <AdBanner ads={ads} position="before_footer" />
         </div>
 
         {/* ── CTA ── */}

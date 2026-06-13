@@ -4,6 +4,7 @@ import {
   getProperties,
   getFeaturedAgents,
 } from '@/lib/data';
+import { prisma } from '@/lib/db';
 import HomeClient from '@/components/home/HomeClient';
 
 export default async function HomePage() {
@@ -15,11 +16,16 @@ export default async function HomePage() {
   const nampulaProps = await getPropertiesByCity('Nampula');
   const teteProps = await getPropertiesByCity('Tete');
   const pembaProps = await getPropertiesByCity('Pemba');
-  
+
   const allProperties = await getProperties();
   const rentProps = allProperties.filter((p) => p.listingType === 'Rent').slice(0, 8);
   const buyProps = allProperties.filter((p) => p.listingType === 'Buy').slice(0, 8);
   const shortStayProps = allProperties.filter((p) => p.listingType === 'Short Stay').slice(0, 8);
+
+  const ads = await prisma.advertisement.findMany({
+    where: { isActive: true },
+    orderBy: [{ position: 'asc' }, { sortOrder: 'asc' }],
+  });
 
   return (
     <HomeClient
@@ -34,6 +40,7 @@ export default async function HomePage() {
       rentProps={rentProps as any}
       buyProps={buyProps as any}
       shortStayProps={shortStayProps as any}
+      ads={ads as any}
     />
   );
 }
