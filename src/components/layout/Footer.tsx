@@ -68,19 +68,7 @@ export default function Footer() {
             <p className="text-[#43474e] mb-8 max-w-sm leading-relaxed text-sm">
               {t.footer.brandDesc}
             </p>
-            {/* <div className="flex gap-4">
-              {(["share", "alternate_email", "public"] as const).map((icon) => (
-                <a
-                  key={icon}
-                  href="#"
-                  className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center text-[#002045] hover:bg-[#002045] hover:text-white transition-all shadow-sm"
-                >
-                  <span className="material-symbols-outlined text-xl">
-                    {icon}
-                  </span>
-                </a>
-              ))}
-            </div> */}
+            {/* Social links moved to "Get in touch" column */}
           </div>
 
           {/* Discover */}
@@ -217,6 +205,57 @@ export default function Footer() {
     </span>
   </li>
 </ul>
+            <div className="mt-6 flex items-center gap-3">
+              <a
+                href="https://www.facebook.com/share/1CQYNNJEAG/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="House in Mozambique on Facebook"
+                className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+              >
+                <img src="/Platform=Facebook,%20Color=Original.svg" alt="Facebook" className="w-5 h-5 object-contain" />
+              </a>
+
+              <a
+                href="https://www.instagram.com/houseinmozambique?igsh=MXZ2eXMwZzBqano3NA%3D%3D&utm_source=qr"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="House in Mozambique on Instagram"
+                className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+              >
+                <img src="/Platform=Instagram,%20Color=Original.svg" alt="Instagram" className="w-5 h-5 object-contain" />
+              </a>
+
+              <a
+                href="https://youtube.com/@houseinmozambique?si=ZS5ltZYL65cRMpmU"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="House in Mozambique on YouTube"
+                className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+              >
+                <img src="/Platform=YouTube,%20Color=Original.svg" alt="YouTube" className="w-5 h-5 object-contain" />
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@house_in_mozambique?_r=1&_t=ZS-96vgKrmit98"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="House in Mozambique on TikTok"
+                className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+              >
+                <img src="/Platform=TikTok,%20Color=Original.svg" alt="TikTok" className="w-5 h-5 object-contain" />
+              </a>
+
+              <a
+                href="https://x.com/ebeb29238037?s=11"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="House in Mozambique on X"
+                className="w-10 h-10 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+              >
+                <img src="/Platform=X%20(Twitter),%20Color=Original.svg" alt="X" className="w-5 h-5 object-contain" />
+              </a>
+            </div>
           </div>
 
           {/* Newsletter */}

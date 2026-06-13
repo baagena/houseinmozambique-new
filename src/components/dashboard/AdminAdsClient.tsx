@@ -38,7 +38,7 @@ type AdForm = {
 };
 
 const POSITIONS = [
-  { value: 'top_banner', label: 'Top Banner (Below Hero)', desc: 'Carousel slot directly below the hero section — 3 ads recommended' },
+  { value: 'top_banner', label: 'Top Banner (Above Hero)', desc: 'Compact sponsored slot above the hero section - 1 to 3 ads recommended' },
   { value: 'after_featured', label: 'After Featured Collection', desc: 'Below the Featured carousel, above city sections' },
   { value: 'between_cities_1', label: 'Between Cities (1st)', desc: 'Between Maputo and Beira sections' },
   { value: 'between_cities_2', label: 'Between Cities (2nd)', desc: 'Between Nampula and Tete sections' },

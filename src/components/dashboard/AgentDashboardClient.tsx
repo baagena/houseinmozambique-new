@@ -5,14 +5,41 @@ import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import StatCard from '@/components/dashboard/StatCard';
 
+interface DashboardProperty {
+  id: string;
+  title: string;
+  location: string;
+  type: string;
+  status: string;
+  price: number;
+  images?: string[] | null;
+}
+
+interface DashboardInquiry {
+  id?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: string | Date;
+}
+
 interface AgentDashboardClientProps {
   agentName: string;
-  myProperties: any[];
-  myInquiries: any[];
+  myProperties: DashboardProperty[];
+  myInquiries: DashboardInquiry[];
 }
 
 export default function AgentDashboardClient({ agentName, myProperties, myInquiries }: AgentDashboardClientProps) {
   const { t } = useLanguage();
+  const publishedListings = myProperties.filter((property) => property.status === 'PUBLISHED').length;
+  const pendingListings = myProperties.filter((property) => property.status !== 'PUBLISHED').length;
+  const portfolioValue = myProperties.reduce((sum, property) => sum + (Number(property.price) || 0), 0);
+  const formattedPortfolioValue = portfolioValue.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  });
 
   return (
     <div className="space-y-12">
@@ -30,25 +57,22 @@ export default function AgentDashboardClient({ agentName, myProperties, myInquir
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title={t.dashboard.stats.activeListings} 
-          value={myProperties.length} 
-          trend={{ value: 8, isUp: true }} 
+          value={publishedListings} 
           icon="home_work" 
         />
         <StatCard 
           title={t.dashboard.stats.totalLeads} 
           value={myInquiries.length} 
-          trend={{ value: 12, isUp: true }} 
           icon="chat_bubble" 
         />
         <StatCard 
-          title={t.dashboard.stats.profileViews} 
-          value="1,280" 
-          trend={{ value: 5, isUp: false }} 
-          icon="visibility" 
+          title="Pending Listings" 
+          value={pendingListings} 
+          icon="pending_actions" 
         />
         <StatCard 
           title={t.dashboard.stats.portfolioValue} 
-          value="$1.1M" 
+          value={formattedPortfolioValue} 
           icon="payments" 
         />
       </div>

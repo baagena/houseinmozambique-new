@@ -203,16 +203,56 @@ export default function ContactPage() {
               {/* Socials */}
               <div className="pt-12 border-t border-[#c4c6cf]/20">
                 <h3 className="text-[10px] font-black text-[#74777f] uppercase tracking-[0.3em] mb-8">{t.contact.followAgents}</h3>
-                <div className="flex gap-4">
-                  {['Instagram', 'LinkedIn', 'Facebook', 'X'].map((social) => (
-                    <Link 
-                      key={social}
-                      href="#"
-                      className="h-12 px-6 rounded-xl border border-[#c4c6cf]/30 flex items-center justify-center font-black text-xs text-[#002045] hover:bg-[#002045] hover:text-white hover:border-[#002045] transition-all"
-                    >
-                      {social}
-                    </Link>
-                  ))}
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://www.facebook.com/share/1CQYNNJEAG/?mibextid=wwXIfr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="House in Mozambique on Facebook"
+                    className="w-12 h-12 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+                  >
+                    <img src="/Platform=Facebook,%20Color=Original.svg" alt="Facebook" className="w-6 h-6 object-contain" />
+                  </a>
+
+                  <a
+                    href="https://www.instagram.com/houseinmozambique?igsh=MXZ2eXMwZzBqano3NA%3D%3D&utm_source=qr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="House in Mozambique on Instagram"
+                    className="w-12 h-12 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+                  >
+                    <img src="/Platform=Instagram,%20Color=Original.svg" alt="Instagram" className="w-6 h-6 object-contain" />
+                  </a>
+
+                  <a
+                    href="https://youtube.com/@houseinmozambique?si=ZS5ltZYL65cRMpmU"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="House in Mozambique on YouTube"
+                    className="w-12 h-12 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+                  >
+                    <img src="/Platform=YouTube,%20Color=Original.svg" alt="YouTube" className="w-6 h-6 object-contain" />
+                  </a>
+
+                  <a
+                    href="https://www.tiktok.com/@house_in_mozambique?_r=1&_t=ZS-96vgKrmit98"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="House in Mozambique on TikTok"
+                    className="w-12 h-12 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+                  >
+                    <img src="/Platform=TikTok,%20Color=Original.svg" alt="TikTok" className="w-6 h-6 object-contain" />
+                  </a>
+
+                  <a
+                    href="https://x.com/ebeb29238037?s=11"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="House in Mozambique on X"
+                    className="w-12 h-12 rounded-full bg-white border border-[#c4c6cf]/20 flex items-center justify-center transition-transform duration-200 transform hover:scale-110"
+                  >
+                    <img src="/Platform=X%20(Twitter),%20Color=Original.svg" alt="X" className="w-6 h-6 object-contain" />
+                  </a>
                 </div>
               </div>
 

@@ -309,7 +309,7 @@ export const translations = {
       headquarters: 'Maputo Headquarters',
       directLine: 'Direct Line',
       generalInquiries: 'General Inquiries',
-      followAgents: 'Follow Our Agents',
+      followAgents: 'Follow us on:',
       joinNetwork: 'Join our agent network?',
       joinNetworkDesc: "We're always looking for talented agents to join Mozambique's agency network.",
       applyHere: 'Apply Here'
@@ -773,7 +773,7 @@ export const translations = {
       headquarters: 'Sede de Maputo',
       directLine: 'Linha Direta',
       generalInquiries: 'Consultas Gerais',
-      followAgents: 'Siga os Nossos Agentes',
+      followAgents: 'Siga-nos em:',
       joinNetwork: 'Juntar-se à nossa rede?',
       joinNetworkDesc: "Estamos sempre à procura de agentes talentosos para se juntarem à rede de agências de Moçambique.",
       applyHere: 'Inscreva-se Aqui'

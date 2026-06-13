@@ -7,11 +7,13 @@ import Image from 'next/image';
 import { logout } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const navLinkKeys = [
+type NavKey = 'home' | 'properties' | 'about' | 'news' | 'contact';
+
+const navLinkKeys: Array<{ href: string; key: NavKey }> = [
   { href: '/', key: 'home' },
   { href: '/properties', key: 'properties' },
-  { href: '/news', key: 'news' },
   { href: '/about', key: 'about' },
+  { href: '/news', key: 'news' },
   { href: '/contact', key: 'contact' },
 ];
 
@@ -22,7 +24,7 @@ function NavbarContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
-  const [isDevMode, setIsDevMode] = useState(false);
+  const [userRole, setUserRole] = useState('AGENT');
   const { lang, setLang, t } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,18 +39,18 @@ function NavbarContent() {
         if (!res.ok) {
           setIsLoggedIn(false);
           setUserName('');
-          setIsDevMode(false);
+          setUserRole('AGENT');
           return;
         }
         const data = await res.json();
         setIsLoggedIn(true);
         setUserName(data.user?.name || '');
-        setIsDevMode(false);
-      } catch (err) {
+        setUserRole(data.user?.role || 'AGENT');
+      } catch {
         if (!mounted) return;
         setIsLoggedIn(false);
         setUserName('');
-        setIsDevMode(false);
+        setUserRole('AGENT');
       }
     })();
     return () => { mounted = false; };
@@ -68,7 +70,7 @@ function NavbarContent() {
   const handleSignOut = async () => {
     await logout();
     setIsLoggedIn(false);
-    setIsDevMode(false);
+    setUserRole('AGENT');
     setDropdownOpen(false);
     router.push('/');
   };
@@ -83,6 +85,7 @@ function NavbarContent() {
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'U';
+  const dashboardHref = userRole === 'ADMIN' ? '/dashboard/admin' : '/dashboard/agent';
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-[12px] shadow-sm border-b border-[#c4c6cf]/10">
@@ -119,7 +122,7 @@ function NavbarContent() {
                       : 'text-slate-600 hover:text-[#002045]'
                   }`}
                 >
-                  {(t.nav as any)[link.key]}
+                  {t.nav[link.key]}
                 </Link>
               );
             })}
@@ -187,43 +190,15 @@ function NavbarContent() {
 
                 {/* Dropdown */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-60 bg-white rounded-2xl shadow-[0_16px_48px_rgba(0,32,69,0.12)] border border-[#eef0f2] overflow-hidden z-50">
-                    {/* User info */}
-                    <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f2f4f6]">
-                      <div className="w-11 h-11 rounded-lg bg-[#002045] border border-[#845326]/20 flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent" />
-                        <span className="text-sm font-bold text-white tracking-[0.1em] [font-family:var(--font-headline)]">
-                          {userInitials}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-black text-[#002045] tracking-tight leading-tight">{userName}</p>
-                          {isDevMode && (
-                            <span className="bg-[#845326]/10 text-[#845326] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-[#74777f] font-medium uppercase tracking-widest">{t.auth.premiumAgent}</p>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
+                  <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-2xl shadow-[0_16px_48px_rgba(0,32,69,0.12)] border border-[#eef0f2] overflow-hidden z-50">
                     <div className="p-2">
                       <Link
-                        href="/dashboard/agent/listings"
+                        href={dashboardHref}
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
                       >
                         <span className="material-symbols-outlined text-lg text-[#845326]">dashboard</span>
-                        {t.auth.myListings}
-                      </Link>
-                      <Link
-                        href="/pricing"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f9fb] transition-colors text-sm font-bold text-[#002045]"
-                      >
-                        <span className="material-symbols-outlined text-lg text-[#845326]">workspace_premium</span>
-                        {t.auth.upgradePlan}
+                        Dashboard
                       </Link>
                     </div>
 
@@ -267,7 +242,7 @@ function NavbarContent() {
               onClick={() => setMobileOpen(false)}
               className="block font-bold text-[#002045] text-base py-2 hover:text-[#845326] transition-colors"
             >
-              {(t.nav as any)[link.key]}
+              {t.nav[link.key]}
             </Link>
           ))}
           <Link
@@ -306,17 +281,14 @@ function NavbarContent() {
           <div className="border-t border-[#f2f4f6] pt-4 mt-2">
             {isLoggedIn ? (
               <>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-[#002045] border border-[#845326]/30 flex items-center justify-center shadow-md">
-                    <span className="text-xs font-bold text-white tracking-[0.2em] [font-family:var(--font-headline)]">
-                      {userInitials}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-[#002045]">{userName}</p>
-                    <p className="text-[10px] text-[#74777f] uppercase tracking-widest">{t.auth.premiumAgent}</p>
-                  </div>
-                </div>
+                <Link
+                  href={dashboardHref}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 font-bold text-[#002045] text-sm py-2"
+                >
+                  <span className="material-symbols-outlined text-lg text-[#845326]">dashboard</span>
+                  Dashboard
+                </Link>
                 <button
                   onClick={() => { handleSignOut(); setMobileOpen(false); }}
                   className="flex items-center gap-2 font-bold text-red-500 text-sm py-2"

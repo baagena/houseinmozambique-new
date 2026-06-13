@@ -11,27 +11,35 @@ export default function HomeHero({ hasTopBanner }: { hasTopBanner?: boolean }) {
   const { t } = useLanguage();
 
   return (
-    <section className={`px-4 md:px-8 relative ${hasTopBanner ? 'mb-12 pt-4' : 'mb-16 pt-24'}`}>
-      <div className={`max-w-7xl mx-auto relative rounded-[3rem] overflow-hidden flex items-center justify-center text-center transition-all ${
-        hasTopBanner ? 'min-h-[420px] md:min-h-[480px]' : 'min-h-[500px] md:min-h-[600px]'
+    <section className={`px-4 md:px-8 relative ${hasTopBanner ? 'mb-12 pt-3' : 'mb-16'}`}>
+      <div className={`max-w-7xl mx-auto relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex items-center justify-center py-12 md:py-16 transition-all ${
+        hasTopBanner ? 'min-h-[460px] md:min-h-[540px]' : 'min-h-[520px] md:min-h-[640px]'
       }`}>
         <div className="absolute inset-0 z-0 scale-105 hover:scale-100 transition-transform duration-1000">
           <Image src={HERO_IMG} alt="Luxury Villa in Mozambique" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#002045]/60 via-[#002045]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00162f]/88 via-[#002045]/54 to-[#00162f]/8" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#00162f]/72 to-transparent" />
         </div>
         
-        <div className={`relative z-10 px-6 max-w-4xl w-full transition-all ${hasTopBanner ? 'pb-14' : 'pb-20'}`}>
-          <span className={`inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black tracking-[0.3em] uppercase animate-fade-in ${
+        <div className={`relative z-10 px-6 max-w-4xl w-full transition-all flex flex-col items-center justify-center text-center ${hasTopBanner ? 'pb-14' : 'pb-20'}`}>
+          {/* <span className={`inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black tracking-[0.3em] uppercase animate-fade-in ${
             hasTopBanner ? 'mb-5' : 'mb-8'
           }`}>
             {t.home.heroBadge}
-          </span>
-          <h1 className={`font-black text-white leading-[0.95] tracking-tighter ${
-            hasTopBanner ? 'text-4xl md:text-6xl mb-6' : 'text-5xl md:text-8xl mb-8'
+          </span> */}
+          <span
+    className={`inline-block ml-auto mr-auto px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-black tracking-[0.25em] uppercase ${
+      hasTopBanner ? 'mb-6' : 'mb-8'
+    }`}
+  >
+    {t.home.heroBadge}
+  </span>
+          <h1 className={`font-black text-white leading-tight tracking-tighter break-words max-w-full ${
+            hasTopBanner ? 'text-4xl md:text-6xl mb-6' : 'text-4xl md:text-7xl mb-6'
           }`} style={{ fontFamily: 'var(--font-headline)' }}>
             {t.home.heroTitle}
           </h1>
-          <p className="text-white/80 text-base md:text-lg font-medium max-w-xl mx-auto leading-relaxed">
+          <p className="text-white/80 text-base md:text-lg font-medium max-w-xl leading-relaxed">
             {t.home.heroSubtitle}
           </p>
         </div>

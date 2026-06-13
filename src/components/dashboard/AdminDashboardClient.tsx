@@ -77,10 +77,10 @@ export default function AdminDashboardClient({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title={t.dashboard.stats.totalProperties} value={stats.propertyCount} trend={{ value: 14, isUp: true }} icon="domain" />
-        <StatCard title={t.dashboard.stats.activeAgents} value={stats.agentCount} trend={{ value: 3, isUp: true }} icon="group" />
+        <StatCard title={t.dashboard.stats.totalProperties} value={stats.propertyCount} icon="domain" />
+        <StatCard title={t.dashboard.stats.activeAgents} value={stats.agentCount} icon="group" />
+        <StatCard title="Total Inquiries" value={stats.totalInquiries || 0} icon="forum" />
         <StatCard title="Pending Payments" value={stats.pendingPayments || 0} icon="payments" />
-        <StatCard title="Newsletter Subscribers" value={stats.newsletterCount || 0} icon="mark_email_read" />
       </div>
 
       <div>

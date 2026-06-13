@@ -21,6 +21,7 @@ interface AdBannerProps {
   position: string;
   /** override the auto-layout; useful for sidebar etc. */
   forceLayout?: 'single' | 'row' | 'carousel';
+  compact?: boolean;
 }
 
 function trackClick(id: string) {
@@ -35,22 +36,27 @@ function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
   const accent = ad.accentColor || '#f4a61d';
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden" style={{ background: bg }}>
-      <div className={`flex flex-col md:flex-row items-center justify-between gap-6 h-full ${compact ? 'px-6 py-5' : 'px-8 py-7'}`}>
+    <div
+      className={`w-full h-full overflow-hidden shadow-sm ${
+        compact ? 'rounded-2xl border border-white/70 ring-1 ring-[#002045]/5' : 'rounded-2xl'
+      }`}
+      style={{ background: bg }}
+    >
+      <div className={`flex items-center justify-between h-full ${compact ? 'gap-4 px-4 py-3 md:px-5' : 'flex-col md:flex-row gap-6 px-8 py-7'}`}>
         {ad.imageUrl && (
-          <div className="hidden md:block w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+          <div className={`${compact ? 'hidden lg:block w-12 h-12' : 'hidden md:block w-16 h-16'} rounded-xl overflow-hidden flex-shrink-0`}>
             <img src={ad.imageUrl} alt="" className="w-full h-full object-cover" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60" style={{ color: text }}>
+          <p className={`${compact ? 'text-[9px]' : 'text-[10px]'} font-bold uppercase tracking-widest mb-1 opacity-65`} style={{ color: text }}>
             Sponsored
           </p>
-          <p className={`font-extrabold leading-tight ${compact ? 'text-lg' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
+          <p className={`font-extrabold leading-tight truncate ${compact ? 'text-sm md:text-base' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
             {ad.title}
           </p>
           {ad.description && (
-            <p className="text-sm mt-1 opacity-75" style={{ color: text }}>
+            <p className={`${compact ? 'hidden lg:block text-xs max-w-2xl truncate' : 'text-sm'} mt-1 opacity-75`} style={{ color: text }}>
               {ad.description}
             </p>
           )}
@@ -61,7 +67,7 @@ function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackClick(ad.id)}
-            className="flex-shrink-0 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 hover:scale-105 active:scale-95"
+            className={`${compact ? 'px-3 py-2 text-[11px] md:px-4' : 'px-5 py-2.5 text-sm'} flex-shrink-0 rounded-xl font-bold transition-all hover:opacity-90 hover:scale-105 active:scale-95`}
             style={{ background: accent, color: '#1a1a1a' }}
           >
             {ad.linkText || 'Learn More →'}
@@ -142,7 +148,7 @@ function AdCard({ ad, compact }: { ad: Ad; compact?: boolean }) {
 }
 
 /* ─────────────────────────────────── Carousel ─── */
-function AdCarousel({ ads }: { ads: Ad[] }) {
+function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
   const [current, setCurrent] = useState(0);
   const [isMobile, setIsMobile] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -156,7 +162,7 @@ function AdCarousel({ ads }: { ads: Ad[] }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const maxIndex = isMobile ? ads.length - 1 : Math.max(0, ads.length - 2);
+  const maxIndex = compact || isMobile ? ads.length - 1 : Math.max(0, ads.length - 2);
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -177,29 +183,30 @@ function AdCarousel({ ads }: { ads: Ad[] }) {
   };
 
   const showArrows = ads.length > (isMobile ? 1 : 2);
+  const canNavigate = compact ? ads.length > 1 : showArrows;
 
   return (
-    <div className={`relative w-full ${showArrows ? 'px-10 md:px-12' : ''}`}>
+    <div className={`relative w-full ${canNavigate ? compact ? '' : 'px-10 md:px-12' : ''}`}>
       {/* Slide track */}
       <div className="overflow-hidden rounded-2xl">
         <div
           className="flex -mx-2 transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${current * (isMobile ? 100 : 50)}%)` }}
+          style={{ transform: `translateX(-${current * (compact || isMobile ? 100 : 50)}%)` }}
         >
           {ads.map((ad) => (
-            <div key={ad.id} className="w-full md:w-1/2 flex-shrink-0 px-2">
-              <AdCard ad={ad} compact />
+            <div key={ad.id} className={`w-full ${compact ? '' : 'md:w-1/2'} flex-shrink-0 px-2`}>
+              <AdCard ad={ad} compact={compact ?? true} />
             </div>
           ))}
         </div>
       </div>
 
       {/* Prev / Next arrows */}
-      {showArrows && (
+      {/* {canNavigate && (
         <>
           <button
             onClick={() => goTo(current === 0 ? maxIndex : current - 1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
+            className={`${compact ? 'left-2 bg-white/90' : 'left-0 bg-white'} absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]`}
             aria-label="Previous"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -208,7 +215,7 @@ function AdCarousel({ ads }: { ads: Ad[] }) {
           </button>
           <button
             onClick={() => goTo(current >= maxIndex ? 0 : current + 1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
+            className={`${compact ? 'right-2 bg-white/90' : 'right-0 bg-white'} absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]`}
             aria-label="Next"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -216,13 +223,13 @@ function AdCarousel({ ads }: { ads: Ad[] }) {
             </svg>
           </button>
         </>
-      )}
+      )} */}
     </div>
   );
 }
 
 /* ─────────────────────────────────── Main export ─── */
-export default function AdBanner({ ads, position, forceLayout }: AdBannerProps) {
+export default function AdBanner({ ads, position, forceLayout, compact }: AdBannerProps) {
   const positionAds = ads.filter((a) => a.position === position);
   if (positionAds.length === 0) return null;
 
@@ -232,19 +239,19 @@ export default function AdBanner({ ads, position, forceLayout }: AdBannerProps) 
   return (
     <div>
       {layout === 'single' && (
-        <AdCard ad={positionAds[0]} />
+        <AdCard ad={positionAds[0]} compact={compact} />
       )}
 
       {layout === 'row' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {positionAds.map((ad) => (
-            <AdCard key={ad.id} ad={ad} compact />
+            <AdCard key={ad.id} ad={ad} compact={compact ?? true} />
           ))}
         </div>
       )}
 
       {layout === 'carousel' && (
-        <AdCarousel ads={positionAds} />
+        <AdCarousel ads={positionAds} compact={compact} />
       )}
     </div>
   );

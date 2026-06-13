@@ -52,17 +52,24 @@ export default function HomeClient({
   ads,
 }: HomeClientProps) {
   const { t } = useLanguage();
+  const hasTopBanner = ads.some((ad) => ad.position === 'top_banner');
 
   return (
     <>
       {/* ── Hero ── */}
-      <HomeHero />
+      {hasTopBanner && (
+        <div className="relative px-4 pt-24 md:px-8 md:pt-28">
+          <div className="max-w-7xl mx-auto">
+            <div className="rounded-[1.25rem] bg-[#f7f9fb]/90 p-1.5 shadow-[0_12px_40px_rgba(0,32,69,0.06)] ring-1 ring-[#002045]/5">
+              <AdBanner ads={ads} position="top_banner" compact />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <HomeHero hasTopBanner={hasTopBanner} />
 
       {/* ── Top Banner Ad — carousel right below hero ── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-8 mb-4">
-        <AdBanner ads={ads} position="top_banner" />
-      </div>
-
       {/* ── Featured Agents ── */}
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <AgentCarousel agents={featuredAgents} />
