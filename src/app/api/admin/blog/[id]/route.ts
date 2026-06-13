@@ -90,7 +90,7 @@ export async function PATCH(request: Request, { params }: Params) {
         content,
         coverImage: body.coverImage ? String(body.coverImage).trim() : null,
         category: body.category ? String(body.category).trim() : 'Market Insight',
-        tags: Array.isArray(body.tags) ? body.tags.map(String).map((tag) => tag.trim()).filter(Boolean) : [],
+        tags: Array.isArray(body.tags) ? body.tags.map((tag: unknown) => String(tag).trim()).filter(Boolean) : [],
         status,
         isFeatured: Boolean(body.isFeatured),
         readTime: estimateReadTime(content),

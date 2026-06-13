@@ -74,7 +74,7 @@ async function main() {
         isPremium: (property as any).isPremium || false,
         isGuestFavorite: (property as any).isGuestFavorite || false,
         status: (property as any).status || 'PUBLISHED',
-        badge: property.badge,
+        badge: (property as any).badge || null,
         amenities: property.amenities,
         images: property.images,
         tags: (property as any).tags || [],
