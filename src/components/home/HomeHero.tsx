@@ -11,7 +11,7 @@ export default function HomeHero({ hasTopBanner }: { hasTopBanner?: boolean }) {
   const { t } = useLanguage();
 
   return (
-    <section className={`px-4 md:px-8 relative ${hasTopBanner ? 'mb-12 pt-3' : 'mb-16'}`}>
+    <section className={`px-4 md:px-8 relative ${hasTopBanner ? 'mb-12 pt-3' : 'mb-16 pt-20 md:pt-28'}`}>
       <div className={`max-w-7xl mx-auto relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex items-center justify-center py-12 md:py-16 transition-all ${
         hasTopBanner ? 'min-h-[460px] md:min-h-[540px]' : 'min-h-[520px] md:min-h-[640px]'
       }`}>

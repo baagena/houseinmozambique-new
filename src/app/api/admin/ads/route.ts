@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { cookies } from 'next/headers';
 
@@ -37,5 +38,6 @@ export async function POST(req: NextRequest) {
       sortOrder: body.sortOrder ?? 0,
     },
   });
+  revalidatePath('/');
   return NextResponse.json(ad);
 }

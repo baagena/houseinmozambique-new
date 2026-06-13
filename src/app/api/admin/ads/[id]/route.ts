@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { cookies } from 'next/headers';
 
@@ -32,6 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       sortOrder: body.sortOrder ?? 0,
     },
   });
+  revalidatePath('/');
   return NextResponse.json(ad);
 }
 
@@ -40,5 +42,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   await prisma.advertisement.delete({ where: { id } });
+  revalidatePath('/');
   return NextResponse.json({ success: true });
 }
