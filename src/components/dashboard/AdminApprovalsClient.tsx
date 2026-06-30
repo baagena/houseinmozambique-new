@@ -208,35 +208,33 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
   }
 
   return (
-    <div className="space-y-12">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-white p-10 rounded-[2rem] border border-[#f2f4f6] shadow-sm">
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div className="max-w-xl">
-          <h1 className="text-3xl font-black text-[#002045] tracking-tighter mb-3" style={{ fontFamily: 'var(--font-headline)' }}>
-            Quality Assurance Queue
-          </h1>
-          <p className="text-[#74777f] font-medium leading-relaxed">
+          <h1 className="text-xl font-semibold text-[#002045] tracking-tight">Approvals queue</h1>
+          <p className="mt-1 text-sm text-[#74777f]">
             Review listings, verify payment references, and edit submissions before publishing.
           </p>
         </div>
 
-        <div className="flex bg-[#f7f9fb] p-1.5 rounded-2xl shrink-0 overflow-x-auto custom-scrollbar">
+        <div className="flex bg-[#f1f3f5] p-1 rounded-lg shrink-0 overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab('properties')}
-            className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-3 flex items-center whitespace-nowrap ${activeTab === 'properties' ? 'bg-[#002045] text-white shadow-xl shadow-[#002045]/10' : 'text-[#74777f] hover:text-[#002045]'}`}
+            className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors gap-2 flex items-center whitespace-nowrap ${activeTab === 'properties' ? 'bg-white text-[#002045] shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
           >
-            <span className="material-symbols-outlined text-lg">domain</span>
-            New Listings
-            <span className={`ml-1 px-2 py-0.5 rounded-full text-[8px] font-black ${activeTab === 'properties' ? 'bg-white/20 text-white' : 'bg-[#845326]/10 text-[#845326]'}`}>
+            <span className="material-symbols-outlined text-[18px]">domain</span>
+            New listings
+            <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${activeTab === 'properties' ? 'bg-[#f1f3f5] text-[#5b616b]' : 'bg-white text-[#9aa0a8]'}`}>
               {properties.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('agents')}
-            className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-3 flex items-center whitespace-nowrap ${activeTab === 'agents' ? 'bg-[#002045] text-white shadow-xl shadow-[#002045]/10' : 'text-[#74777f] hover:text-[#002045]'}`}
+            className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors gap-2 flex items-center whitespace-nowrap ${activeTab === 'agents' ? 'bg-white text-[#002045] shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
           >
-            <span className="material-symbols-outlined text-lg">person_check</span>
-            New Agents
-            <span className={`ml-1 px-2 py-0.5 rounded-full text-[8px] font-black ${activeTab === 'agents' ? 'bg-white/20 text-white' : 'bg-[#845326]/10 text-[#845326]'}`}>
+            <span className="material-symbols-outlined text-[18px]">person_check</span>
+            New agents
+            <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${activeTab === 'agents' ? 'bg-[#f1f3f5] text-[#5b616b]' : 'bg-white text-[#9aa0a8]'}`}>
               {newAgents.length}
             </span>
           </button>
@@ -244,11 +242,11 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
       </div>
 
       {activeTab === 'properties' ? (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-3">
           {properties.length === 0 ? (
-            <div className="py-20 text-center bg-white rounded-[2rem] border border-[#f2f4f6]">
-              <span className="material-symbols-outlined text-6xl text-[#f2f4f6] mb-4">check_circle</span>
-              <p className="text-[#c4c6cf] font-black text-[10px] uppercase tracking-widest">No pending listings. All clear.</p>
+            <div className="py-16 text-center bg-white rounded-xl border border-[#eceef1]">
+              <span className="material-symbols-outlined text-5xl text-[#e3e6ea] mb-2">check_circle</span>
+              <p className="text-sm text-[#9aa0a8]">No pending listings. All clear.</p>
             </div>
           ) : properties.map((listing) => {
             const latestPayment = listing.payments[0];
@@ -257,43 +255,43 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
             return (
               <div
                 key={listing.id}
-                className="bg-white p-8 rounded-[2rem] border border-[#f2f4f6] flex flex-col md:flex-row items-center gap-8 group hover:shadow-2xl hover:shadow-[#002045]/5 transition-all"
+                className="bg-white p-4 rounded-xl border border-[#eceef1] flex flex-col md:flex-row md:items-center gap-4 transition-colors hover:border-[#dde0e4]"
               >
-                <div className="w-full md:w-32 h-32 rounded-2xl bg-[#f7f9fb] shrink-0 border border-[#f2f4f6] overflow-hidden relative">
+                <div className="w-full md:w-24 h-24 rounded-lg bg-[#f5f6f8] shrink-0 border border-[#eceef1] overflow-hidden relative">
                   {listing.images[0] ? (
                     <Image src={listing.images[0]} alt={listing.title} fill className="object-cover" />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                      <span className="material-symbols-outlined text-4xl">image</span>
+                    <div className="absolute inset-0 flex items-center justify-center text-[#c4c6cf]">
+                      <span className="material-symbols-outlined text-3xl">image</span>
                     </div>
                   )}
                 </div>
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-[#fef9f2] text-[#845326] text-[8px] font-black uppercase tracking-widest">Pending Review</span>
-                    <span className="text-[9px] font-bold text-[#c4c6cf] uppercase tracking-widest">{timeAgo(listing.createdAt)}</span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[11px] font-medium">Pending review</span>
+                    <span className="text-[12px] text-[#9aa0a8]">{timeAgo(listing.createdAt)}</span>
                   </div>
-                  <h4 className="text-xl font-black text-[#002045] tracking-tight">{listing.title}</h4>
-                  <p className="text-xs font-bold text-[#74777f] uppercase tracking-wide">
-                    {listing.city} / Submitted by <span className="text-[#002045]">{listing.host.name}</span>
+                  <h4 className="text-[15px] font-semibold text-[#002045] tracking-tight">{listing.title}</h4>
+                  <p className="text-[13px] text-[#74777f]">
+                    {listing.city} · Submitted by <span className="text-[#002045]">{listing.host.name}</span>
                   </p>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <span className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest ${hasCompletedPayment ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${hasCompletedPayment ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
                       {hasCompletedPayment ? 'Payment verified' : 'Payment not verified'}
                     </span>
                     {latestPayment ? (
-                      <span className="rounded-full bg-[#f7f9fb] px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[#74777f]">
+                      <span className="rounded-md bg-[#f1f3f5] px-1.5 py-0.5 text-[11px] font-medium text-[#5b616b]">
                         Ref: {latestPayment.transactionId || latestPayment.orderRef}
                       </span>
                     ) : (
-                      <span className="rounded-full bg-red-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-red-600">
+                      <span className="rounded-md bg-red-50 px-1.5 py-0.5 text-[11px] font-medium text-red-600">
                         No payment record
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-left shrink-0 space-y-4">
-                  <p className="text-xl font-black text-[#002045] mb-4">{formatPrice(listing.price, listing.priceUnit)}</p>
+                <div className="text-left md:text-right shrink-0 space-y-2.5">
+                  <p className="text-[15px] font-semibold text-[#002045]">{formatPrice(listing.price, listing.priceUnit)}</p>
                   <AdminPropertyActions
                     propertyId={listing.id}
                     currentStatus="PENDING"
@@ -306,27 +304,27 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-3">
           {newAgents.length === 0 ? (
-            <div className="py-20 text-center bg-white rounded-[2rem] border border-[#f2f4f6]">
-              <span className="material-symbols-outlined text-6xl text-[#f2f4f6] mb-4">group</span>
-              <p className="text-[#c4c6cf] font-black text-[10px] uppercase tracking-widest">No new agent registrations this month.</p>
+            <div className="py-16 text-center bg-white rounded-xl border border-[#eceef1]">
+              <span className="material-symbols-outlined text-5xl text-[#e3e6ea] mb-2">group</span>
+              <p className="text-sm text-[#9aa0a8]">No new agent registrations this month.</p>
             </div>
           ) : newAgents.map((agent) => (
-            <div key={agent.id} className="bg-white p-8 rounded-[2rem] border border-[#f2f4f6] flex flex-col md:flex-row items-center gap-10">
-              <div className="w-20 h-20 rounded-2xl bg-[#002045] shrink-0 flex items-center justify-center text-[#fab983] font-black text-xl overflow-hidden relative">
+            <div key={agent.id} className="bg-white p-4 rounded-xl border border-[#eceef1] flex flex-col md:flex-row md:items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-[#002045] shrink-0 flex items-center justify-center text-[#fab983] font-semibold text-base overflow-hidden relative">
                 {agent.avatar ? <Image src={agent.avatar} alt={agent.name} fill className="object-cover" /> : <span>{agent.initials}</span>}
               </div>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-[#f7f9fb] text-[#002045] text-[8px] font-black uppercase tracking-widest">New Registration</span>
-                  <span className="text-[9px] font-bold text-[#c4c6cf] uppercase tracking-widest">{timeAgo(agent.createdAt)}</span>
+                  <span className="px-1.5 py-0.5 rounded-md bg-[#f1f3f5] text-[#5b616b] text-[11px] font-medium">New registration</span>
+                  <span className="text-[12px] text-[#9aa0a8]">{timeAgo(agent.createdAt)}</span>
                 </div>
-                <h4 className="text-2xl font-black text-[#002045] tracking-tighter">{agent.name}</h4>
-                <p className="text-xs font-bold text-[#74777f]">{agent.location} / {agent.yearsExperience ?? 0} yrs / {agent.specializations.slice(0, 2).join(', ') || 'No specialization'}</p>
+                <h4 className="text-[15px] font-semibold text-[#002045] tracking-tight">{agent.name}</h4>
+                <p className="text-[13px] text-[#74777f]">{agent.location} · {agent.yearsExperience ?? 0} yrs · {agent.specializations.slice(0, 2).join(', ') || 'No specialization'}</p>
               </div>
-              <span className="px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest bg-emerald-50 text-emerald-700 text-center">
-                Active Member
+              <span className="px-2.5 py-1 rounded-md font-medium text-[12px] bg-emerald-50 text-emerald-700 text-center shrink-0">
+                Active member
               </span>
             </div>
           ))}
@@ -334,17 +332,17 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
       )}
 
       {currentProperty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="relative mx-auto w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-[2rem] bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0b1f3a]/30 backdrop-blur-sm">
+          <div className="relative mx-auto w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-xl border border-[#eceef1] bg-white shadow-xl">
             <button
               onClick={() => {
                 setSelectedProperty(null);
                 setEditForm(null);
                 setIsEditing(false);
               }}
-              className="absolute right-4 top-4 z-10 text-[#74777f] hover:text-[#002045] text-xl font-black cursor-pointer"
+              className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045] cursor-pointer"
             >
-              x
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-8">
@@ -411,32 +409,32 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
               </aside>
 
               <section className="space-y-6">
-                <div className="flex justify-end gap-2 pr-10">
+                <div className="flex justify-end gap-2.5 pr-10">
                   <button
                     onClick={() => setIsEditing((value) => !value)}
-                    className="rounded-xl border border-[#002045] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#002045] hover:bg-[#002045] hover:text-white transition-all"
+                    className="rounded-lg border border-[#e3e6ea] px-3.5 py-2 text-[13px] font-medium text-[#002045] hover:bg-[#f5f6f8] transition-colors"
                   >
-                    {isEditing ? 'Cancel Edit' : 'Edit Before Publish'}
+                    {isEditing ? 'Cancel edit' : 'Edit before publish'}
                   </button>
                   {isEditing && (
                     <button
                       onClick={savePropertyEdits}
                       disabled={isSaving}
-                      className="rounded-xl bg-[#845326] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white disabled:opacity-50"
+                      className="rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white hover:bg-[#0a2f5c] disabled:opacity-50"
                     >
-                      {isSaving ? 'Saving...' : 'Save Changes'}
+                      {isSaving ? 'Saving…' : 'Save changes'}
                     </button>
                   )}
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#845326] mb-2">Listing Details</p>
+                  <p className="text-[12px] font-medium text-[#9aa0a8] mb-1.5">Listing details</p>
                   {isEditing ? (
-                    <input value={currentProperty.title} onChange={(event) => updateEdit('title', event.target.value)} className="w-full rounded-xl border border-[#f2f4f6] px-4 py-3 text-2xl font-black text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10" />
+                    <input value={currentProperty.title} onChange={(event) => updateEdit('title', event.target.value)} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-lg font-semibold text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
                   ) : (
-                    <h2 className="text-3xl font-black text-[#002045] tracking-tight">{currentProperty.title}</h2>
+                    <h2 className="text-xl font-semibold text-[#002045] tracking-tight">{currentProperty.title}</h2>
                   )}
-                  <p className="text-sm text-[#74777f] mt-2">{currentProperty.city}{currentProperty.neighborhood ? ` / ${currentProperty.neighborhood}` : ''}</p>
+                  <p className="text-[13px] text-[#74777f] mt-1.5">{currentProperty.city}{currentProperty.neighborhood ? ` · ${currentProperty.neighborhood}` : ''}</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -532,17 +530,17 @@ function DetailField({
   type?: 'text' | 'number';
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
-      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">{label}</p>
+    <div className="rounded-lg border border-[#eceef1] p-3 bg-[#fafbfc]">
+      <p className="text-[12px] font-medium text-[#9aa0a8]">{label}</p>
       {editing ? (
         <input
           type={type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="mt-2 w-full rounded-lg border border-[#f2f4f6] px-3 py-2 font-black text-[#002045] outline-none"
+          className="mt-1.5 w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
         />
       ) : (
-        <p className="text-lg font-black text-[#002045]">{display}</p>
+        <p className="text-[15px] font-semibold text-[#002045]">{display}</p>
       )}
     </div>
   );

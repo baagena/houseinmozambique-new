@@ -70,28 +70,25 @@ export default function NotificationsClient() {
   const unreadCount = visibleNotifications.filter((item) => item.unread).length;
 
   return (
-    <section className="space-y-8">
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+    <section className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-[#845326]">
-            {t.dashboard.notifications.title}
-          </p>
-          <h1 className="text-4xl font-extrabold tracking-tighter text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+          <h1 className="text-xl font-semibold tracking-tight text-[#002045]">
             {t.dashboard.notifications.allNotifications}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-[#43474e]/70">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#74777f]">
             {t.dashboard.notifications.desc}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setShowUnreadOnly((current) => !current)}
-            className={`rounded-xl px-5 py-3 text-xs font-black uppercase tracking-widest transition-all ${
+            className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors ${
               showUnreadOnly
-                ? 'bg-[#002045] text-white shadow-lg shadow-[#002045]/10'
-                : 'border border-[#c4c6cf]/30 bg-white text-[#002045] hover:bg-[#f2f4f6]'
+                ? 'bg-[#002045] text-white'
+                : 'border border-[#e3e6ea] bg-white text-[#002045] hover:bg-[#f5f6f8]'
             }`}
           >
             {t.dashboard.notifications.unread}
@@ -99,39 +96,39 @@ export default function NotificationsClient() {
           <button
             type="button"
             onClick={() => setReadIds(notifications.map((item) => item.id))}
-            className="rounded-xl bg-[#febc85] px-5 py-3 text-xs font-black uppercase tracking-widest text-[#002045] transition-all hover:bg-[#f4a96c]"
+            className="rounded-lg border border-[#e3e6ea] bg-white px-3.5 py-2 text-[13px] font-medium text-[#5b616b] transition-colors hover:bg-[#f5f6f8]"
           >
             {t.dashboard.notifications.markAllAsRead}
           </button>
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-2.5">
         {visibleNotifications.map((item) => (
           <article
             key={item.id}
-            className="flex gap-4 rounded-2xl border border-[#c4c6cf]/20 bg-white p-5 shadow-sm"
+            className="flex items-start gap-3.5 rounded-xl border border-[#eceef1] bg-white p-4"
           >
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${item.unread ? 'bg-[#002045] text-[#febc85]' : 'bg-[#f2f4f6] text-[#74777f]'}`}>
-              <span className="material-symbols-outlined">{iconByKind[item.kind]}</span>
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.unread ? 'bg-[#002045] text-[#fab983]' : 'bg-[#f5f6f8] text-[#9aa0a8]'}`}>
+              <span className="material-symbols-outlined text-[20px]">{iconByKind[item.kind]}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-sm font-black text-[#002045]">{item.title}</h2>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#74777f]">{item.time}</span>
+              <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-[14px] font-medium text-[#002045]">{item.title}</h2>
+                <span className="text-[12px] font-medium text-[#9aa0a8]">{item.time}</span>
               </div>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-[#43474e]/70">{item.message}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#74777f]">{item.message}</p>
             </div>
-            {item.unread && <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />}
+            {item.unread && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />}
           </article>
         ))}
       </div>
 
       {visibleNotifications.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-[#c4c6cf]/40 bg-white py-16 text-center">
-          <span className="material-symbols-outlined text-5xl text-[#c4c6cf]">notifications_off</span>
-          <h2 className="mt-4 text-lg font-black text-[#002045]">{t.dashboard.notifications.noNotifications}</h2>
-          <p className="mt-2 text-sm font-medium text-[#74777f]">
+        <div className="rounded-xl border border-dashed border-[#e3e6ea] bg-white py-16 text-center">
+          <span className="material-symbols-outlined text-5xl text-[#d7dbe0]">notifications_off</span>
+          <h2 className="mt-3 text-[15px] font-semibold text-[#002045]">{t.dashboard.notifications.noNotifications}</h2>
+          <p className="mt-1 text-sm text-[#9aa0a8]">
             {unreadCount === 0 ? t.dashboard.notifications.markAllAsRead : t.dashboard.notifications.desc}
           </p>
         </div>

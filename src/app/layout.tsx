@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
+import { getContentOverrides } from '@/lib/content';
 import Script from 'next/script';
 
 const dmsans = DM_Sans({
@@ -25,11 +26,13 @@ export const metadata: Metadata = {
   keywords: 'Mozambique real estate, property Maputo, rent villa Mozambique, buy house Mozambique',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const contentOverrides = await getContentOverrides();
+
   return (
     <html lang="en" className={`${montserrat.variable} ${dmsans.variable}`}>
       <head>
@@ -39,7 +42,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <LanguageProvider>
+        <LanguageProvider overrides={contentOverrides}>
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <FooterWrapper />

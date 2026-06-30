@@ -23,96 +23,101 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-       <div>
-        <h1 className="text-3xl font-black text-[#002045] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-          Platform Settings
-        </h1>
-        <p className="text-[#74777f] font-medium font-serif leading-relaxed italic">
+      <div>
+        <h1 className="text-xl font-semibold text-[#002045] tracking-tight">Platform settings</h1>
+        <p className="mt-1 text-sm text-[#74777f]">
           Configure administrative controls and global notification preferences.
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-12">
+      <form onSubmit={handleSave} className="space-y-5">
         {/* Profile Card */}
-        <div className="bg-white p-10 rounded-[2.5rem] border border-[#f2f4f6] shadow-sm space-y-8">
-           <h3 className="text-xs font-black text-[#74777f] uppercase tracking-widest px-1">Administrative Profile</h3>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#002045] uppercase tracking-widest ml-1">Admin Identity</label>
-                <input 
-                  type="text" 
+        <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+          <div className="px-5 h-12 flex items-center border-b border-[#eceef1]">
+            <h3 className="text-sm font-semibold text-[#002045]">Administrative profile</h3>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Admin identity</label>
+                <input
+                  type="text"
                   value={formData.adminName}
-                  onChange={(e) => setFormData({...formData, adminName: e.target.value})}
-                  className="w-full bg-[#f7f9fb] border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#002045] focus:ring-4 focus:ring-[#002045]/5 transition-all shadow-inner"
+                  onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#002045] uppercase tracking-widest ml-1">Restricted Email</label>
-                <input 
-                  type="email" 
+              <div>
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Restricted email</label>
+                <input
+                  type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full bg-[#f7f9fb] border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#002045] focus:ring-4 focus:ring-[#002045]/5 transition-all shadow-inner"
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                 />
               </div>
-           </div>
+            </div>
 
-           <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002045] uppercase tracking-widest ml-1">Global Site Tagline</label>
-              <input 
-                type="text" 
+            <div>
+              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Global site tagline</label>
+              <input
+                type="text"
                 value={formData.platformTagline}
-                onChange={(e) => setFormData({...formData, platformTagline: e.target.value})}
-                className="w-full bg-[#f7f9fb] border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#002045] focus:ring-4 focus:ring-[#002045]/5 transition-all shadow-inner"
+                onChange={(e) => setFormData({ ...formData, platformTagline: e.target.value })}
+                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
               />
-           </div>
+            </div>
+          </div>
         </div>
 
         {/* Notifications Card */}
-        <div className="bg-white p-10 rounded-[2.5rem] border border-[#f2f4f6] shadow-sm space-y-8">
-           <h3 className="text-xs font-black text-[#74777f] uppercase tracking-widest px-1">Notification Controls</h3>
-           
-           <div className="space-y-1 gap-1">
-              {[
-                { key: 'globalNotifications', label: 'Push Notifications', desc: 'Receive real-time alerts for platform activities.' },
-                { key: 'agentApprovalAlerts', label: 'Agent Verification Alerts', desc: 'Get notified immediately when a new agent applies.' },
-                { key: 'weeklyReport', label: 'Executive Weekly Digest', desc: 'Automated report of platform growth and revenue stats.' },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between py-4 group border-b border-[#f2f4f6] last:border-0 h-20">
-                   <div>
-                      <p className="text-sm font-black text-[#002045] mb-1">{item.label}</p>
-                      <p className="text-[10px] font-bold text-[#c4c6cf] uppercase tracking-widest">{item.desc}</p>
-                   </div>
-                   <button
+        <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+          <div className="px-5 h-12 flex items-center border-b border-[#eceef1]">
+            <h3 className="text-sm font-semibold text-[#002045]">Notification controls</h3>
+          </div>
+          <div className="px-5">
+            {[
+              { key: 'globalNotifications', label: 'Push notifications', desc: 'Receive real-time alerts for platform activities.' },
+              { key: 'agentApprovalAlerts', label: 'Agent verification alerts', desc: 'Get notified immediately when a new agent applies.' },
+              { key: 'weeklyReport', label: 'Executive weekly digest', desc: 'Automated report of platform growth and revenue stats.' },
+            ].map((item) => {
+              const on = formData[item.key as keyof typeof formData] as boolean;
+              return (
+                <div key={item.key} className="flex items-center justify-between gap-4 py-4 border-b border-[#f2f4f6] last:border-0">
+                  <div className="leading-snug">
+                    <p className="text-[13px] font-medium text-[#002045]">{item.label}</p>
+                    <p className="text-[12px] text-[#9aa0a8]">{item.desc}</p>
+                  </div>
+                  <button
                     type="button"
-                    onClick={() => setFormData({...formData, [item.key]: !formData[item.key as keyof typeof formData]})}
-                    className={`w-14 h-8 rounded-full transition-all relative outline-none ring-0 ${formData[item.key as keyof typeof formData] ? 'bg-[#fab983]' : 'bg-[#f2f4f6]'}`}
-                   >
-                     <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-sm transition-all ${formData[item.key as keyof typeof formData] ? 'left-7' : 'left-1'}`} />
-                   </button>
+                    onClick={() => setFormData({ ...formData, [item.key]: !on })}
+                    className={`relative h-5 w-9 shrink-0 rounded-full p-0.5 transition-colors ${on ? 'bg-[#002045]' : 'bg-[#d7dbe0]'}`}
+                  >
+                    <span className={`block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${on ? 'translate-x-4' : ''}`} />
+                  </button>
                 </div>
-              ))}
-           </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="pt-4 flex justify-end">
-           <button 
-              type="submit"
-              disabled={isSaving}
-              className="px-12 bg-[#002045] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-[#002045]/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 transition-all"
-            >
-              {isSaving ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-                  Commit System Changes
-                </>
-              )}
-            </button>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="flex items-center justify-center gap-2 rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c] disabled:opacity-50"
+          >
+            {isSaving ? (
+              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">check</span>
+                Save changes
+              </>
+            )}
+          </button>
         </div>
       </form>
     </div>

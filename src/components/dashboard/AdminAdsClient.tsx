@@ -243,49 +243,48 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb]">
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+    <div className="max-w-5xl space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold text-[#191c1e]">Advertisements</h1>
-            <p className="text-sm text-[#6b7280] mt-1">Manage ads displayed on the home page</p>
+            <h1 className="text-xl font-semibold text-[#002045] tracking-tight">Advertisements</h1>
+            <p className="text-sm text-[#74777f] mt-1">Manage ads displayed on the home page.</p>
           </div>
           <button
             onClick={openNew}
-            className="flex items-center gap-2 bg-[#002045] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#003070] transition-colors"
+            className="flex items-center gap-1.5 bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
           >
-            <span className="material-symbols-outlined text-base">add</span>
-            New Ad
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            New ad
           </button>
         </div>
 
         {/* Stats strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Ads', value: ads.length, icon: 'campaign' },
+            { label: 'Total ads', value: ads.length, icon: 'campaign' },
             { label: 'Active', value: ads.filter((a) => a.isActive).length, icon: 'check_circle', color: 'text-emerald-600' },
             { label: 'Inactive', value: ads.filter((a) => !a.isActive).length, icon: 'pause_circle', color: 'text-amber-500' },
-            { label: 'Total Clicks', value: ads.reduce((s, a) => s + a.clickCount, 0), icon: 'ads_click', color: 'text-blue-600' },
+            { label: 'Total clicks', value: ads.reduce((s, a) => s + a.clickCount, 0), icon: 'ads_click', color: 'text-blue-600' },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl px-5 py-4 border border-[#f0f0f0]">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`material-symbols-outlined text-lg ${s.color ?? 'text-[#002045]'}`}>{s.icon}</span>
-                <span className="text-xs text-[#6b7280] font-medium">{s.label}</span>
+            <div key={s.label} className="bg-white rounded-xl px-5 py-4 border border-[#eceef1]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className={`material-symbols-outlined text-[20px] ${s.color ?? 'text-[#002045]'}`}>{s.icon}</span>
+                <span className="text-[13px] text-[#74777f] font-medium">{s.label}</span>
               </div>
-              <p className="text-2xl font-extrabold text-[#191c1e]">{s.value}</p>
+              <p className="text-2xl font-semibold text-[#002045] tabular-nums">{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Form panel */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-[#e8e8e8] shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0]">
-              <h2 className="font-bold text-[#191c1e]">{editing ? 'Edit Ad' : 'Create New Ad'}</h2>
-              <button onClick={closeForm} className="text-[#6b7280] hover:text-[#191c1e]">
-                <span className="material-symbols-outlined">close</span>
+          <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+            <div className="flex items-center justify-between px-5 h-12 border-b border-[#eceef1]">
+              <h2 className="text-sm font-semibold text-[#002045]">{editing ? 'Edit ad' : 'Create new ad'}</h2>
+              <button onClick={closeForm} className="flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]">
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
@@ -434,17 +433,17 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-2.5 pt-2">
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 bg-[#002045] text-white py-2.5 rounded-xl font-bold text-sm hover:bg-[#003070] transition-colors disabled:opacity-60"
+                    className="flex-1 bg-[#002045] text-white py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors disabled:opacity-60"
                   >
-                    {saving ? 'Saving…' : editing ? 'Update Ad' : 'Create Ad'}
+                    {saving ? 'Saving…' : editing ? 'Update ad' : 'Create ad'}
                   </button>
                   <button
                     onClick={closeForm}
-                    className="px-5 py-2.5 border border-[#e0e0e0] rounded-xl text-sm font-medium text-[#6b7280] hover:bg-[#f9f9f9]"
+                    className="px-4 py-2 border border-[#e3e6ea] rounded-lg text-[13px] font-medium text-[#5b616b] hover:bg-[#f5f6f8]"
                   >
                     Cancel
                   </button>
@@ -453,10 +452,10 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
 
               {/* Right: live preview */}
               <div>
-                <p className="text-xs font-semibold text-[#374151] mb-3 uppercase tracking-wider">Live Preview</p>
+                <p className="text-[13px] font-medium text-[#5b616b] mb-2.5">Live preview</p>
                 <PreviewAd form={form} />
-                <div className="mt-4 p-3 bg-[#f8f9fb] rounded-xl">
-                  <p className="text-xs text-[#6b7280]">
+                <div className="mt-4 p-3 bg-[#fafbfc] rounded-lg border border-[#eceef1]">
+                  <p className="text-xs text-[#74777f]">
                     <span className="font-semibold">Position: </span>
                     {POSITIONS.find((p) => p.value === form.position)?.label}
                     <br />
@@ -473,53 +472,53 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
         {POSITIONS.map((pos) => {
           const group = grouped[pos.value] ?? [];
           return (
-            <div key={pos.value} className="bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0]">
+            <div key={pos.value} className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+              <div className="flex items-center justify-between px-5 h-12 border-b border-[#eceef1]">
                 <div>
-                  <p className="font-bold text-[#191c1e] text-sm">{pos.label}</p>
-                  <p className="text-xs text-[#6b7280]">{pos.desc}</p>
+                  <p className="font-semibold text-[#002045] text-[13px]">{pos.label}</p>
+                  <p className="text-[12px] text-[#9aa0a8]">{pos.desc}</p>
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${group.length > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f0f0f0] text-[#9ca3af]'}`}>
+                <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-medium ${group.length > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f1f3f5] text-[#9aa0a8]'}`}>
                   {group.length} ad{group.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
               {group.length === 0 ? (
-                <div className="px-6 py-8 text-center text-sm text-[#aaa]">
+                <div className="px-5 py-8 text-center text-[13px] text-[#9aa0a8]">
                   No ads for this position.{' '}
                   <button
                     onClick={() => { openNew(); setForm((f) => ({ ...f, position: pos.value })); }}
-                    className="text-[#002045] font-semibold hover:underline"
+                    className="text-[#002045] font-medium hover:underline"
                   >
                     Add one
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-[#f5f5f5]">
+                <div className="divide-y divide-[#f2f4f6]">
                   {group.map((ad) => (
-                    <div key={ad.id} className="px-6 py-4 flex items-center gap-4">
+                    <div key={ad.id} className="px-5 py-3.5 flex items-center gap-3">
                       {/* Type badge */}
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-[#f0f4ff] text-[#3b5bdb] rounded-lg flex-shrink-0">
+                      <span className="text-[11px] font-medium px-1.5 py-0.5 bg-[#f1f3f5] text-[#5b616b] rounded-md shrink-0">
                         {typeLabel(ad.type)}
                       </span>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-[#191c1e] truncate">{ad.title}</p>
-                        {ad.description && <p className="text-xs text-[#6b7280] truncate">{ad.description}</p>}
-                        {ad.linkUrl && <p className="text-[10px] text-[#aaa] truncate">{ad.linkUrl}</p>}
+                        <p className="font-medium text-[13px] text-[#002045] truncate">{ad.title}</p>
+                        {ad.description && <p className="text-[12px] text-[#74777f] truncate">{ad.description}</p>}
+                        {ad.linkUrl && <p className="text-[11px] text-[#b4b9c0] truncate">{ad.linkUrl}</p>}
                       </div>
 
                       {/* Clicks */}
-                      <div className="text-center flex-shrink-0 hidden md:block">
-                        <p className="text-xs font-bold text-[#191c1e]">{ad.clickCount}</p>
-                        <p className="text-[10px] text-[#aaa]">clicks</p>
+                      <div className="text-center shrink-0 hidden md:block">
+                        <p className="text-[13px] font-semibold text-[#002045] tabular-nums">{ad.clickCount}</p>
+                        <p className="text-[11px] text-[#9aa0a8]">clicks</p>
                       </div>
 
                       {/* Colour swatch (banner only) */}
                       {ad.type === 'banner' && ad.bgColor && (
                         <div
-                          className="w-6 h-6 rounded-full border border-white shadow flex-shrink-0 hidden md:block"
+                          className="w-5 h-5 rounded-full border border-[#eceef1] shrink-0 hidden md:block"
                           style={{ background: ad.bgColor }}
                           title={ad.bgColor}
                         />
@@ -528,31 +527,31 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
                       {/* Toggle active */}
                       <button
                         onClick={() => toggleActive(ad)}
-                        className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors flex-shrink-0 ${
+                        className={`text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors shrink-0 ${
                           ad.isActive
                             ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                            : 'bg-[#fef3c7] text-amber-600 hover:bg-[#fde68a]'
+                            : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
                         }`}
                       >
                         {ad.isActive ? 'Active' : 'Inactive'}
                       </button>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-0.5 shrink-0">
                         <button
                           onClick={() => openEdit(ad)}
-                          className="p-2 text-[#6b7280] hover:text-[#002045] hover:bg-[#f0f4ff] rounded-lg transition-colors"
+                          className="p-1.5 text-[#9aa0a8] hover:text-[#002045] hover:bg-[#f5f6f8] rounded-md transition-colors"
                           title="Edit"
                         >
-                          <span className="material-symbols-outlined text-base">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button
                           onClick={() => handleDelete(ad.id)}
                           disabled={deleting === ad.id}
-                          className="p-2 text-[#6b7280] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
+                          className="p-1.5 text-[#9aa0a8] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-40"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-base">delete</span>
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
                     </div>
@@ -564,24 +563,23 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
         })}
 
         {/* Position guide */}
-        <div className="bg-white rounded-2xl border border-[#e8e8e8] p-6">
-          <p className="text-sm font-bold text-[#191c1e] mb-4">Ad Position Guide</p>
-          <div className="space-y-2">
+        <div className="bg-white rounded-xl border border-[#eceef1] p-5">
+          <p className="text-sm font-semibold text-[#002045] mb-3">Ad position guide</p>
+          <div className="space-y-2.5">
             {POSITIONS.map((p, i) => (
-              <div key={p.value} className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#002045] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div key={p.value} className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-[#002045] text-white text-[11px] font-medium flex items-center justify-center shrink-0 mt-0.5 tabular-nums">
                   {i + 1}
                 </span>
-                <div>
-                  <p className="text-sm font-semibold text-[#374151]">{p.label}</p>
-                  <p className="text-xs text-[#6b7280]">{p.desc}</p>
+                <div className="leading-snug">
+                  <p className="text-[13px] font-medium text-[#002045]">{p.label}</p>
+                  <p className="text-[12px] text-[#74777f]">{p.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-      </div>
     </div>
   );
 }

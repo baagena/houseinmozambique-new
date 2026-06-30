@@ -24,13 +24,13 @@ export default async function AdminActivitiesPage() {
   }));
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
+    <div className="max-w-5xl space-y-6">
       <div>
-        <h1 className="text-3xl font-black text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
-          Messages & Newsletter Signups
+        <h1 className="text-xl font-semibold text-[#002045] tracking-tight">
+          Messages &amp; newsletter signups
         </h1>
-        <p className="text-sm text-[#74777f] font-medium mt-1">
-          Monitor contact messages, property leads, and footer Stay Updated subscriptions.
+        <p className="text-sm text-[#74777f] mt-1">
+          Monitor contact messages, property leads, and footer subscriptions.
         </p>
       </div>
 

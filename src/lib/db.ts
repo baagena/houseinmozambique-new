@@ -26,11 +26,27 @@ try {
 
 const adapter = new PrismaPg(pool as pg.Pool);
 
-const globalForPrisma = global as unknown as { prisma?: PrismaClient };
+// Bump this string after every `prisma db push && prisma generate` (i.e. any
+// schema change) to force the dev server to drop its cached client on the next
+// HMR cycle. Without this, an in-flight `next dev` keeps a stale PrismaClient
+// that is missing newly added models and throws "Cannot read properties of
+// undefined" until a full restart.
+const SCHEMA_VERSION = '2026-06-30-sitecontent';
 
-let prisma: PrismaClient;
+type VersionedClient = PrismaClient & { __schemaVersion?: string };
+const globalForPrisma = global as unknown as { prisma?: VersionedClient };
+
+function createClient(): VersionedClient {
+  const client = new PrismaClient({ adapter }) as VersionedClient;
+  client.__schemaVersion = SCHEMA_VERSION;
+  return client;
+}
+
+let prisma: VersionedClient;
 try {
-  prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+  const cached = globalForPrisma.prisma;
+  const isStale = cached && cached.__schemaVersion !== SCHEMA_VERSION;
+  prisma = !cached || isStale ? createClient() : cached;
   if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 } catch (err) {
   console.error('src/lib/db.ts: failed to instantiate PrismaClient', err);

@@ -64,52 +64,51 @@ export default function DashboardLayout({
       
       <main className="flex-1 overflow-y-auto custom-scrollbar relative">
         {/* Top Header */}
-        <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-[#f2f4f6] px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4 bg-[#f7f9fb] px-4 py-2.5 rounded-2xl w-96 group border border-transparent focus-within:border-[#002045]/10 focus-within:bg-white transition-all">
-            <span className="material-symbols-outlined text-[#74777f]">search</span>
-            <input 
-              type="text" 
-              placeholder="Search listings, leads, or agents..." 
-              className="bg-transparent border-none outline-none text-sm font-bold w-full placeholder-[#c4c6cf]"
+        <header className="sticky top-0 z-10 bg-white/85 backdrop-blur-xl border-b border-[#eceef1] px-6 h-14 flex justify-between items-center">
+          <div className="flex items-center gap-2.5 bg-[#f5f6f8] px-3 h-9 rounded-lg w-72 max-w-[40vw] border border-transparent focus-within:border-[#002045]/15 focus-within:bg-white transition-colors">
+            <span className="material-symbols-outlined text-[19px] text-[#9aa0a8]">search</span>
+            <input
+              type="text"
+              placeholder="Search listings, leads, agents…"
+              className="bg-transparent border-none outline-none text-[13px] font-medium w-full text-[#3f4754] placeholder-[#b4b9c0]"
             />
           </div>
-          
-          <div className="flex items-center gap-6">
-            <Link 
+
+          <div className="flex items-center gap-3">
+            <Link
               href="/dashboard/notifications"
-              className="relative p-2 text-[#74777f] hover:text-[#002045] transition-colors group flex items-center justify-center"
+              className="relative p-2 rounded-lg text-[#9aa0a8] hover:text-[#002045] hover:bg-[#f5f6f8] transition-colors flex items-center justify-center"
             >
-              <span className="material-symbols-outlined text-2xl">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+              <span className="material-symbols-outlined text-[21px]">notifications</span>
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full ring-2 ring-white" />
             </Link>
-            <div className="h-8 w-px bg-[#f2f4f6]" />
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-[#002045] leading-none mb-1">{user.name}</p>
-                <p className="text-[9px] font-bold text-[#74777f] uppercase tracking-widest leading-none">{roleLabel}</p>
+            <div className="h-6 w-px bg-[#eceef1]" />
+            <div className="flex items-center gap-2.5">
+              <div className="text-right hidden sm:block leading-tight">
+                <p className="text-[12px] font-semibold text-[#002045]">{user.name}</p>
+                <p className="text-[11px] font-medium text-[#9aa0a8] capitalize">{roleLabel}</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#002045] to-[#1a365d] flex items-center justify-center border border-white/10 shadow-lg">
-                <span className="text-[10px] font-bold text-[#fab983] tracking-widest">{user.initials}</span>
+              <div className="w-8 h-8 rounded-lg bg-[#002045] flex items-center justify-center">
+                <span className="text-[11px] font-semibold text-[#fab983]">{user.initials}</span>
               </div>
-              {/* Logout Button */}
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                title="Sign Out"
-                className="p-2 rounded-xl text-[#74777f] hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
+                title="Sign out"
+                className="p-2 rounded-lg text-[#9aa0a8] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
               >
                 {isLoggingOut ? (
-                  <div className="w-5 h-5 border-2 border-[#74777f]/30 border-t-[#74777f] rounded-full animate-spin" />
+                  <div className="w-[18px] h-[18px] border-2 border-[#9aa0a8]/30 border-t-[#9aa0a8] rounded-full animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-xl">logout</span>
+                  <span className="material-symbols-outlined text-[19px]">logout</span>
                 )}
               </button>
             </div>
           </div>
         </header>
 
-        <div className="p-8 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="w-8 h-8 border-4 border-[#002045]/10 border-t-[#002045] rounded-full animate-spin" /></div>}>
+        <div className="px-6 py-6 lg:px-8 lg:py-8 max-w-[1400px]">
+          <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="w-7 h-7 border-[3px] border-[#002045]/15 border-t-[#002045] rounded-full animate-spin" /></div>}>
             {children}
           </Suspense>
         </div>

@@ -198,74 +198,73 @@ function AuthForm() {
 
           {tab === 'signin' ? (
             /* Sign In Left Side: Existing Branding */
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-1000">
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/10">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{t.auth.accessBadge}</span>
+            <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-700">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[11px] font-medium text-white/90 tracking-wide">{t.auth.accessBadge}</span>
               </div>
 
-              <h2 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
                 {t.auth.signInHeroTitle}
               </h2>
 
-              <p className="text-lg lg:text-xl text-[#86a0cd] font-medium leading-relaxed max-w-md">
+              <p className="text-base lg:text-lg text-[#9fb4d6] leading-relaxed max-w-md">
                 {t.auth.signInHeroDesc}
               </p>
 
-              <footer className="pt-12 border-t border-white/10 flex items-center gap-12 mt-12">
-                <div className="flex -space-x-3">
+              <footer className="pt-8 border-t border-white/10 flex items-center gap-6 mt-8">
+                <div className="flex -space-x-2.5">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-12 h-12 rounded-xl border-2 border-[#002045] bg-[#f2f4f6] flex items-center justify-center overflow-hidden">
+                    <div key={i} className="w-10 h-10 rounded-lg border-2 border-[#002045] bg-[#f2f4f6] flex items-center justify-center overflow-hidden">
                       <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-400" />
                     </div>
                   ))}
                 </div>
-                <div>
-                  <p className="text-white font-black text-sm tracking-tight leading-none mb-1">Agency Network</p>
-                  <p className="text-[10px] text-[#74777f] uppercase tracking-widest">{t.auth.premiumAgent}</p>
-                  <p className="text-[10px] text-[#86a0cd] uppercase tracking-widest font-bold">280+ Certified Partners</p>
+                <div className="leading-tight">
+                  <p className="text-white font-medium text-[13px]">Agency network</p>
+                  <p className="text-[12px] text-[#9fb4d6]">280+ certified partners</p>
                 </div>
               </footer>
             </div>
           ) : (
             /* Sign Up Left Side: Step-by-Step Registration Guide */
-            <div className="space-y-12 animate-in fade-in slide-in-from-left-4 duration-1000">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#845326]/20 backdrop-blur-xl border border-[#845326]/30">
-                  <span className="w-2 h-2 rounded-full bg-[#fab983] animate-pulse" />
-                  <span className="text-[10px] font-black text-[#fab983] uppercase tracking-[0.2em]">{t.auth.registrationBadge}</span>
+            <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#845326]/20 backdrop-blur-xl border border-[#845326]/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fab983]" />
+                  <span className="text-[11px] font-medium text-[#fab983] tracking-wide">{t.auth.registrationBadge}</span>
                 </div>
-                <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-[1.1]" style={{ fontFamily: 'var(--font-headline)' }}>
+                <h2 className="text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-[1.1]" style={{ fontFamily: 'var(--font-headline)' }}>
                    {t.auth.registrationTitle}
                 </h2>
               </div>
 
-              <div className="relative space-y-6">
+              <div className="relative space-y-3">
                 {/* Connecting Line */}
-                <div className="absolute left-6 top-8 bottom-8 w-px bg-white/10" />
+                <div className="absolute left-[22px] top-8 bottom-8 w-px bg-white/10" />
 
                 {REGISTRATION_STEPS.map((s) => {
                   const isActive = step === s.id;
                   const isCompleted = step > s.id;
 
                   return (
-                    <div key={s.id} className={`relative flex gap-8 transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}>
+                    <div key={s.id} className={`relative flex gap-4 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
                       {/* Step Indicator */}
-                      <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-700 border ${isActive ? 'bg-[#845326] text-white border-[#fab983]/30 shadow-[0_0_30px_rgba(132,83,38,0.4)] scale-110' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
+                      <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#845326] text-white border-[#fab983]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
                         {isCompleted ? (
-                          <span className="material-symbols-outlined text-xl">check</span>
+                          <span className="material-symbols-outlined text-[20px]">check</span>
                         ) : (
-                          <span className="material-symbols-outlined text-2xl">{s.icon}</span>
+                          <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
                         )}
                       </div>
 
                       {/* Step Content */}
-                      <div className={`flex-1 p-5 rounded-3xl transition-all duration-700 ${isActive ? 'bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl' : ''}`}>
-                        <h3 className="text-white font-black text-lg tracking-tight mb-1.5 flex justify-between items-center transition-colors">
+                      <div className={`flex-1 px-4 py-3 rounded-xl transition-colors duration-300 ${isActive ? 'bg-white/5 backdrop-blur-xl border border-white/10' : ''}`}>
+                        <h3 className="text-white font-medium text-[15px] tracking-tight mb-0.5 flex justify-between items-center">
                           {s.title}
-                          {isActive && <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#fab983] animate-pulse">Active Phase</span>}
+                          {isActive && <span className="text-[11px] font-medium text-[#fab983]">Current</span>}
                         </h3>
-                        <p className={`text-sm font-medium leading-relaxed transition-colors ${isActive ? 'text-[#86a0cd]' : 'text-[#86a0cd]/60'}`}>
+                        <p className={`text-[13px] leading-relaxed ${isActive ? 'text-[#9fb4d6]' : 'text-[#9fb4d6]/60'}`}>
                           {s.description}
                         </p>
                       </div>
@@ -282,92 +281,92 @@ function AuthForm() {
 
       {/* Right: Modern Multi-step Form */}
       <section className="flex-1 flex flex-col bg-white overflow-y-auto">
-        <header className="flex justify-between items-center px-8 lg:px-12 py-10">
-          <Link href="/" className="md:hidden font-black text-[#002045] text-2xl tracking-tighter [font-family:var(--font-headline)]">
+        <header className="flex justify-between items-center px-8 lg:px-12 py-6">
+          <Link href="/" className="md:hidden font-semibold text-[#002045] text-xl tracking-tight [font-family:var(--font-headline)]">
              HIM.
           </Link>
-          <nav className="flex gap-8 ml-auto items-center">
-            <Link href="/" className="text-xs font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Portal</Link>
-            <Link href="/agents" className="text-xs font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Directory</Link>
+          <nav className="flex gap-6 ml-auto items-center">
+            <Link href="/" className="text-[13px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Home</Link>
+            <Link href="/agents" className="text-[13px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Agents</Link>
           </nav>
         </header>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-24 py-12">
-          <div className="w-full max-w-lg">
-            {/* Minimalist Switcher */}
-            <div className="flex gap-8 mb-16 border-b border-[#f2f4f6]">
+        <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-20 py-10">
+          <div className="w-full max-w-md">
+            {/* Switcher */}
+            <div className="flex gap-6 mb-9 border-b border-[#eceef1]">
               <button
                 onClick={() => { setTab('signin'); setStep(1); }}
-                className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${tab === 'signin' ? 'text-[#002045]' : 'text-[#c4c6cf] hover:text-[#74777f]'}`}
+                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signin' ? 'text-[#002045]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
               >
                 {t.nav.signIn}
                 {tab === 'signin' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
               </button>
               <button
                 onClick={() => setTab('signup')}
-                className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${tab === 'signup' ? 'text-[#002045]' : 'text-[#c4c6cf] hover:text-[#74777f]'}`}
+                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signup' ? 'text-[#002045]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
               >
-                {lang === 'en' ? 'Agent Registration' : 'Registo de Agente'}
+                {lang === 'en' ? 'Agent registration' : 'Registo de Agente'}
                 {tab === 'signup' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
               </button>
             </div>
 
             {/* Step Indicator (signup only) */}
             {tab === 'signup' && (
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-2 mb-8">
                 {[1, 2, 3].map((s) => (
-                  <div 
-                    key={s} 
-                    className={`h-1 flex-1 rounded-full transition-all duration-700 ${s <= step ? 'bg-[#002045]' : 'bg-[#f2f4f6]'}`} 
+                  <div
+                    key={s}
+                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${s <= step ? 'bg-[#002045]' : 'bg-[#eceef1]'}`}
                   />
                 ))}
-                <span className="text-[10px] font-black text-[#002045] ml-4 uppercase tracking-tighter">{lang === 'en' ? 'Step' : 'Passo'} 0{step}</span>
+                <span className="text-[12px] font-medium text-[#9aa0a8] ml-3">{lang === 'en' ? 'Step' : 'Passo'} {step} / 3</span>
               </div>
             )}
 
-            <div className="mb-12">
-              <h2 className="text-4xl font-black text-[#002045] mb-4 tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
+            <div className="mb-7">
+              <h2 className="text-2xl font-semibold text-[#002045] mb-1.5 tracking-tight">
                 {tab === 'signin' ? t.auth.welcomeBtn : step === 1 ? t.auth.getStarted : step === 2 ? t.auth.yourDetails : t.auth.aboutYou}
               </h2>
-              <p className="text-[#43474e] font-medium leading-relaxed">
-                {tab === 'signin' 
+              <p className="text-sm text-[#74777f] leading-relaxed">
+                {tab === 'signin'
                   ? t.auth.loginDesc
                   : step === 1 ? t.auth.signupStep1Desc : step === 2 ? t.auth.signupStep2Desc : t.auth.signupStep3Desc}
               </p>
             </div>
 
             {error && (
-              <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl flex items-center gap-3">
-                <span className="material-symbols-outlined text-lg">error</span>
+              <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-[13px] font-medium rounded-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>
                 {error}
               </div>
             )}
 
-            <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               {tab === 'signin' ? (
                 /* Login Form */
                 <>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.emailLabel}</label>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                       <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.emailLabel}</label>
                        <input
                         type="email"
                         required
-                        className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                         placeholder="agent@houseinmoz.com"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                        <div className="flex justify-between items-center">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.passwordLabel}</label>
-                         <button className="text-[10px] font-black text-[#845326] uppercase tracking-[0.1em] hover:underline">{t.auth.forgotPassword}</button>
+                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.passwordLabel}</label>
+                         <button type="button" className="text-[13px] font-medium text-[#845326] hover:underline">{t.auth.forgotPassword}</button>
                        </div>
                        <input
                         type="password"
                         required
-                        className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                         placeholder="••••••••"
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -376,10 +375,11 @@ function AuthForm() {
                   </div>
                   <button
                     onClick={handleAuth}
-                    className="w-full h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {t.auth.signInBtn}
-                    <span className="material-symbols-outlined text-xl">login</span>
+                    {isLoading ? 'Signing in…' : t.auth.signInBtn}
+                    {!isLoading && <span className="material-symbols-outlined text-[18px]">login</span>}
                   </button>
                 </>
               ) : (
@@ -387,35 +387,35 @@ function AuthForm() {
                 <>
                   {/* Step 1: Credentials */}
                   {step === 1 && (
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.fullNameLabel}</label>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.fullNameLabel}</label>
                          <input
                           type="text"
                           required
-                          className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                           placeholder="e.g. Ricardo Santos"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                         />
                       </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.emailLabel}</label>
+                      <div className="space-y-1.5">
+                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.emailLabel}</label>
                          <input
                           type="email"
                           required
-                          className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                           placeholder="ricardo@houseinmoz.com"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
                       </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.createPassword}</label>
+                      <div className="space-y-1.5">
+                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.createPassword}</label>
                          <input
                           type="password"
                           required
-                          className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                           placeholder="••••••••"
                           value={formData.password}
                           onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -426,34 +426,34 @@ function AuthForm() {
 
                   {/* Step 2: Professional Details */}
                   {step === 2 && (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.profRoleLabel}</label>
-                          <select 
-                            className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold appearance-none"
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.profRoleLabel}</label>
+                          <select
+                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                             value={formData.title}
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                           >
                             {TITLE_KEYS.map(k => <option key={k} value={k}>{(t.auth.titles as any)[k]}</option>)}
                           </select>
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.expLabel}</label>
+                        <div className="space-y-1.5">
+                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expLabel}</label>
                           <input
                             type="number"
-                            className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] tabular-nums outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                             value={formData.yearsExperience}
                             onChange={(e) => setFormData({...formData, yearsExperience: parseInt(e.target.value)})}
                           />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.locationLabel}</label>
+                      <div className="space-y-1.5">
+                        <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.locationLabel}</label>
                         <input
                           type="text"
                           required
-                          className="w-full h-16 px-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-[#002045] font-bold"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                           placeholder="e.g. Maputo City, Polana"
                           value={formData.location}
                           onChange={(e) => setFormData({...formData, location: e.target.value})}
@@ -464,26 +464,26 @@ function AuthForm() {
 
                   {/* Step 3: Narrative */}
                   {step === 3 && (
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.bioLabel}</label>
+                    <div className="space-y-5">
+                      <div className="space-y-1.5">
+                        <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.bioLabel}</label>
                         <textarea
                           rows={4}
-                          className="w-full px-6 py-6 rounded-2xl bg-[#f7f9fb] border-none focus:ring-4 focus:ring-[#002045]/5 text-sm font-medium text-[#43474e] resize-none"
-                          placeholder="Tell us a little about your experience and how you help clients..."
+                          className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#43474e] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 resize-none"
+                          placeholder="Tell us a little about your experience and how you help clients…"
                           value={formData.bio}
                           onChange={(e) => setFormData({...formData, bio: e.target.value})}
                         />
                       </div>
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black text-[#002045] uppercase tracking-[0.2em]">{t.auth.expertiseLabel}</label>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="space-y-2">
+                        <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expertiseLabel}</label>
+                        <div className="flex flex-wrap gap-1.5">
                           {SPECIALIZATION_KEYS.map(k => (
                             <button
                               key={k}
                               type="button"
                               onClick={() => toggleSpecialization(k)}
-                              className={`px-4 py-2 rounded-lg text-[9px] font-black tracking-widest uppercase transition-all ${formData.specializations.includes(k) ? 'bg-[#845326] text-white' : 'bg-[#f7f9fb] text-[#74777f] hover:bg-[#e6e8ea]'}`}
+                              className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${formData.specializations.includes(k) ? 'bg-[#002045] text-white' : 'bg-[#f1f3f5] text-[#5b616b] hover:bg-[#e6e8ea]'}`}
                             >
                               {(t.auth.specializations as any)[k]}
                             </button>
@@ -493,97 +493,95 @@ function AuthForm() {
                     </div>
                   )}
 
-                  <div className="flex gap-4 pt-4">
+                  <div className="flex gap-3 pt-2">
                     {step > 1 && (
                       <button
                         onClick={prevStep}
-                        className="flex-1 h-16 bg-[#f7f9fb] text-[#002045] font-black rounded-2xl hover:bg-[#e6e8ea] transition-all flex items-center justify-center gap-3"
+                        className="flex-1 h-11 border border-[#e3e6ea] text-[#002045] text-[14px] font-medium rounded-lg hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined">arrow_back</span>
+                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                         {t.auth.backBtn}
                       </button>
                     )}
                     {step < 3 ? (
                       <button
                         onClick={nextStep}
-                        className="flex-[2] h-16 bg-[#002045] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                        className="flex-[2] h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] flex items-center justify-center gap-2"
                       >
                          {t.auth.saveAndContinue}
-                        <span className="material-symbols-outlined">arrow_forward</span>
+                        <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                       </button>
                     ) : (
                       <button
                         onClick={handleAuth}
-                        className="flex-[2] h-16 bg-[#845326] text-white font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                        disabled={isLoading}
+                        className="flex-[2] h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                         {t.auth.completeRegistration}
-                        <span className="material-symbols-outlined">how_to_reg</span>
+                         {isLoading ? 'Submitting…' : t.auth.completeRegistration}
+                        {!isLoading && <span className="material-symbols-outlined text-[18px]">how_to_reg</span>}
                       </button>
                     )}
                   </div>
                 </>
               )}
 
-              {/* Enhanced Social Integration */}
-              <div className="relative py-10 flex items-center">
-                <div className="flex-grow border-t border-[#f2f4f6]" />
-                <span className="flex-shrink mx-6 text-[9px] font-black text-[#c4c6cf] uppercase tracking-[0.3em]">Sign in with</span>
-                <div className="flex-grow border-t border-[#f2f4f6]" />
+              {/* Social Integration */}
+              <div className="relative py-2 flex items-center">
+                <div className="flex-grow border-t border-[#eceef1]" />
+                <span className="flex-shrink mx-3 text-[12px] font-medium text-[#9aa0a8]">or continue with</span>
+                <div className="flex-grow border-t border-[#eceef1]" />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <button type="button" className="flex items-center justify-center gap-4 h-16 border border-[#f2f4f6] rounded-2xl hover:bg-[#f7f9fb] transition-all group">
-                   <svg className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" viewBox="0 0 24 24">
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" className="flex items-center justify-center gap-2.5 h-11 border border-[#e3e6ea] rounded-lg hover:bg-[#f5f6f8] transition-colors">
+                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  <span className="text-xs font-black text-[#002045] uppercase tracking-wider">Google Work</span>
+                  <span className="text-[13px] font-medium text-[#002045]">Google</span>
                 </button>
-                <button type="button" className="flex items-center justify-center gap-4 h-16 border border-[#f2f4f6] rounded-2xl hover:bg-[#f7f9fb] transition-all group">
-                   <svg className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" viewBox="0 0 24 24">
+                <button type="button" className="flex items-center justify-center gap-2.5 h-11 border border-[#e3e6ea] rounded-lg hover:bg-[#f5f6f8] transition-colors">
+                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" fill="#0077B5"/>
                   </svg>
-                  <span className="text-xs font-black text-[#002045] uppercase tracking-wider">LinkedIn Pro</span>
+                  <span className="text-[13px] font-medium text-[#002045]">LinkedIn</span>
                 </button>
               </div>
 
               {IS_DEV && (
-                <div className="mt-12 p-8 bg-[#fef9f2] rounded-3xl border border-[#fab983]/20 text-center">
-                  <div className="grid grid-cols-2 gap-4 mt-12">
+                <div className="mt-2 rounded-lg border border-[#eceef1] bg-[#fafbfc] p-4">
+                  <p className="mb-3 text-[11px] font-medium text-[#9aa0a8]">Development role bypass</p>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => handleDevQuickLogin('agent')}
-                      className="h-14 bg-white text-[#845326] border border-[#fab983]/30 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-[#845326] hover:text-white transition-all flex items-center justify-center gap-3 shadow-sm"
+                      className="h-10 bg-white text-[#002045] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-lg">person</span>
-                      Agent Login
+                      <span className="material-symbols-outlined text-[18px]">person</span>
+                      Agent login
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDevQuickLogin('admin')}
-                      className="h-14 bg-white text-[#002045] border border-[#002045]/10 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-[#002045] hover:text-white transition-all flex items-center justify-center gap-3 shadow-sm"
+                      className="h-10 bg-white text-[#002045] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-                      Admin Login
+                      <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                      Admin login
                     </button>
                   </div>
-                  <p className="mt-4 text-[9px] font-bold text-[#845326]/60 uppercase tracking-widest text-center">Development Role Bypass</p>
                 </div>
               )}
             </form>
           </div>
         </div>
 
-        <footer className="px-12 py-10 border-t border-[#f2f4f6] flex flex-col lg:flex-row justify-between items-center gap-6">
-           <p className="text-[9px] font-black text-[#c4c6cf] uppercase tracking-[0.2em]">
-            Protocol · © 2024 HouseinMozambique
-          </p>
-          <div className="flex gap-10">
-            <a href="/privacy" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Privacy</a>
-            <a href="/terms" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Terms</a>
-            <a href="#" className="text-[9px] font-black text-[#74777f] hover:text-[#002045] uppercase tracking-widest transition-colors">Security</a>
+        <footer className="px-8 lg:px-12 py-6 border-t border-[#eceef1] flex flex-col lg:flex-row justify-between items-center gap-3">
+           <p className="text-[12px] font-medium text-[#9aa0a8]">© 2024 House in Mozambique</p>
+          <div className="flex gap-6">
+            <a href="/privacy" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Privacy</a>
+            <a href="/terms" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Terms</a>
           </div>
         </footer>
       </section>
