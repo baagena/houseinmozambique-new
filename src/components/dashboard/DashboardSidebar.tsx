@@ -57,63 +57,58 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
     .toUpperCase() || (role === 'admin' ? 'AD' : 'AG');
 
   return (
-    <aside className="w-80 h-full flex flex-col bg-white border-r border-[#f2f4f6] relative z-20 overflow-y-auto custom-scrollbar">
+    <aside className="w-60 h-full flex flex-col bg-white border-r border-[#eceef1] relative z-20 overflow-y-auto custom-scrollbar">
       {/* Branding */}
-      <div className="p-8 pb-12">
-        <Link href="/" className="flex items-center gap-3 mb-4">
-        <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-[#f2f4f6] border border-[#e6e8ea] shadow-sm">
-          <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" />
-        </div>
-        <div>
-          <p className="text-2xl font-black text-[#002045] tracking-tighter" style={{ fontFamily: 'var(--font-headline)' }}>
-            House in&nbsp;Mozambique
-          </p>
-          <p className="text-[10px] font-bold text-[#c4c6cf] uppercase tracking-widest">{role} dashboard</p>
-        </div>
-      </Link>
+      <div className="px-5 pt-5 pb-6">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-[#f5f6f8] border border-[#eceef1]">
+            <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" />
+          </div>
+          <div className="leading-tight">
+            <p className="text-[13px] font-semibold text-[#002045] tracking-tight">House in Mozambique</p>
+            <p className="text-[11px] font-medium text-[#9aa0a8] capitalize">{role} workspace</p>
+          </div>
+        </Link>
       </div>
 
       {/* Nav Links */}
-      <nav className="flex-1 px-4 space-y-2">
+      <nav className="flex-1 px-3 space-y-0.5">
+        <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-wider text-[#b4b9c0]">Menu</p>
         {links.map((link) => {
           const isActive = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all group ${isActive ? 'bg-[#002045] text-white shadow-xl shadow-[#002045]/10' : 'text-[#74777f] hover:bg-[#f7f9fb] hover:text-[#002045]'}`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group ${isActive ? 'bg-[#002045] text-white' : 'text-[#5b616b] hover:bg-[#f5f6f8] hover:text-[#002045]'}`}
             >
-              <span className={`material-symbols-outlined text-2xl transition-transform group-hover:scale-110 ${isActive ? 'text-[#fab983]' : 'text-inherit'}`}>
+              <span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-[#fab983]' : 'text-[#9aa0a8] group-hover:text-[#002045]'}`}>
                 {link.icon}
               </span>
-              <span className="text-sm font-black tracking-tight">{link.label}</span>
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#fab983]" />
-              )}
+              <span className="text-[13px] font-medium tracking-tight">{link.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Footer / Profile */}
-      <div className="p-6 mt-auto border-t border-[#f2f4f6]">
-        <div className="bg-[#f7f9fb] rounded-3xl p-4 flex items-center gap-4 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-[#002045] flex items-center justify-center text-white font-black text-xs translate-x-[0.5px]">
+      <div className="px-3 py-3 mt-auto border-t border-[#eceef1]">
+        <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
+          <div className="w-8 h-8 rounded-lg bg-[#002045] flex items-center justify-center text-white font-semibold text-[11px]">
             {initials}
           </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="text-xs font-black text-[#002045] truncate">{userName}</p>
-            <p className="text-[9px] font-bold text-[#74777f] uppercase tracking-widest truncate">{role === 'admin' ? 'Master Access' : 'Verified Agent'}</p>
+          <div className="flex-1 overflow-hidden leading-tight">
+            <p className="text-[12px] font-semibold text-[#002045] truncate">{userName}</p>
+            <p className="text-[11px] font-medium text-[#9aa0a8] truncate">{role === 'admin' ? 'Administrator' : 'Verified agent'}</p>
           </div>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="p-1.5 rounded-md text-[#9aa0a8] hover:text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+          </button>
         </div>
-        
-        <button 
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-red-500 font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-all active:scale-95"
-        >
-          <span className="material-symbols-outlined text-lg">logout</span>
-          Sign Out
-        </button>
       </div>
     </aside>
   );
