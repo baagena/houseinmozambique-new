@@ -190,67 +190,67 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
           </thead>
           <tbody>
             {agents.map((agent) => (
-              <tr key={agent.id} className="group border-b border-[#f2f4f6] transition-colors hover:bg-[#f7f9fb]">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-full border border-[#f2f4f6]">
+              <tr key={agent.id} className="group border-b border-[#f2f4f6] transition-colors hover:bg-[#fafbfc] last:border-0">
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[#eceef1]">
                       {agent.avatar ? (
                         <Image src={agent.avatar} alt={agent.name} fill className="object-cover" />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f4f6] text-[10px] font-black text-[#1a365d]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f6f8] text-[11px] font-semibold text-[#1a365d]">
                           {agent.initials}
                         </div>
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm font-black tracking-tight text-[#002045]">{agent.name}</p>
-                      <p className="text-[10px] font-medium uppercase tracking-tight text-[#74777f]">{agent.email}</p>
+                    <div className="leading-tight">
+                      <p className="text-[13px] font-medium text-[#002045]">{agent.name}</p>
+                      <p className="text-[12px] text-[#9aa0a8]">{agent.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="text-xs font-bold text-[#002045]">{agent.propertyCount} Listed</span>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[#c4c6cf]">{agent.location}</p>
+                <td className="px-5 py-3">
+                  <span className="text-[13px] font-medium text-[#002045]">{agent.propertyCount} listed</span>
+                  <p className="text-[12px] text-[#9aa0a8]">{agent.location}</p>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-5 py-3">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={`rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-widest ${agent.role === 'ADMIN' ? 'bg-[#002045] text-white' : 'bg-[#f7f9fb] text-[#74777f]'}`}>
-                      {agent.role}
+                    <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${agent.role === 'ADMIN' ? 'bg-[#002045] text-white' : 'bg-[#f1f3f5] text-[#5b616b]'}`}>
+                      {agent.role === 'ADMIN' ? 'Admin' : 'Agent'}
                     </span>
                     {agent.isVerified && (
-                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-emerald-700">Verified</span>
+                      <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">Verified</span>
                     )}
                     {agent.isFeatured && (
-                      <span className="rounded-full bg-amber-50 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-amber-700">Featured</span>
+                      <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">Featured</span>
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-3">
+                <td className="px-5 py-3">
+                  <div className="flex items-center justify-end gap-3 text-[13px] font-medium opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                     <button
                       onClick={() => openEdit(agent)}
                       disabled={busyId === agent.id}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#002045] hover:underline disabled:opacity-50"
+                      className="text-[#002045] hover:underline disabled:opacity-50"
                     >
                       Edit
                     </button>
                     <Link
                       href={`/dashboard/admin/agents/${agent.id}`}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#74777f] hover:text-[#002045]"
+                      className="text-[#74777f] hover:text-[#002045]"
                     >
                       Analytics
                     </Link>
                     <button
                       onClick={() => revoke(agent.id)}
                       disabled={busyId === agent.id}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#845326] hover:underline disabled:opacity-50"
+                      className="text-[#845326] hover:underline disabled:opacity-50"
                     >
                       Revoke
                     </button>
                     <button
                       onClick={() => remove(agent)}
                       disabled={busyId === agent.id}
-                      className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 disabled:opacity-50"
+                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -260,7 +260,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             ))}
             {agents.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-16 text-center text-[10px] font-black uppercase tracking-widest text-[#c4c6cf]">
+                <td colSpan={4} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
                   No agents yet. Add one to get started.
                 </td>
               </tr>
