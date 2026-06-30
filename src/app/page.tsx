@@ -6,6 +6,8 @@ import {
 } from '@/lib/data';
 import { prisma } from '@/lib/db';
 import HomeClient from '@/components/home/HomeClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { faqJsonLd, HOME_FAQS } from '@/lib/seo';
 
 export default async function HomePage() {
   const featured = await getFeaturedProperties();
@@ -28,7 +30,9 @@ export default async function HomePage() {
   });
 
   return (
-    <HomeClient
+    <>
+      <JsonLd data={faqJsonLd(HOME_FAQS)} />
+      <HomeClient
       featured={featured as any}
       featuredAgents={featuredAgents as any}
       maputoProps={maputoProps as any}
@@ -42,5 +46,6 @@ export default async function HomePage() {
       shortStayProps={shortStayProps as any}
       ads={ads as any}
     />
+    </>
   );
 }

@@ -1,0 +1,38 @@
+# House in Mozambique
+
+> House in Mozambique is a curated real-estate marketplace for buying, renting, and booking short stays across Mozambique. Listings come from verified local agents and cover Maputo, Matola, Beira, Nampula, Tete, Inhambane, and the Bazaruto archipelago — including apartments, villas, commercial space, and coastal retreats. The platform is bilingual (English and Portuguese).
+
+## What you can do here
+
+- Browse property listings filtered by Buy, Rent, or Short Stay, by city, type, price, bedrooms, and bathrooms.
+- View full property details: price, location, photos, amenities, and the listing agent.
+- Find and contact verified real-estate agents directly.
+- Read market insight and neighbourhood guides on the blog.
+- Agents can register, choose a plan, and publish listings (reviewed before going live).
+
+## Key pages
+
+- [Home](/): Featured listings and search across Mozambique.
+- [Properties](/properties): All listings with filters for Buy / Rent / Short Stay, city, and type.
+- [Agents](/agents): Directory of verified real-estate agents.
+- [Blog](/news): Market reports, neighbourhood guides, and investment notes.
+- [Pricing](/pricing): Plans for agents to advertise listings.
+- [About](/about): Company background and services.
+- [Contact](/contact): Get in touch with the team.
+- [Post a Property](/post-property): Agent listing submission.
+
+## Key facts
+
+- Service area: Mozambique (nationwide).
+- Listing categories: Buy (sale), Rent (monthly), Short Stay (nightly).
+- Listings are published by registered agents and reviewed before going live; verified agents are badged.
+- Languages: English and Portuguese.
+- Prices are shown per listing; contact the listing agent for viewings and terms.
+
+## Structured data
+
+Every page exposes Schema.org JSON-LD: Organization/RealEstateAgent and WebSite site-wide, Product/Offer on property pages, BlogPosting on articles, and BreadcrumbList on detail pages. A sitemap is available at /sitemap.xml.
+
+## Contact
+
+For listing, partnership, or support enquiries, use the contact page at /contact.

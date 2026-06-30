@@ -5,6 +5,16 @@ import Navbar from '@/components/layout/Navbar';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
 import { getContentOverrides } from '@/lib/content';
+import JsonLd from '@/components/seo/JsonLd';
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TAGLINE,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_KEYWORDS,
+  organizationJsonLd,
+  websiteJsonLd,
+} from '@/lib/seo';
 import Script from 'next/script';
 
 const dmsans = DM_Sans({
@@ -20,10 +30,49 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: 'HouseinMozambique — The Modern Estate Curator',
-  description:
-    'Discover premium real estate in Mozambique. Buy, rent, or find short stays in Maputo, Inhambane, Beira, and more. Curated listings by expert local agents.',
-  keywords: 'Mozambique real estate, property Maputo, rent villa Mozambique, buy house Mozambique',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  keywords: DEFAULT_KEYWORDS,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: { canonical: '/' },
+  category: 'real estate',
+  formatDetection: { telephone: true, address: true, email: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: DEFAULT_DESCRIPTION,
+    url: SITE_URL,
+    locale: 'en_US',
+    alternateLocale: ['pt_PT'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: DEFAULT_DESCRIPTION,
+  },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default async function RootLayout({
@@ -42,6 +91,7 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <LanguageProvider overrides={contentOverrides}>
           <Navbar />
           <main className="min-h-screen">{children}</main>

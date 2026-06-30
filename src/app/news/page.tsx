@@ -1,8 +1,18 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPublishedBlogPosts, formatPostDate } from '@/lib/blog';
+import { buildMetadata } from '@/lib/seo';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600';
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Blog — Mozambique Property Market Insight',
+  description:
+    'Market reports, neighbourhood guides, and investment notes on the Mozambique property market from House in Mozambique.',
+  path: '/news',
+  keywords: ['Mozambique property market', 'Maputo real estate news', 'Mozambique investment guide'],
+});
 
 export default async function NewsPage() {
   const posts = await getPublishedBlogPosts();

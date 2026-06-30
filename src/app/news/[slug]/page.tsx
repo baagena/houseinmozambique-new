@@ -1,7 +1,10 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatPostDate, getBlogPostBySlug, getPublishedBlogPosts } from '@/lib/blog';
+import JsonLd from '@/components/seo/JsonLd';
+import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600';
 
@@ -9,20 +12,24 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
 
   if (!post) {
-    return {
-      title: 'Blog Post | House in Mozambique',
-    };
+    return buildMetadata({ title: 'Article not found', path: `/news/${slug}`, noindex: true });
   }
 
-  return {
-    title: `${post.title} | House in Mozambique`,
+  return buildMetadata({
+    title: post.title,
     description: post.excerpt,
-  };
+    path: `/news/${post.slug}`,
+    type: 'article',
+    images: post.coverImage ? [post.coverImage] : undefined,
+    keywords: post.tags?.length ? post.tags : undefined,
+    publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+    modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+  });
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -36,8 +43,28 @@ export default async function BlogPostPage({ params }: Props) {
     .slice(0, 3);
   const paragraphs = post.content.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
 
+  const jsonLd = [
+    articleJsonLd({
+      title: post.title,
+      excerpt: post.excerpt,
+      slug: post.slug,
+      coverImage: post.coverImage,
+      publishedAt: post.publishedAt,
+      updatedAt: post.updatedAt,
+      author: post.author,
+      category: post.category,
+      tags: post.tags,
+    }),
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/news' },
+      { name: post.title, path: `/news/${post.slug}` },
+    ]),
+  ];
+
   return (
     <main className="bg-[#f7f9fb]">
+      <JsonLd data={jsonLd} />
       <article>
         <header className="relative min-h-[620px] overflow-hidden bg-[#002045] px-6 pt-32 text-white">
           <Image
