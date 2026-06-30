@@ -238,36 +238,32 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
           );
         })}
         {filteredSections.length === 0 && (
-          <div className="rounded-[1.5rem] border border-[#f2f4f6] bg-white py-16 text-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#c4c6cf]">No fields match “{search}”.</p>
+          <div className="rounded-xl border border-[#eceef1] bg-white py-16 text-center">
+            <p className="text-sm text-[#9aa0a8]">No fields match “{search}”.</p>
           </div>
         )}
       </div>
 
       {/* Sticky save bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-80">
-        <div className="m-4 flex items-center justify-between gap-4 rounded-2xl border border-[#f2f4f6] bg-white/90 px-6 py-4 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            {toast ? (
-              <span
-                className={`text-xs font-black ${toast.type === 'ok' ? 'text-emerald-600' : 'text-red-500'}`}
-              >
-                {toast.msg}
-              </span>
-            ) : (
-              <span className="text-xs font-bold text-[#74777f]">
-                {dirtyKeys.length > 0
-                  ? `${dirtyKeys.length} unsaved change${dirtyKeys.length === 1 ? '' : 's'}`
-                  : 'All changes saved'}
-              </span>
-            )}
-          </div>
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-60">
+        <div className="m-4 flex items-center justify-between gap-4 rounded-xl border border-[#e3e6ea] bg-white/90 px-5 py-3 shadow-lg backdrop-blur-xl">
+          {toast ? (
+            <span className={`text-[13px] font-medium ${toast.type === 'ok' ? 'text-emerald-600' : 'text-red-500'}`}>
+              {toast.msg}
+            </span>
+          ) : (
+            <span className="text-[13px] font-medium text-[#74777f]">
+              {dirtyKeys.length > 0
+                ? `${dirtyKeys.length} unsaved change${dirtyKeys.length === 1 ? '' : 's'}`
+                : 'All changes saved'}
+            </span>
+          )}
           <button
             onClick={save}
             disabled={isSaving || dirtyKeys.length === 0}
-            className="rounded-xl bg-[#002045] px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-[#003366] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isSaving ? 'Saving…' : 'Publish Changes'}
+            {isSaving ? 'Saving…' : 'Publish changes'}
           </button>
         </div>
       </div>
