@@ -1,0 +1,17 @@
+
+> app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3099
+- Network:       http://192.168.1.68:3099
+- Environments: .env
+✓ Ready in 1041ms
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling / ...
+ GET / 200 in 13.1s (next.js: 5.5s, application-code: 7.6s)
+ GET /dashboard/admin/content 200 in 2.2s (next.js: 474ms, application-code: 1753ms)
+ GET /pricing 200 in 772ms (next.js: 478ms, application-code: 294ms)
+ GET /about 200 in 721ms (next.js: 425ms, application-code: 296ms)
