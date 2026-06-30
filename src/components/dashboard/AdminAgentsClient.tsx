@@ -163,31 +163,29 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-[#002045]">Manage Agents</h2>
-          <p className="mt-1 text-sm font-medium text-[#74777f]">Create, edit, and manage every agent profile.</p>
+          <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Manage agents</h2>
+          <p className="mt-1 text-sm text-[#74777f]">Create, edit, and manage every agent profile.</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden rounded-full bg-[#845326]/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#845326] sm:inline">
-            {agents.length} Professionals
-          </span>
+          <span className="hidden text-[13px] font-medium text-[#9aa0a8] sm:inline">{agents.length} agents</span>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 rounded-xl bg-[#002045] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-[#003366]"
+            className="flex items-center gap-1.5 rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
           >
-            <span className="material-symbols-outlined text-base">person_add</span>
-            Add Agent
+            <span className="material-symbols-outlined text-[18px]">person_add</span>
+            Add agent
           </button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-[#f2f4f6] bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-[#f2f4f6] bg-[#f7f9fb]/50">
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Agent Detail</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Portfolio</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Role / Status</th>
-              <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[#74777f]">Controls</th>
+            <tr className="border-b border-[#eceef1] bg-[#fafbfc]">
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Agent</th>
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Portfolio</th>
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Role / status</th>
+              <th className="px-5 py-2.5 text-right text-[11px] font-medium text-[#9aa0a8]">Controls</th>
             </tr>
           </thead>
           <tbody>
