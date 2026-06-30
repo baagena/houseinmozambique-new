@@ -83,55 +83,56 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-[#002045]">Global Property Inventory</h2>
-        <span className="rounded-full bg-[#845326]/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#845326]">
-          {properties.length} Assets
-        </span>
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Property inventory</h2>
+          <p className="mt-1 text-sm text-[#74777f]">Edit, publish, or remove any listing on the platform.</p>
+        </div>
+        <span className="text-[13px] font-medium text-[#9aa0a8]">{properties.length} listings</span>
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-[#f2f4f6] bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-[#f2f4f6] bg-[#f7f9fb]/50">
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Property Asset</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Host / Agent</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#74777f]">Status</th>
-              <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[#74777f]">Admin Control</th>
+            <tr className="border-b border-[#eceef1] bg-[#fafbfc]">
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Property</th>
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Host / agent</th>
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Status</th>
+              <th className="px-5 py-2.5 text-right text-[11px] font-medium text-[#9aa0a8]">Controls</th>
             </tr>
           </thead>
           <tbody>
             {properties.map((p) => (
-              <tr key={p.id} className="border-b border-[#f2f4f6] transition-colors hover:bg-[#f7f9fb]">
-                <td className="flex items-center gap-4 px-6 py-4">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
-                    <Image
-                      src={p.images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200'}
-                      alt={p.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#002045]">{p.title}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-tight text-[#74777f]">{p.city}</p>
+              <tr key={p.id} className="group border-b border-[#f2f4f6] transition-colors hover:bg-[#fafbfc] last:border-0">
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md">
+                      <Image
+                        src={p.images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200'}
+                        alt={p.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="leading-tight">
+                      <p className="text-[13px] font-medium text-[#002045]">{p.title}</p>
+                      <p className="text-[12px] text-[#9aa0a8]">{p.city}</p>
+                    </div>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="text-xs font-bold text-[#002045]">{p.hostName}</span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${p.status === 'PUBLISHED' ? 'bg-emerald-500' : p.status === 'REJECTED' ? 'bg-red-500' : 'bg-[#fab983]'}`} />
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${p.status === 'PUBLISHED' ? 'text-emerald-600' : p.status === 'REJECTED' ? 'text-red-600' : 'text-[#845326]'}`}>
-                      {p.status}
+                <td className="px-5 py-3 text-[13px] text-[#5b616b]">{p.hostName}</td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`h-1.5 w-1.5 rounded-full ${p.status === 'PUBLISHED' ? 'bg-emerald-500' : p.status === 'REJECTED' ? 'bg-red-500' : 'bg-[#e0a458]'}`} />
+                    <span className={`text-[13px] font-medium capitalize ${p.status === 'PUBLISHED' ? 'text-emerald-600' : p.status === 'REJECTED' ? 'text-red-600' : 'text-[#845326]'}`}>
+                      {p.status.toLowerCase()}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-3">
+                <td className="px-5 py-3">
+                  <div className="flex items-center justify-end gap-3 text-[13px] font-medium">
                     <button
                       onClick={() => open(p)}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#002045] hover:underline"
+                      className="text-[#002045] hover:underline"
                     >
                       Edit
                     </button>
@@ -142,7 +143,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
             ))}
             {properties.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-16 text-center text-[10px] font-black uppercase tracking-widest text-[#c4c6cf]">
+                <td colSpan={4} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
                   No properties yet.
                 </td>
               </tr>
@@ -152,63 +153,65 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-white p-8 shadow-2xl">
-            <button onClick={() => setEditing(null)} className="absolute right-5 top-5 text-xl font-black text-[#74777f] hover:text-[#002045]">×</button>
-            <h3 className="mb-6 text-xl font-black text-[#002045]">Edit Listing</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1f3a]/30 p-4 backdrop-blur-sm">
+          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[#eceef1] bg-white p-6 shadow-xl">
+            <button onClick={() => setEditing(null)} className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]">
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            <h3 className="mb-5 text-base font-semibold text-[#002045]">Edit listing</h3>
 
-            {error && <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-600">{error}</div>}
+            {error && <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-[13px] font-medium text-red-600">{error}</div>}
 
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Title</label>
-                <input value={editing.title} onChange={(e) => set('title', e.target.value)} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm font-bold text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10" />
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Title</label>
+                <input value={editing.title} onChange={(e) => set('title', e.target.value)} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <NumField label="Price" value={editing.price} onChange={(v) => set('price', v)} />
                 <NumField label="Area (m²)" value={editing.area} onChange={(v) => set('area', v)} />
                 <NumField label="Bedrooms" value={editing.bedrooms} onChange={(v) => set('bedrooms', v)} />
                 <NumField label="Bathrooms" value={editing.bathrooms} onChange={(v) => set('bathrooms', v)} />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <SelectField label="Listing Type" value={editing.listingType} onChange={(v) => set('listingType', v)} options={['Buy', 'Rent', 'Short Stay', 'Auction']} />
-                <TextField label="Property Type" value={editing.type} onChange={(v) => set('type', v)} />
-                <SelectField label="Price Unit" value={editing.priceUnit} onChange={(v) => set('priceUnit', v)} options={['sale', 'monthly', 'nightly']} />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <SelectField label="Listing type" value={editing.listingType} onChange={(v) => set('listingType', v)} options={['Buy', 'Rent', 'Short Stay', 'Auction']} />
+                <TextField label="Property type" value={editing.type} onChange={(v) => set('type', v)} />
+                <SelectField label="Price unit" value={editing.priceUnit} onChange={(v) => set('priceUnit', v)} options={['sale', 'monthly', 'nightly']} />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <TextField label="City" value={editing.city} onChange={(v) => set('city', v)} />
                 <TextField label="Neighborhood" value={editing.neighborhood} onChange={(v) => set('neighborhood', v)} />
                 <TextField label="Address" value={editing.address} onChange={(v) => set('address', v)} />
               </div>
 
               <div>
-                <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Description</label>
-                <textarea rows={6} value={editing.description} onChange={(e) => set('description', e.target.value)} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm leading-relaxed text-[#43474e] outline-none focus:ring-2 focus:ring-[#002045]/10" />
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Description</label>
+                <textarea rows={5} value={editing.description} onChange={(e) => set('description', e.target.value)} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] leading-relaxed text-[#43474e] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
               </div>
 
               <div>
-                <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Amenities (comma separated)</label>
-                <textarea rows={2} value={editing.amenities.join(', ')} onChange={(e) => set('amenities', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#002045]/10" />
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Amenities (comma separated)</label>
+                <textarea rows={2} value={editing.amenities.join(', ')} onChange={(e) => set('amenities', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#43474e] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
               </div>
 
               <div>
-                <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Image URLs (comma separated)</label>
-                <textarea rows={2} value={editing.images.join(', ')} onChange={(e) => set('images', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#002045]/10" />
+                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Image URLs (comma separated)</label>
+                <textarea rows={2} value={editing.images.join(', ')} onChange={(e) => set('images', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#43474e] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <TextField label="Badge" value={editing.badge} onChange={(v) => set('badge', v)} />
                 <TextField label="Tags (comma separated)" value={editing.tags.join(', ')} onChange={(v) => set('tags', v.split(',').map((s) => s.trim()).filter(Boolean))} />
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3">
-              <button onClick={() => setEditing(null)} className="rounded-xl border border-[#f2f4f6] px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#74777f] hover:bg-[#f7f9fb]">Cancel</button>
-              <button onClick={save} disabled={isSaving} className="rounded-xl bg-[#845326] px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#6f441f] disabled:opacity-50">
-                {isSaving ? 'Saving…' : 'Save Changes'}
+            <div className="mt-7 flex justify-end gap-2.5">
+              <button onClick={() => setEditing(null)} className="rounded-lg border border-[#e3e6ea] px-4 py-2 text-[13px] font-medium text-[#5b616b] hover:bg-[#f5f6f8]">Cancel</button>
+              <button onClick={save} disabled={isSaving} className="rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#0a2f5c] disabled:opacity-50">
+                {isSaving ? 'Saving…' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -221,8 +224,8 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm font-medium text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10" />
+      <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
     </div>
   );
 }
@@ -230,8 +233,8 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">{label}</label>
-      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm font-black text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10" />
+      <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{label}</label>
+      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] tabular-nums outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
     </div>
   );
 }
@@ -239,8 +242,8 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
 function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
   return (
     <div>
-      <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm font-black text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10">
+      <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{label}</label>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10">
         {options.map((opt) => (
           <option key={opt} value={opt}>{opt}</option>
         ))}

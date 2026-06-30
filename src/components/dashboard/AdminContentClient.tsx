@@ -139,24 +139,22 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
   }
 
   return (
-    <div className="space-y-8 pb-28">
+    <div className="space-y-6 pb-24">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-2xl font-black text-[#002045]">Edit Pages Content</h2>
-          <p className="mt-1 text-sm font-medium text-[#74777f]">
-            Change any text shown on the public website — in English and Portuguese. Saved changes go live immediately.
+          <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Edit pages content</h2>
+          <p className="mt-1 text-sm text-[#74777f]">
+            Change any text on the public website, in English and Portuguese. Saved changes go live immediately.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-2xl border border-[#f2f4f6] bg-white px-4 py-2.5">
-            <span className="material-symbols-outlined text-[#74777f]">search</span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search text or section…"
-              className="w-56 border-none bg-transparent text-sm font-bold outline-none placeholder-[#c4c6cf]"
-            />
-          </div>
+        <div className="flex items-center gap-2.5 rounded-lg border border-[#e3e6ea] bg-white px-3 h-9 w-full sm:w-72">
+          <span className="material-symbols-outlined text-[19px] text-[#9aa0a8]">search</span>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search text or section…"
+            className="w-full border-none bg-transparent text-[13px] font-medium text-[#3f4754] outline-none placeholder-[#b4b9c0]"
+          />
         </div>
       </div>
 
@@ -167,53 +165,51 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
             (k) => values.en[k] !== baseline.en[k] || values.pt[k] !== baseline.pt[k]
           );
           return (
-            <div key={section} className="overflow-hidden rounded-[1.5rem] border border-[#f2f4f6] bg-white shadow-sm">
+            <div key={section} className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">
               <button
                 onClick={() => setOpenSection(isOpen && !search ? null : section)}
-                className="flex w-full items-center justify-between px-6 py-5 text-left"
+                className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-[#fafbfc]"
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#845326]">description</span>
-                  <span className="text-base font-black text-[#002045]">{sectionLabel(section)}</span>
-                  <span className="rounded-full bg-[#f7f9fb] px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-[#74777f]">
-                    {keys.length} fields
-                  </span>
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[20px] text-[#9aa0a8]">description</span>
+                  <span className="text-sm font-semibold text-[#002045]">{sectionLabel(section)}</span>
+                  <span className="text-[12px] font-medium text-[#9aa0a8]">{keys.length}</span>
                   {sectionDirty && (
-                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">
+                    <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
                       Unsaved
                     </span>
                   )}
                 </div>
-                <span className={`material-symbols-outlined text-[#74777f] transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                <span className={`material-symbols-outlined text-[20px] text-[#9aa0a8] transition-transform ${isOpen ? 'rotate-180' : ''}`}>
                   expand_more
                 </span>
               </button>
 
               {isOpen && (
-                <div className="space-y-6 border-t border-[#f2f4f6] px-6 py-6">
+                <div className="space-y-4 border-t border-[#eceef1] px-5 py-5">
                   {keys.map((key) => {
                     const isLong = (defaults.en[key]?.length ?? 0) > 70 || (values.en[key]?.length ?? 0) > 70;
                     const changed = values.en[key] !== baseline.en[key] || values.pt[key] !== baseline.pt[key];
                     return (
-                      <div key={key} className="rounded-2xl border border-[#f2f4f6] bg-[#fafbfc] p-5">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <p className="text-xs font-black uppercase tracking-wide text-[#002045]">{fieldLabel(key)}</p>
-                          <div className="flex items-center gap-2">
-                            <code className="hidden text-[10px] text-[#c4c6cf] sm:inline">{key}</code>
+                      <div key={key} className="rounded-lg border border-[#eceef1] bg-[#fafbfc] p-4">
+                        <div className="mb-2.5 flex items-center justify-between gap-2">
+                          <p className="text-[13px] font-medium text-[#002045]">{fieldLabel(key)}</p>
+                          <div className="flex items-center gap-2.5">
+                            <code className="hidden text-[11px] text-[#b4b9c0] sm:inline">{key}</code>
                             {changed && (
                               <button
                                 onClick={() => resetField(key)}
-                                className="text-[9px] font-black uppercase tracking-widest text-[#74777f] hover:text-red-500"
+                                className="text-[12px] font-medium text-[#9aa0a8] hover:text-red-500"
                               >
                                 Reset
                               </button>
                             )}
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {(['en', 'pt'] as Lang[]).map((lang) => (
                             <div key={lang}>
-                              <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">
+                              <label className="mb-1 block text-[11px] font-medium text-[#9aa0a8]">
                                 {lang === 'en' ? 'English' : 'Português'}
                               </label>
                               {isLong ? (
@@ -221,13 +217,13 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
                                   rows={3}
                                   value={values[lang][key] ?? ''}
                                   onChange={(e) => setValue(lang, key, e.target.value)}
-                                  className="w-full rounded-xl border border-[#f2f4f6] bg-white px-4 py-3 text-sm leading-relaxed text-[#43474e] outline-none focus:ring-2 focus:ring-[#002045]/10"
+                                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] leading-relaxed text-[#43474e] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                                 />
                               ) : (
                                 <input
                                   value={values[lang][key] ?? ''}
                                   onChange={(e) => setValue(lang, key, e.target.value)}
-                                  className="w-full rounded-xl border border-[#f2f4f6] bg-white px-4 py-3 text-sm font-medium text-[#43474e] outline-none focus:ring-2 focus:ring-[#002045]/10"
+                                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#43474e] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                                 />
                               )}
                             </div>
