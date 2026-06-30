@@ -270,16 +270,18 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
       </div>
 
       {mode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-white p-8 shadow-2xl">
-            <button onClick={close} className="absolute right-5 top-5 text-xl font-black text-[#74777f] hover:text-[#002045]">×</button>
-            <h3 className="mb-1 text-xl font-black text-[#002045]">{mode === 'create' ? 'Add New Agent' : `Edit ${draft.name}`}</h3>
-            <p className="mb-6 text-sm font-medium text-[#74777f]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1f3a]/30 p-4 backdrop-blur-sm">
+          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[#eceef1] bg-white p-6 shadow-xl">
+            <button onClick={close} className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]">
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            <h3 className="text-base font-semibold text-[#002045]">{mode === 'create' ? 'Add new agent' : `Edit ${draft.name}`}</h3>
+            <p className="mb-5 mt-0.5 text-sm text-[#74777f]">
               {mode === 'create' ? 'Provision a new agent account with login credentials.' : 'Update this agent’s profile details.'}
             </p>
 
             {error && (
-              <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-600">{error}</div>
+              <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-[13px] font-medium text-red-600">{error}</div>
             )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
