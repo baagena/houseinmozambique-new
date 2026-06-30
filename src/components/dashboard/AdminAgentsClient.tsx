@@ -302,33 +302,33 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             </div>
 
             <div className="mt-4">
-              <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Specializations (comma separated)</label>
+              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Specializations (comma separated)</label>
               <input
                 value={(draft.specializations ?? []).join(', ')}
                 onChange={(e) => set('specializations', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
-                className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#002045]/10"
+                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
               />
             </div>
 
             <div className="mt-4">
-              <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">Bio</label>
+              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Bio</label>
               <textarea
                 rows={3}
                 value={draft.bio ?? ''}
                 onChange={(e) => set('bio', e.target.value)}
-                className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#002045]/10"
+                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
               />
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-6">
+            <div className="mt-5 flex flex-wrap items-center gap-5">
               <Toggle label="Verified" checked={!!draft.isVerified} onChange={(v) => set('isVerified', v)} />
               <Toggle label="Featured" checked={!!draft.isFeatured} onChange={(v) => set('isFeatured', v)} />
               <div className="flex items-center gap-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#74777f]">Role</label>
+                <label className="text-[12px] font-medium text-[#5b616b]">Role</label>
                 <select
                   value={draft.role ?? 'AGENT'}
                   onChange={(e) => set('role', e.target.value)}
-                  className="rounded-lg border border-[#f2f4f6] bg-[#fafbfc] px-3 py-2 text-xs font-black text-[#002045] outline-none"
+                  className="rounded-lg border border-[#e3e6ea] bg-white px-2.5 py-1.5 text-[13px] font-medium text-[#002045] outline-none"
                 >
                   <option value="AGENT">Agent</option>
                   <option value="ADMIN">Admin</option>
@@ -336,16 +336,16 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3">
-              <button onClick={close} className="rounded-xl border border-[#f2f4f6] px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#74777f] hover:bg-[#f7f9fb]">
+            <div className="mt-7 flex justify-end gap-2.5">
+              <button onClick={close} className="rounded-lg border border-[#e3e6ea] px-4 py-2 text-[13px] font-medium text-[#5b616b] hover:bg-[#f5f6f8]">
                 Cancel
               </button>
               <button
                 onClick={save}
                 disabled={isSaving}
-                className="rounded-xl bg-[#002045] px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#003366] disabled:opacity-50"
+                className="rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#0a2f5c] disabled:opacity-50"
               >
-                {isSaving ? 'Saving…' : mode === 'create' ? 'Create Agent' : 'Save Changes'}
+                {isSaving ? 'Saving…' : mode === 'create' ? 'Create agent' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -362,13 +362,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[9px] font-black uppercase tracking-widest text-[#74777f]">{label}</label>
+      <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{label}</label>
       <input
         type={type}
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-[#f2f4f6] bg-[#fafbfc] px-4 py-3 text-sm font-medium text-[#002045] outline-none focus:ring-2 focus:ring-[#002045]/10 disabled:opacity-60"
+        className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 disabled:bg-[#f5f6f8] disabled:opacity-70"
       />
     </div>
   );
@@ -381,10 +381,10 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
       onClick={() => onChange(!checked)}
       className="flex items-center gap-2"
     >
-      <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${checked ? 'bg-[#002045]' : 'bg-[#e6e8ea]'}`}>
-        <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
+      <span className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${checked ? 'bg-[#002045]' : 'bg-[#d7dbe0]'}`}>
+        <span className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-4' : ''}`} />
       </span>
-      <span className="text-[10px] font-black uppercase tracking-widest text-[#74777f]">{label}</span>
+      <span className="text-[13px] font-medium text-[#5b616b]">{label}</span>
     </button>
   );
 }
