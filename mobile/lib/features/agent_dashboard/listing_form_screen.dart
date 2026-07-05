@@ -146,7 +146,9 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
+    return Material(
+      type: MaterialType.transparency,
+      child: DraggableScrollableSheet(
       initialChildSize: 0.95,
       minChildSize: 0.5,
       maxChildSize: 0.98,
@@ -257,6 +259,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           ),
         );
       },
+      ),
     );
   }
 }

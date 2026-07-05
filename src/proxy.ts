@@ -20,5 +20,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/api/mobile/:path*',
+  matcher: ['/api/mobile/:path*', '/api/inquiries'],
 };

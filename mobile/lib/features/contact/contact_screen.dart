@@ -59,70 +59,73 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
+    return Material(
+      type: MaterialType.transparency,
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
+                    ),
                   ),
-                ),
-                Text('contact.title'.tr(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(labelText: 'contact.name'.tr()),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: 'contact.email'.tr()),
-                  validator: (v) => (v == null || !v.contains('@')) ? ' ' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _subjectController,
-                  decoration: InputDecoration(labelText: 'contact.subject'.tr()),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _messageController,
-                  maxLines: 5,
-                  decoration: InputDecoration(labelText: 'contact.message'.tr()),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submitting ? null : _submit,
-                    child: _submitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text('common.send'.tr()),
+                  Text('contact.title'.tr(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(labelText: 'contact.name'.tr()),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(labelText: 'contact.email'.tr()),
+                    validator: (v) => (v == null || !v.contains('@')) ? ' ' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _subjectController,
+                    decoration: InputDecoration(labelText: 'contact.subject'.tr()),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _messageController,
+                    maxLines: 5,
+                    decoration: InputDecoration(labelText: 'contact.message'.tr()),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _submitting ? null : _submit,
+                      child: _submitting
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Text('common.send'.tr()),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
