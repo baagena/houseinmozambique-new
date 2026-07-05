@@ -1,7 +1,16 @@
+import type { Metadata } from 'next';
 import { getProperties } from '@/lib/data';
 export const dynamic = 'force-dynamic';
 import PropertiesClient from '@/components/properties/PropertiesClient';
 import { Suspense } from 'react';
+import { buildMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Properties for Sale, Rent & Short Stay in Mozambique',
+  description:
+    'Browse curated property listings across Mozambique — buy, rent, or book short stays in Maputo, Inhambane, Beira, Nampula and beyond. Filter by city, type, and price.',
+  path: '/properties',
+});
 
 interface Props {
   searchParams: Promise<{
