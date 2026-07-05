@@ -14,7 +14,7 @@ export const agents = [
     yearsExperience: 5,
     specializations: ['Luxury Villas', 'Expat Relocations', 'Polana District'],
     email: 'agent-1@houseinmoz.com',
-    password: 'password123', // In real app, this will be hashed
+    password: 'password123', 
     role: 'AGENT',
   },
   {

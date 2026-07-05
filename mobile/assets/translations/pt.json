@@ -1,0 +1,143 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "retry": "Tentar novamente",
+    "somethingWentWrong": "Algo correu mal",
+    "seeAll": "Ver tudo",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "send": "Enviar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "apply": "Aplicar",
+    "clear": "Limpar",
+    "logout": "Sair",
+    "back": "Voltar",
+    "noResults": "Nenhum resultado encontrado"
+  },
+  "nav": {
+    "home": "Início",
+    "explore": "Explorar",
+    "favorites": "Favoritos",
+    "agents": "Agentes",
+    "profile": "Perfil"
+  },
+  "onboarding": {
+    "title1": "Encontre o seu lugar em Moçambique",
+    "body1": "Explore milhares de casas, apartamentos e terrenos em todo o país.",
+    "title2": "Conecte-se com agentes de confiança",
+    "body2": "Fale diretamente com agentes locais verificados e obtenha respostas rápidas.",
+    "title3": "Anuncie com confiança",
+    "body3": "Os agentes podem publicar e gerir anúncios em qualquer lugar.",
+    "skip": "Saltar",
+    "next": "Seguinte",
+    "getStarted": "Começar"
+  },
+  "home": {
+    "heroTitle": "Encontre a sua casa em Moçambique",
+    "heroSubtitle": "Compre, alugue ou descubra estadias curtas em todo o país",
+    "featured": "Imóveis em Destaque",
+    "featuredAgents": "Agentes em Destaque",
+    "forRent": "Para Alugar",
+    "forSale": "Para Comprar",
+    "shortStay": "Estadias Curtas",
+    "exploreCity": "Explorar {}"
+  },
+  "search": {
+    "title": "Pesquisar Imóveis",
+    "listingType": "Tipo de Anúncio",
+    "buy": "Comprar",
+    "rent": "Alugar",
+    "shortStay": "Estadia Curta",
+    "city": "Cidade",
+    "propertyType": "Tipo de Imóvel",
+    "priceRange": "Faixa de Preço",
+    "bedrooms": "Quartos",
+    "bathrooms": "Casas de Banho",
+    "sort": "Ordenar por",
+    "sortNewest": "Mais recentes",
+    "sortOldest": "Mais antigos",
+    "sortPriceAsc": "Preço: Menor para Maior",
+    "sortPriceDesc": "Preço: Maior para Menor"
+  },
+  "property": {
+    "bedrooms": "Quartos",
+    "bathrooms": "Casas de Banho",
+    "area": "Área",
+    "amenities": "Comodidades",
+    "aboutThisPlace": "Sobre este imóvel",
+    "similarProperties": "Imóveis Semelhantes",
+    "contactAgent": "Contactar Agente",
+    "openInMaps": "Abrir no Mapa",
+    "listedBy": "Anunciado por",
+    "featured": "Destaque",
+    "newListing": "Novo"
+  },
+  "agent": {
+    "title": "Agentes",
+    "listings": "Anúncios",
+    "verified": "Verificado",
+    "yearsExperience": "{} anos de experiência",
+    "specializations": "Especializações",
+    "contact": "Contactar"
+  },
+  "favorites": {
+    "title": "Favoritos",
+    "empty": "Ainda não guardou nenhum imóvel",
+    "emptyBody": "Toque no ícone de coração num anúncio para o guardar aqui"
+  },
+  "blog": {
+    "title": "Notícias e Perspetivas",
+    "readTime": "{} min de leitura"
+  },
+  "contact": {
+    "title": "Contacto",
+    "name": "Nome completo",
+    "email": "Email",
+    "subject": "Assunto",
+    "message": "Mensagem",
+    "success": "A sua mensagem foi enviada",
+    "error": "Não foi possível enviar a sua mensagem. Tente novamente."
+  },
+  "settings": {
+    "title": "Definições",
+    "language": "Idioma",
+    "english": "Inglês",
+    "portuguese": "Português",
+    "about": "Sobre",
+    "agentLogin": "Acesso de agente",
+    "agentDashboard": "Painel do agente"
+  },
+  "auth": {
+    "loginTitle": "Acesso de Agente",
+    "registerTitle": "Torne-se Agente",
+    "email": "Email",
+    "password": "Palavra-passe",
+    "fullName": "Nome completo",
+    "login": "Entrar",
+    "register": "Criar conta",
+    "noAccount": "Não tem uma conta?",
+    "haveAccount": "Já tem uma conta?",
+    "signUp": "Registar",
+    "signIn": "Entrar"
+  },
+  "dashboard": {
+    "title": "Painel",
+    "myListings": "Meus Anúncios",
+    "leads": "Contactos",
+    "profile": "Perfil",
+    "settings": "Definições",
+    "unreadLeads": "{} contactos não lidos",
+    "addListing": "Adicionar Anúncio",
+    "noListings": "Ainda não publicou nenhum anúncio",
+    "noLeads": "Ainda sem contactos",
+    "markRead": "Marcar como lido",
+    "propertyTitle": "Título",
+    "description": "Descrição",
+    "price": "Preço",
+    "city": "Cidade",
+    "submit": "Submeter para revisão"
+  }
+}

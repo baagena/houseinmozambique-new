@@ -8,8 +8,17 @@ export async function getProperties(filters: {
   maxPrice?: number;
   bedrooms?: number;
   bathrooms?: number;
+  skip?: number;
+  take?: number;
+  sort?: 'newest' | 'oldest' | 'price_asc' | 'price_desc';
 } = {}) {
-  const { listingType, city, propertyType, minPrice, maxPrice, bedrooms, bathrooms } = filters;
+  const { listingType, city, propertyType, minPrice, maxPrice, bedrooms, bathrooms, skip, take, sort } = filters;
+
+  const orderBy =
+    sort === 'oldest' ? { createdAt: 'asc' as const } :
+    sort === 'price_asc' ? { price: 'asc' as const } :
+    sort === 'price_desc' ? { price: 'desc' as const } :
+    { createdAt: 'desc' as const };
 
   return await prisma.property.findMany({
     where: {
@@ -23,7 +32,34 @@ export async function getProperties(filters: {
       ...(bathrooms !== undefined && { bathrooms: { gte: bathrooms } }),
     },
     include: { host: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy,
+    ...(skip !== undefined && { skip }),
+    ...(take !== undefined && { take }),
+  });
+}
+
+export async function countProperties(filters: {
+  listingType?: string;
+  city?: string;
+  propertyType?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+} = {}) {
+  const { listingType, city, propertyType, minPrice, maxPrice, bedrooms, bathrooms } = filters;
+
+  return await prisma.property.count({
+    where: {
+      status: 'PUBLISHED',
+      ...(listingType && { listingType }),
+      ...(city && { city: { contains: city, mode: 'insensitive' } }),
+      ...(propertyType && propertyType.length > 0 && { type: { in: propertyType } }),
+      ...(minPrice !== undefined && { price: { gte: minPrice } }),
+      ...(maxPrice !== undefined && { price: { lte: maxPrice } }),
+      ...(bedrooms !== undefined && { bedrooms: { gte: bedrooms } }),
+      ...(bathrooms !== undefined && { bathrooms: { gte: bathrooms } }),
+    },
   });
 }
 

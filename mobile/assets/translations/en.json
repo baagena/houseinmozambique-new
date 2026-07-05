@@ -1,0 +1,143 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "somethingWentWrong": "Something went wrong",
+    "seeAll": "See all",
+    "save": "Save",
+    "cancel": "Cancel",
+    "send": "Send",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "apply": "Apply",
+    "clear": "Clear",
+    "logout": "Log out",
+    "back": "Back",
+    "noResults": "No results found"
+  },
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "favorites": "Favorites",
+    "agents": "Agents",
+    "profile": "Profile"
+  },
+  "onboarding": {
+    "title1": "Find your place in Mozambique",
+    "body1": "Browse thousands of homes, apartments and land listings across the country.",
+    "title2": "Connect with trusted agents",
+    "body2": "Message verified local agents directly and get answers fast.",
+    "title3": "List with confidence",
+    "body3": "Agents can post and manage listings on the go, from anywhere.",
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get started"
+  },
+  "home": {
+    "heroTitle": "Find your home in Mozambique",
+    "heroSubtitle": "Buy, rent or discover short stays across the country",
+    "featured": "Featured Properties",
+    "featuredAgents": "Featured Agents",
+    "forRent": "For Rent",
+    "forSale": "For Sale",
+    "shortStay": "Short Stays",
+    "exploreCity": "Explore {}"
+  },
+  "search": {
+    "title": "Search Properties",
+    "listingType": "Listing Type",
+    "buy": "Buy",
+    "rent": "Rent",
+    "shortStay": "Short Stay",
+    "city": "City",
+    "propertyType": "Property Type",
+    "priceRange": "Price Range",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "sort": "Sort by",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low"
+  },
+  "property": {
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "area": "Area",
+    "amenities": "Amenities",
+    "aboutThisPlace": "About this place",
+    "similarProperties": "Similar Properties",
+    "contactAgent": "Contact Agent",
+    "openInMaps": "Open in Maps",
+    "listedBy": "Listed by",
+    "featured": "Featured",
+    "newListing": "New"
+  },
+  "agent": {
+    "title": "Agents",
+    "listings": "Listings",
+    "verified": "Verified",
+    "yearsExperience": "{} years experience",
+    "specializations": "Specializations",
+    "contact": "Contact"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "You haven't saved any properties yet",
+    "emptyBody": "Tap the heart icon on a listing to save it here"
+  },
+  "blog": {
+    "title": "News & Insights",
+    "readTime": "{} min read"
+  },
+  "contact": {
+    "title": "Contact",
+    "name": "Full name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "success": "Your message has been sent",
+    "error": "Couldn't send your message. Please try again."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "english": "English",
+    "portuguese": "Portuguese",
+    "about": "About",
+    "agentLogin": "Agent login",
+    "agentDashboard": "Agent dashboard"
+  },
+  "auth": {
+    "loginTitle": "Agent Login",
+    "registerTitle": "Become an Agent",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "login": "Log in",
+    "register": "Create account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "signUp": "Sign up",
+    "signIn": "Sign in"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "myListings": "My Listings",
+    "leads": "Leads",
+    "profile": "Profile",
+    "settings": "Settings",
+    "unreadLeads": "{} unread leads",
+    "addListing": "Add Listing",
+    "noListings": "You haven't posted any listings yet",
+    "noLeads": "No leads yet",
+    "markRead": "Mark as read",
+    "propertyTitle": "Title",
+    "description": "Description",
+    "price": "Price",
+    "city": "City",
+    "submit": "Submit for review"
+  }
+}
