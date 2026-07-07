@@ -3,6 +3,7 @@
     "loading": "Loading...",
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
+    "noInternet": "No internet connection. Please check your network and try again.",
     "seeAll": "See all",
     "save": "Save",
     "cancel": "Cancel",
@@ -121,7 +122,12 @@
     "benefitListings": "List and manage your properties",
     "benefitLeads": "Respond to buyer and renter inquiries directly",
     "benefitInsights": "Track views and performance on your listings",
-    "agentDashboard": "Agent dashboard"
+    "agentDashboard": "Agent dashboard",
+    "customerBadge": "Customer",
+    "becomeAgent": "Become an agent",
+    "syncFavoritesTitle": "Sync your favorites",
+    "syncFavoritesSubtitle": "Create a free account to keep favorites across devices.",
+    "syncFavoritesCta": "Get started"
   },
   "auth": {
     "loginTitle": "Agent Login",

@@ -1,12 +1,27 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../storage/token_storage.dart';
 import 'api_config.dart';
+import 'isrg_root_x1.dart';
+
+const _networkErrorTypes = {
+  DioExceptionType.connectionError,
+  DioExceptionType.connectionTimeout,
+  DioExceptionType.sendTimeout,
+  DioExceptionType.receiveTimeout,
+};
 
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
-  ApiException(this.message, {this.statusCode});
+  final bool isNetworkError;
+  ApiException(this.message, {this.statusCode, this.isNetworkError = false});
   @override
   String toString() => message;
 }
@@ -34,6 +49,16 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
     ));
 
+    if (!kIsWeb) {
+      dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final context = SecurityContext(withTrustedRoots: true);
+          context.setTrustedCertificatesBytes(utf8.encode(isrgRootX1Pem));
+          return HttpClient(context: context);
+        },
+      );
+    }
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await TokenStorage.readToken();
@@ -43,13 +68,16 @@ class ApiClient {
         handler.next(options);
       },
       onError: (error, handler) {
+        final isNetworkError = _networkErrorTypes.contains(error.type);
         final data = error.response?.data;
-        final message = (data is Map && data['error'] != null)
-            ? data['error'].toString()
-            : error.message ?? 'Something went wrong. Please try again.';
+        final message = isNetworkError
+            ? 'common.noInternet'.tr()
+            : (data is Map && data['error'] != null)
+                ? data['error'].toString()
+                : error.message ?? 'common.somethingWentWrong'.tr();
         handler.next(DioException(
           requestOptions: error.requestOptions,
-          error: ApiException(message, statusCode: error.response?.statusCode),
+          error: ApiException(message, statusCode: error.response?.statusCode, isNetworkError: isNetworkError),
           response: error.response,
           type: error.type,
         ));

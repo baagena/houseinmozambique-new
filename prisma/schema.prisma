@@ -26,12 +26,24 @@ model Agent {
   specializations String[]
   email           String     @unique
   password        String
-  role            String     @default("AGENT") // AGENT, ADMIN
+  role            String     @default("AGENT") // AGENT, ADMIN, CUSTOMER
   properties      Property[]
   inquiries       Inquiry[]
   blogPosts       BlogPost[]
+  favorites       Favorite[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  customer   Agent    @relation(fields: [customerId], references: [id])
+  customerId String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, propertyId])
+  @@index([customerId])
 }
 
 model Property {

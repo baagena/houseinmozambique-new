@@ -155,9 +155,20 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       expand: false,
       builder: (context, scrollController) {
         if (_loading && widget.isEditing && _titleController.text.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          );
         }
-        return Form(
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Form(
           key: _formKey,
           child: ListView(
             controller: scrollController,
@@ -256,6 +267,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
                     : Text('dashboard.submit'.tr()),
               ),
             ],
+          ),
           ),
         );
       },

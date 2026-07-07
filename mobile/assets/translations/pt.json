@@ -3,6 +3,7 @@
     "loading": "Carregando...",
     "retry": "Tentar novamente",
     "somethingWentWrong": "Algo correu mal",
+    "noInternet": "Sem ligação à internet. Verifique a sua rede e tente novamente.",
     "seeAll": "Ver tudo",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -121,7 +122,12 @@
     "benefitListings": "Publique e gira os seus imóveis",
     "benefitLeads": "Responda diretamente a interessados compradores e inquilinos",
     "benefitInsights": "Acompanhe visualizações e desempenho dos seus anúncios",
-    "agentDashboard": "Painel do agente"
+    "agentDashboard": "Painel do agente",
+    "customerBadge": "Cliente",
+    "becomeAgent": "Tornar-se agente",
+    "syncFavoritesTitle": "Sincronize os seus favoritos",
+    "syncFavoritesSubtitle": "Crie uma conta gratuita para manter os favoritos em todos os dispositivos.",
+    "syncFavoritesCta": "Começar"
   },
   "auth": {
     "loginTitle": "Acesso de Agente",

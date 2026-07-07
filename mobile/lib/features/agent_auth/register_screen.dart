@@ -7,11 +7,13 @@ import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 
-const _steps = ['Personal', 'Professional', 'Expertise'];
+const _agentSteps = ['Personal', 'Professional', 'Expertise'];
+const _customerSteps = ['Personal'];
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? redirectTo;
-  const RegisterScreen({super.key, this.redirectTo});
+  final String initialAccountType;
+  const RegisterScreen({super.key, this.redirectTo, this.initialAccountType = 'AGENT'});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -33,9 +35,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _specInputController = TextEditingController();
   final List<String> _specializations = [];
 
+  late String _accountType = widget.initialAccountType;
   int _step = 0;
   bool _submitting = false;
   String? _error;
+
+  List<String> get _steps => _accountType == 'CUSTOMER' ? _customerSteps : _agentSteps;
+  bool get _isCustomer => _accountType == 'CUSTOMER';
+
+  void _setAccountType(String type) {
+    if (_accountType == type) return;
+    setState(() {
+      _accountType = type;
+      _step = 0;
+    });
+    _pageController.jumpToPage(0);
+  }
 
   @override
   void dispose() {
@@ -65,7 +80,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _goNext() async {
     if (!_formKeys[_step].currentState!.validate()) return;
-    if (_step < 2) {
+    if (_step < _steps.length - 1) {
       setState(() => _step++);
       _pageController.animateToPage(_step, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
     } else {
@@ -89,12 +104,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             name: _nameController.text.trim(),
+            role: _accountType,
             phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-            title: _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
-            location: _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
-            yearsExperience: int.tryParse(_yearsController.text.trim()),
-            bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
-            specializations: _specializations.isEmpty ? null : _specializations,
+            title: _isCustomer || _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
+            location: _isCustomer || _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
+            yearsExperience: _isCustomer ? null : int.tryParse(_yearsController.text.trim()),
+            bio: _isCustomer || _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
+            specializations: _isCustomer || _specializations.isEmpty ? null : _specializations,
           );
       if (mounted) context.go(widget.redirectTo ?? '/profile');
     } catch (e) {
@@ -113,6 +129,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       appBar: AppBar(title: Text('auth.registerTitle'.tr())),
       body: Column(
         children: [
+          if (_step == 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+              child: _AccountTypeToggle(accountType: _accountType, onChanged: _setAccountType),
+            ),
+          if (_steps.length > 1)
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
             child: Row(
@@ -159,8 +181,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 _buildStep(
                   formKey: _formKeys[0],
-                  title: 'Start your journey',
-                  subtitle: 'Create your account to join our verified partner network.',
+                  title: _isCustomer ? 'Create your account' : 'Start your journey',
+                  subtitle: _isCustomer
+                      ? 'Save favorites and message agents faster across all your devices.'
+                      : 'Create your account to join our verified partner network.',
                   children: [
                     TextFormField(
                       controller: _nameController,
@@ -293,7 +317,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onPressed: _submitting ? null : _goNext,
                     child: _submitting
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text(_step == 2 ? 'Complete application' : 'Continue'),
+                        : Text(_step == _steps.length - 1 ? (_isCustomer ? 'Create account' : 'Complete application') : 'Continue'),
                   ),
                 ),
               ],
@@ -328,6 +352,52 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
             ...children,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountTypeToggle extends StatelessWidget {
+  final String accountType;
+  final ValueChanged<String> onChanged;
+  const _AccountTypeToggle({required this.accountType, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _segment(label: 'Customer', value: 'CUSTOMER')),
+          Expanded(child: _segment(label: 'Agent', value: 'AGENT')),
+        ],
+      ),
+    );
+  }
+
+  Widget _segment({required String label, required String value}) {
+    final selected = accountType == value;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : AppColors.onSurfaceVariant,
+          ),
         ),
       ),
     );

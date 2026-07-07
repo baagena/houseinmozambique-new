@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/storage/token_storage.dart';
 import '../models/agent.dart';
 import '../repositories/auth_repository.dart';
+import 'favorites_controller.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -38,12 +39,14 @@ class AuthController extends Notifier<AuthState> {
     final (token, agent) = await ref.read(authRepositoryProvider).login(email, password);
     await TokenStorage.saveToken(token);
     state = AuthState(status: AuthStatus.authenticated, agent: agent);
+    if (agent.isCustomer) await _mergeFavoritesIfCustomer();
   }
 
   Future<void> register({
     required String email,
     required String password,
     required String name,
+    String role = 'AGENT',
     String? phone,
     String? title,
     String? location,
@@ -55,6 +58,7 @@ class AuthController extends Notifier<AuthState> {
           email: email,
           password: password,
           name: name,
+          role: role,
           phone: phone,
           title: title,
           location: location,
@@ -64,6 +68,15 @@ class AuthController extends Notifier<AuthState> {
         );
     await TokenStorage.saveToken(token);
     state = AuthState(status: AuthStatus.authenticated, agent: agent);
+    if (agent.isCustomer) await _mergeFavoritesIfCustomer();
+  }
+
+  Future<void> _mergeFavoritesIfCustomer() async {
+    try {
+      await ref.read(favoritesControllerProvider.notifier).mergeLocalIntoServer();
+    } catch (_) {
+      // Non-fatal: the favorites screen will just retry loading from the server later.
+    }
   }
 
   void updateAgent(Agent agent) {

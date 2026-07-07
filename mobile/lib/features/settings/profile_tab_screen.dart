@@ -22,7 +22,42 @@ class ProfileTabScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (agent != null) ...[
+          if (agent != null && agent.isCustomer) ...[
+            Card(
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                leading: CircleAvatar(
+                  radius: 28,
+                  backgroundColor: AppColors.surfaceVariant,
+                  backgroundImage: agent.avatar != null ? CachedNetworkImageProvider(agent.avatar!) : null,
+                  child: agent.avatar == null ? Text(agent.initials) : null,
+                ),
+                title: Text(agent.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('settings.customerBadge'.tr()),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _ProfileTile(
+              icon: Icons.favorite_outline,
+              label: 'nav.favorites'.tr(),
+              trailingText: favoritesCount > 0 ? '$favoritesCount' : null,
+              onTap: () => context.push('/favorites'),
+            ),
+            _ProfileTile(icon: Icons.support_agent_outlined, label: 'settings.helpContact'.tr(), onTap: () => context.push('/contact')),
+            _ProfileTile(icon: Icons.settings_outlined, label: 'settings.title'.tr(), onTap: () => context.push('/settings')),
+            const SizedBox(height: 8),
+            _ProfileTile(
+              icon: Icons.logout,
+              label: 'common.logout'.tr(),
+              onTap: () => ref.read(authControllerProvider.notifier).logout(),
+            ),
+            const SizedBox(height: 8),
+            _ProfileTile(
+              icon: Icons.real_estate_agent_outlined,
+              label: 'settings.becomeAgent'.tr(),
+              onTap: () => context.push('/agent-register', extra: {'accountType': 'AGENT'}),
+            ),
+          ] else if (agent != null) ...[
             Card(
               child: ListTile(
                 contentPadding: const EdgeInsets.all(16),
@@ -89,6 +124,35 @@ class ProfileTabScreen extends ConsumerWidget {
             ),
             _ProfileTile(icon: Icons.support_agent_outlined, label: 'settings.helpContact'.tr(), onTap: () => context.push('/contact')),
             _ProfileTile(icon: Icons.settings_outlined, label: 'settings.title'.tr(), onTap: () => context.push('/settings')),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.sync_outlined, color: AppColors.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('settings.syncFavoritesTitle'.tr(), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                        const SizedBox(height: 2),
+                        Text('settings.syncFavoritesSubtitle'.tr(), style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () => context.push('/agent-register', extra: {'accountType': 'CUSTOMER'}),
+                    child: Text('settings.syncFavoritesCta'.tr()),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 8),
             const Divider(height: 32),
             Text('settings.forProfessionals'.tr(), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),

@@ -38,6 +38,8 @@ class Agent {
   });
 
   bool get isAdmin => role == 'ADMIN';
+  bool get isCustomer => role == 'CUSTOMER';
+  bool get isAgent => role == 'AGENT' || role == 'ADMIN';
 
   factory Agent.fromJson(Map<String, dynamic> json) {
     return Agent(

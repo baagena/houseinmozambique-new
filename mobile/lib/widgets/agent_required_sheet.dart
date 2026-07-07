@@ -7,25 +7,27 @@ import '../controllers/auth_controller.dart';
 import '../core/theme/app_theme.dart';
 
 /// Entry point for any action that requires an agent account (e.g. posting a
-/// listing). Signed-in agents go straight through; everyone else sees a sheet
-/// explaining why, with a clear path to sign in or create an account —
-/// instead of silently redirecting to a login form with no context.
+/// listing). Signed-in agents/admins go straight through; a signed-in
+/// customer or a guest sees a sheet explaining why, with a clear path to
+/// become an agent — instead of silently redirecting to a login form with no
+/// context, or (for customers) silently letting a non-agent account through.
 void requireAgent(BuildContext context, WidgetRef ref, {required String redirectTo}) {
-  final isAuthenticated = ref.read(authControllerProvider).status == AuthStatus.authenticated;
-  if (isAuthenticated) {
+  final agent = ref.read(authControllerProvider).agent;
+  if (agent != null && agent.isAgent) {
     context.push(redirectTo);
     return;
   }
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
-    builder: (context) => _AgentRequiredSheet(redirectTo: redirectTo),
+    builder: (context) => _AgentRequiredSheet(redirectTo: redirectTo, isSignedInAsCustomer: agent != null),
   );
 }
 
 class _AgentRequiredSheet extends StatelessWidget {
   final String redirectTo;
-  const _AgentRequiredSheet({required this.redirectTo});
+  final bool isSignedInAsCustomer;
+  const _AgentRequiredSheet({required this.redirectTo, required this.isSignedInAsCustomer});
 
   @override
   Widget build(BuildContext context) {
@@ -54,25 +56,26 @@ class _AgentRequiredSheet extends StatelessWidget {
               style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13.5),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  context.push('/agent-login', extra: redirectTo);
-                },
-                child: Text('auth.signIn'.tr()),
+            if (!isSignedInAsCustomer)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.push('/agent-login', extra: redirectTo);
+                  },
+                  child: Text('auth.signIn'.tr()),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
+            if (!isSignedInAsCustomer) const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  context.push('/agent-register', extra: redirectTo);
+                  context.push('/agent-register', extra: {'redirectTo': redirectTo, 'accountType': 'AGENT'});
                 },
-                child: Text('auth.registerTitle'.tr()),
+                child: Text(isSignedInAsCustomer ? 'settings.becomeAgent'.tr() : 'auth.registerTitle'.tr()),
               ),
             ),
           ],

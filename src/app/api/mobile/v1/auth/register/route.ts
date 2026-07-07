@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password, name, phone, title, location, yearsExperience, bio, specializations } = body;
+    const role = body.role === 'CUSTOMER' ? 'CUSTOMER' : 'AGENT';
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -41,20 +42,22 @@ export async function POST(request: Request) {
         name,
         initials,
         phone: phone || null,
-        title: title || 'Agent',
+        title: role === 'CUSTOMER' ? 'Customer' : (title || 'Agent'),
         location: location || 'Mozambique',
         yearsExperience: yearsExperience || 0,
         bio: bio || '',
         specializations: specializations || [],
-        role: 'AGENT',
+        role,
       },
       select: AGENT_SELF_SELECT,
     });
 
-    try {
-      await sendAgentVerificationEmail({ name: newAgent.name, email: newAgent.email });
-    } catch (emailError) {
-      console.error('Agent verification email failed:', emailError);
+    if (role === 'AGENT') {
+      try {
+        await sendAgentVerificationEmail({ name: newAgent.name, email: newAgent.email });
+      } catch (emailError) {
+        console.error('Agent verification email failed:', emailError);
+      }
     }
 
     const token = signAgentToken(newAgent.id, newAgent.role);
@@ -62,7 +65,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       token,
       agent: newAgent,
-      message: 'Agent registered successfully. A verification email has been sent.',
+      message: role === 'CUSTOMER'
+        ? 'Account created successfully.'
+        : 'Agent registered successfully. A verification email has been sent.',
     });
   } catch (error) {
     console.error('Mobile registration error:', error);

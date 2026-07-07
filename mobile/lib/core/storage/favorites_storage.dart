@@ -1,7 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Favorites are local-only: the site has no consumer account system today
-/// (only Agent logins), so there is nothing on the server to sync against.
+/// Device-local favorites for guests (and the pre-sync fallback before a
+/// customer account exists). Signed-in customers sync via FavoritesRepository
+/// instead — see FavoritesController.
 class FavoritesStorage {
   FavoritesStorage._();
   static const _key = 'favorite_property_ids';
@@ -24,5 +25,10 @@ class FavoritesStorage {
     }
     await prefs.setStringList(_key, ids.toList());
     return isFavorite;
+  }
+
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
   }
 }

@@ -144,7 +144,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/agent-register',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => _fadeThroughPage(RegisterScreen(redirectTo: state.extra as String?)),
+        pageBuilder: (context, state) {
+          final extra = state.extra;
+          final redirectTo = extra is Map ? extra['redirectTo'] as String? : extra as String?;
+          final accountType = extra is Map ? (extra['accountType'] as String? ?? 'AGENT') : 'AGENT';
+          return _fadeThroughPage(RegisterScreen(redirectTo: redirectTo, initialAccountType: accountType));
+        },
       ),
       GoRoute(
         path: '/dashboard',
