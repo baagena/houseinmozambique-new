@@ -11,6 +11,7 @@ import '../../repositories/home_repository.dart';
 import '../../widgets/agent_card.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/property_card.dart';
+import '../../widgets/favorites_fab.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/shimmer_loaders.dart';
 
@@ -34,22 +35,25 @@ class HomeScreen extends ConsumerWidget {
           IconButton(icon: const Icon(Icons.article_outlined), onPressed: () => context.push('/blog')),
         ],
       ),
+      floatingActionButton: const FavoritesFab(heroTag: 'home-favorites-fab'),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(homeDataProvider.future),
         child: homeAsync.when(
           loading: () => ListView(
+            padding: const EdgeInsets.only(bottom: 100),
             children: const [
               SizedBox(height: 12),
               PropertyRowSkeletons(),
             ],
           ),
           error: (err, st) => ErrorView(
-            message: err is ApiException ? err.message : null,
+            message: err.asApiException?.message,
             onRetry: () => ref.invalidate(homeDataProvider),
           ),
           data: (home) => ListView(
+            padding: const EdgeInsets.only(bottom: 100),
             children: [
-              const SizedBox(height: 200, child: _HeroBanner()),
+              const _HeroBanner(),
               if (home.ads.any((a) => a.position == 'top_banner'))
                 _AdBanner(ad: home.ads.firstWhere((a) => a.position == 'top_banner')),
               if (home.featured.isNotEmpty) ...[

@@ -7,6 +7,7 @@ import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../repositories/property_repository.dart';
 import '../../widgets/error_view.dart';
+import '../../widgets/favorites_fab.dart';
 import '../../widgets/property_card.dart';
 import '../../widgets/shimmer_loaders.dart';
 
@@ -60,6 +61,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           IconButton(icon: const Icon(Icons.tune), onPressed: _openFilters),
         ],
       ),
+      floatingActionButton: const FavoritesFab(heroTag: 'explore-favorites-fab'),
       body: Column(
         children: [
           SizedBox(
@@ -79,14 +81,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ? const ListSkeleton()
                 : state.error != null && state.results.isEmpty
                     ? ErrorView(
-                        message: state.error is ApiException ? (state.error as ApiException).message : null,
+                        message: state.error.asApiException?.message,
                         onRetry: () => ref.read(propertySearchControllerProvider.notifier).search(),
                       )
                     : state.results.isEmpty
                         ? Center(child: Text('common.noResults'.tr()))
                         : GridView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 12,

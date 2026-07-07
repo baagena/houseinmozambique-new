@@ -7,7 +7,8 @@ import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final String? redirectTo;
+  const LoginScreen({super.key, this.redirectTo});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -35,9 +36,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
     try {
       await ref.read(authControllerProvider.notifier).login(_emailController.text.trim(), _passwordController.text);
-      if (mounted) context.go('/profile');
+      if (mounted) context.go(widget.redirectTo ?? '/profile');
     } catch (e) {
-      setState(() => _error = e is ApiException ? e.message : 'common.somethingWentWrong'.tr());
+      setState(() => _error = e.asApiException?.message ?? 'common.somethingWentWrong'.tr());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -62,15 +63,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(labelText: 'auth.email'.tr()),
-                validator: (v) => (v == null || !v.contains('@')) ? ' ' : null,
+                decoration: InputDecoration(labelText: 'auth.email'.tr(), prefixIcon: const Icon(Icons.email_outlined)),
+                validator: (v) => (v == null || !v.contains('@')) ? 'auth.emailInvalid'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(labelText: 'auth.password'.tr()),
-                validator: (v) => (v == null || v.isEmpty) ? ' ' : null,
+                decoration: InputDecoration(labelText: 'auth.password'.tr(), prefixIcon: const Icon(Icons.lock_outline)),
+                validator: (v) => (v == null || v.isEmpty) ? 'auth.passwordRequired'.tr() : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -81,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => context.push('/agent-register'),
+                onPressed: () => context.push('/agent-register', extra: widget.redirectTo),
                 child: Text('${'auth.noAccount'.tr()} ${'auth.signUp'.tr()}'),
               ),
             ],

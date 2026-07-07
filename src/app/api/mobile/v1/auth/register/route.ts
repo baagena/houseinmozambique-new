@@ -7,7 +7,7 @@ import { signAgentToken, AGENT_SELF_SELECT } from '@/lib/mobile-auth';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, name, title, location, yearsExperience, bio, specializations } = body;
+    const { email, password, name, phone, title, location, yearsExperience, bio, specializations } = body;
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         name,
         initials,
+        phone: phone || null,
         title: title || 'Agent',
         location: location || 'Mozambique',
         yearsExperience: yearsExperience || 0,

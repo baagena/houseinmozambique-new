@@ -11,6 +11,7 @@ class BlogPost {
   final int readTime;
   final DateTime? publishedAt;
   final String? authorName;
+  final String status;
 
   BlogPost({
     required this.id,
@@ -25,6 +26,7 @@ class BlogPost {
     this.readTime = 4,
     this.publishedAt,
     this.authorName,
+    this.status = 'DRAFT',
   });
 
   factory BlogPost.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class BlogPost {
       readTime: json['readTime'] as int? ?? 4,
       publishedAt: json['publishedAt'] != null ? DateTime.tryParse(json['publishedAt'] as String) : null,
       authorName: author?['name'] as String?,
+      status: json['status'] as String? ?? 'DRAFT',
     );
   }
 }

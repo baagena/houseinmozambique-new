@@ -11,6 +11,18 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Dio always throws [DioException] from request calls, never the [ApiException]
+/// nested inside it by [ApiClient]'s error interceptor — so `e is ApiException`
+/// is never true at call sites. Use `e.asApiException` to unwrap it correctly.
+extension ApiExceptionUnwrap on Object? {
+  ApiException? get asApiException {
+    final e = this;
+    if (e is ApiException) return e;
+    if (e is DioException && e.error is ApiException) return e.error as ApiException;
+    return null;
+  }
+}
+
 class ApiClient {
   late final Dio dio;
 

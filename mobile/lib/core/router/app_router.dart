@@ -22,7 +22,16 @@ import '../../features/agent_dashboard/my_listings_screen.dart';
 import '../../features/agent_dashboard/listing_form_screen.dart';
 import '../../features/agent_dashboard/leads_screen.dart';
 import '../../features/agent_dashboard/agent_profile_screen.dart';
+import '../../features/admin/admin_dashboard_screen.dart';
+import '../../features/admin/admin_approvals_screen.dart';
+import '../../features/admin/admin_agents_screen.dart';
+import '../../features/admin/admin_properties_screen.dart';
+import '../../features/admin/admin_ads_screen.dart';
+import '../../features/admin/admin_blog_screen.dart';
+import '../../features/admin/admin_activities_screen.dart';
+import '../../features/admin/admin_settings_screen.dart';
 import '../../widgets/app_shell.dart';
+import '../../controllers/auth_controller.dart';
 
 CustomTransitionPage<void> _fadeThroughPage(Widget child) {
   return CustomTransitionPage(
@@ -52,6 +61,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    redirect: (context, state) {
+      if (state.matchedLocation.startsWith('/admin')) {
+        final agent = ref.read(authControllerProvider).agent;
+        if (agent == null || !agent.isAdmin) return '/profile';
+      }
+      return null;
+    },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
@@ -65,15 +81,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(path: '/explore', builder: (context, state) => const SearchScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/favorites', builder: (context, state) => const FavoritesScreen()),
-          ]),
-          StatefulShellBranch(routes: [
             GoRoute(path: '/agents', builder: (context, state) => const AgentsScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (context, state) => const ProfileTabScreen()),
           ]),
         ],
+      ),
+      GoRoute(
+        path: '/favorites',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const FavoritesScreen()),
       ),
       GoRoute(
         path: '/property/:id',
@@ -121,12 +139,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/agent-login',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => _fadeThroughPage(const LoginScreen()),
+        pageBuilder: (context, state) => _fadeThroughPage(LoginScreen(redirectTo: state.extra as String?)),
       ),
       GoRoute(
         path: '/agent-register',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => _fadeThroughPage(const RegisterScreen()),
+        pageBuilder: (context, state) => _fadeThroughPage(RegisterScreen(redirectTo: state.extra as String?)),
       ),
       GoRoute(
         path: '/dashboard',
@@ -157,6 +175,46 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/dashboard/profile',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _fadeThroughPage(const AgentProfileScreen()),
+      ),
+      GoRoute(
+        path: '/admin',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminDashboardScreen()),
+      ),
+      GoRoute(
+        path: '/admin/approvals',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminApprovalsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/agents',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminAgentsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/properties',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminPropertiesScreen()),
+      ),
+      GoRoute(
+        path: '/admin/ads',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminAdsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/blog',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminBlogScreen()),
+      ),
+      GoRoute(
+        path: '/admin/activities',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminActivitiesScreen()),
+      ),
+      GoRoute(
+        path: '/admin/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminSettingsScreen()),
       ),
     ],
   );

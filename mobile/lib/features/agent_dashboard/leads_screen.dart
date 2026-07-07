@@ -23,7 +23,7 @@ class LeadsScreen extends ConsumerWidget {
         child: leadsAsync.when(
           loading: () => const ListSkeleton(),
           error: (err, st) => ErrorView(
-            message: err is ApiException ? err.message : null,
+            message: err.asApiException?.message,
             onRetry: () => ref.invalidate(myLeadsProvider),
           ),
           data: (result) {

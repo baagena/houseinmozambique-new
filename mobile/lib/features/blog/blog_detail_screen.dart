@@ -28,7 +28,7 @@ class BlogDetailScreen extends ConsumerWidget {
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, st) => ErrorView(
-          message: err is ApiException ? err.message : null,
+          message: err.asApiException?.message,
           onRetry: () => ref.invalidate(blogDetailProvider(slug)),
         ),
         data: (result) {

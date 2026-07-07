@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
+import '../../core/theme/app_theme.dart';
 import '../../repositories/inquiry_repository.dart';
 
 class ContactScreen extends ConsumerStatefulWidget {
@@ -50,7 +51,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      final message = e is ApiException ? e.message : 'contact.error'.tr();
+      final message = e.asApiException?.message ?? 'contact.error'.tr();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -67,14 +68,19 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
         maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: [
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
                   Center(
                     child: Container(
                       width: 40,
@@ -120,7 +126,8 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
                           : Text('common.send'.tr()),
                     ),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

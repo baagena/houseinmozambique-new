@@ -51,7 +51,7 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final message = e is ApiException ? e.message : 'common.somethingWentWrong'.tr();
+        final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {

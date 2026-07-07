@@ -38,12 +38,17 @@
   "home": {
     "heroTitle": "Encontre a sua casa em Moçambique",
     "heroSubtitle": "Compre, alugue ou descubra estadias curtas em todo o país",
+    "postHouse": "Anuncie um Imóvel",
     "featured": "Imóveis em Destaque",
     "featuredAgents": "Agentes em Destaque",
     "forRent": "Para Alugar",
     "forSale": "Para Comprar",
     "shortStay": "Estadias Curtas",
     "exploreCity": "Explorar {}"
+  },
+  "postHouse": {
+    "signInRequired": "Entre para anunciar um imóvel",
+    "signInRequiredBody": "Anunciar um imóvel é uma funcionalidade para agentes. Entre na sua conta de agente ou crie uma em poucos minutos se ainda não tiver."
   },
   "search": {
     "title": "Pesquisar Imóveis",
@@ -107,14 +112,29 @@
     "english": "Inglês",
     "portuguese": "Português",
     "about": "Sobre",
+    "guestTitle": "Bem-vindo",
+    "guestSubtitle": "Explore imóveis, guarde favoritos e contacte agentes — sem precisar de conta.",
+    "helpContact": "Ajuda e Contacto",
+    "forProfessionals": "Para profissionais imobiliários",
     "agentLogin": "Acesso de agente",
+    "agentLoginSubtitle": "Entre para gerir os seus imóveis, responder a contactos e expandir o seu negócio — ou junte-se à nossa rede de agentes de confiança.",
+    "benefitListings": "Publique e gira os seus imóveis",
+    "benefitLeads": "Responda diretamente a interessados compradores e inquilinos",
+    "benefitInsights": "Acompanhe visualizações e desempenho dos seus anúncios",
     "agentDashboard": "Painel do agente"
   },
   "auth": {
     "loginTitle": "Acesso de Agente",
     "registerTitle": "Torne-se Agente",
     "email": "Email",
+    "phone": "Número de telefone",
     "password": "Palavra-passe",
+    "confirmPassword": "Confirmar palavra-passe",
+    "passwordTooShort": "Deve ter pelo menos 8 caracteres",
+    "passwordsDontMatch": "As palavras-passe não coincidem",
+    "passwordRequired": "A palavra-passe é obrigatória",
+    "nameRequired": "O nome é obrigatório",
+    "emailInvalid": "Introduza um email válido",
     "fullName": "Nome completo",
     "login": "Entrar",
     "register": "Criar conta",

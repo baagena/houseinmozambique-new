@@ -24,7 +24,7 @@ class BlogListScreen extends ConsumerWidget {
       body: postsAsync.when(
         loading: () => const ListSkeleton(),
         error: (err, st) => ErrorView(
-          message: err is ApiException ? err.message : null,
+          message: err.asApiException?.message,
           onRetry: () => ref.invalidate(blogListProvider),
         ),
         data: (posts) => ListView.separated(

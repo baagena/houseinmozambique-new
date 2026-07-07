@@ -38,12 +38,17 @@
   "home": {
     "heroTitle": "Find your home in Mozambique",
     "heroSubtitle": "Buy, rent or discover short stays across the country",
+    "postHouse": "Post a House",
     "featured": "Featured Properties",
     "featuredAgents": "Featured Agents",
     "forRent": "For Rent",
     "forSale": "For Sale",
     "shortStay": "Short Stays",
     "exploreCity": "Explore {}"
+  },
+  "postHouse": {
+    "signInRequired": "Sign in to post a house",
+    "signInRequiredBody": "Posting a listing is an agent feature. Sign in to your agent account, or create one in a couple of minutes if you don't have one yet."
   },
   "search": {
     "title": "Search Properties",
@@ -107,14 +112,29 @@
     "english": "English",
     "portuguese": "Portuguese",
     "about": "About",
+    "guestTitle": "Welcome",
+    "guestSubtitle": "Browse listings, save favorites and contact agents — no account needed.",
+    "helpContact": "Help & Contact",
+    "forProfessionals": "For property professionals",
     "agentLogin": "Agent login",
+    "agentLoginSubtitle": "Sign in to manage your listings, respond to leads and grow your business — or join our network of trusted agents.",
+    "benefitListings": "List and manage your properties",
+    "benefitLeads": "Respond to buyer and renter inquiries directly",
+    "benefitInsights": "Track views and performance on your listings",
     "agentDashboard": "Agent dashboard"
   },
   "auth": {
     "loginTitle": "Agent Login",
     "registerTitle": "Become an Agent",
     "email": "Email",
+    "phone": "Phone number",
     "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordTooShort": "Must be at least 8 characters",
+    "passwordsDontMatch": "Passwords don't match",
+    "passwordRequired": "Password is required",
+    "nameRequired": "Name is required",
+    "emailInvalid": "Enter a valid email address",
     "fullName": "Full name",
     "login": "Log in",
     "register": "Create account",

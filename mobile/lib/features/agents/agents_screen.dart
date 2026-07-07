@@ -27,7 +27,7 @@ class AgentsScreen extends ConsumerWidget {
       body: agentsAsync.when(
         loading: () => const ListSkeleton(),
         error: (err, st) => ErrorView(
-          message: err is ApiException ? err.message : null,
+          message: err.asApiException?.message,
           onRetry: () => ref.invalidate(agentsListProvider),
         ),
         data: (agents) => ListView.separated(

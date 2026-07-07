@@ -60,6 +60,22 @@ export async function requireBearerAgent(request: Request) {
   return { agent };
 }
 
+/**
+ * Resolves the authenticated agent from an Authorization: Bearer <jwt> header
+ * and requires that agent to have the ADMIN role. Mirrors the cookie-based
+ * requireAdmin() helpers in src/app/api/admin/*, for mobile API routes.
+ */
+export async function requireBearerAdmin(request: Request) {
+  const result = await requireBearerAgent(request);
+  if ('error' in result) return result;
+
+  if (result.agent.role !== 'ADMIN') {
+    return { error: 'Forbidden - admins only', status: 403 as const };
+  }
+
+  return { agent: result.agent };
+}
+
 export const AGENT_PUBLIC_SELECT = {
   id: true,
   name: true,

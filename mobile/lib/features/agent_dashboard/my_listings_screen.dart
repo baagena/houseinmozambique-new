@@ -29,7 +29,7 @@ class MyListingsScreen extends ConsumerWidget {
         child: propertiesAsync.when(
           loading: () => const ListSkeleton(),
           error: (err, st) => ErrorView(
-            message: err is ApiException ? err.message : null,
+            message: err.asApiException?.message,
             onRetry: () => ref.invalidate(myPropertiesProvider),
           ),
           data: (properties) {

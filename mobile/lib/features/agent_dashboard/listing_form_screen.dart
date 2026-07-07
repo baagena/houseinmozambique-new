@@ -96,7 +96,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       setState(() => _images.add(url));
     } catch (e) {
       if (mounted) {
-        final message = e is ApiException ? e.message : 'common.somethingWentWrong'.tr();
+        final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -136,7 +136,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final message = e is ApiException ? e.message : 'common.somethingWentWrong'.tr();
+        final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {

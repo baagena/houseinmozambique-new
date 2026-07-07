@@ -15,6 +15,7 @@ class Agent {
   final int? yearsExperience;
   final List<String> specializations;
   final int propertyCount;
+  final String role;
 
   Agent({
     required this.id,
@@ -33,7 +34,10 @@ class Agent {
     this.yearsExperience,
     this.specializations = const [],
     this.propertyCount = 0,
+    this.role = 'AGENT',
   });
+
+  bool get isAdmin => role == 'ADMIN';
 
   factory Agent.fromJson(Map<String, dynamic> json) {
     return Agent(
@@ -53,6 +57,7 @@ class Agent {
       yearsExperience: json['yearsExperience'] as int?,
       specializations: (json['specializations'] as List?)?.map((e) => e.toString()).toList() ?? [],
       propertyCount: (json['_count'] as Map<String, dynamic>?)?['properties'] as int? ?? 0,
+      role: json['role'] as String? ?? 'AGENT',
     );
   }
 }
