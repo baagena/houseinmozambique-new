@@ -45,6 +45,7 @@ CustomTransitionPage<void> _fadeThroughPage(Widget child) {
 
 CustomTransitionPage<void> _slideUpPage(Widget child) {
   return CustomTransitionPage(
+    opaque: false,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)

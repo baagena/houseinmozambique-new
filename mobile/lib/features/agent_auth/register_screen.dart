@@ -126,7 +126,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('auth.registerTitle'.tr())),
+      appBar: AppBar(title: Text(_isCustomer ? 'auth.createAccountTitle'.tr() : 'auth.registerTitle'.tr())),
       body: Column(
         children: [
           if (_step == 0)

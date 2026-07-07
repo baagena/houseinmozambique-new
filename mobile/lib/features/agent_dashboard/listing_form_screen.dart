@@ -4,16 +4,27 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/property.dart';
 import '../../repositories/agent_dashboard_repository.dart';
+import '../../repositories/payment_repository.dart';
 import '../../repositories/property_repository.dart';
 
 const _propertyTypes = ['Villa', 'Apartment', 'House', 'Land', 'Commercial'];
 const _listingTypes = ['Buy', 'Rent', 'Short Stay'];
+
+enum _Phase { plan, details, payment }
+
+const _planTiers = [
+  (id: 'standard', nameKey: 'plans.standardName', priceKey: 'plans.standardPrice', descKey: 'plans.standardDesc', ctaKey: 'plans.standardCta', amount: 0, highlighted: false, selectable: true),
+  (id: 'premium', nameKey: 'plans.premiumName', priceKey: 'plans.premiumPrice', descKey: 'plans.premiumDesc', ctaKey: 'plans.premiumCta', amount: 3500, highlighted: true, selectable: true),
+  (id: 'pro', nameKey: 'plans.proName', priceKey: 'plans.proPrice', descKey: 'plans.proDesc', ctaKey: 'plans.proCta', amount: 0, highlighted: false, selectable: false),
+];
 
 class ListingFormScreen extends ConsumerStatefulWidget {
   final String? propertyId;
@@ -35,6 +46,8 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   final _bedroomsController = TextEditingController(text: '1');
   final _bathroomsController = TextEditingController(text: '1');
   final _areaController = TextEditingController();
+  final _payerNameController = TextEditingController();
+  final _transactionRefController = TextEditingController();
 
   String _propertyType = _propertyTypes.first;
   String _listingType = _listingTypes.first;
@@ -42,10 +55,21 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   bool _loading = false;
   bool _submitting = false;
 
+  late _Phase _phase = widget.isEditing ? _Phase.details : _Phase.plan;
+  String _selectedPlan = 'standard';
+  String _paymentTab = 'mobile';
+  bool _agreedToTerms = false;
+
+  int get _planAmount => _planTiers.firstWhere((p) => p.id == _selectedPlan).amount;
+
   @override
   void initState() {
     super.initState();
-    if (widget.isEditing) _loadExisting();
+    if (widget.isEditing) {
+      _loadExisting();
+    } else {
+      _payerNameController.text = ref.read(authControllerProvider).agent?.name ?? '';
+    }
   }
 
   Future<void> _loadExisting() async {
@@ -80,27 +104,78 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     _bedroomsController.dispose();
     _bathroomsController.dispose();
     _areaController.dispose();
+    _payerNameController.dispose();
+    _transactionRefController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (file == null) return;
-    final bytes = await file.readAsBytes();
-    final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-    final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
     setState(() => _loading = true);
     try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
       final url = await ref.read(agentDashboardRepositoryProvider).uploadImage(base64Str);
       setState(() => _images.add(url));
     } catch (e) {
       if (mounted) {
-        final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
+        final message = e.asApiException?.message ?? 'dashboard.imagePickerError'.tr();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _selectPlan(String planId) {
+    final plan = _planTiers.firstWhere((p) => p.id == planId);
+    if (!plan.selectable) {
+      final router = GoRouter.of(context);
+      Navigator.of(context).pop();
+      router.push('/contact');
+      return;
+    }
+    setState(() {
+      _selectedPlan = planId;
+      _phase = _Phase.details;
+    });
+  }
+
+  void _onDetailsContinue() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_planAmount == 0) {
+      _submit();
+    } else {
+      setState(() => _phase = _Phase.payment);
+    }
+  }
+
+  Future<void> _submitPayment() async {
+    if (_payerNameController.text.trim().isEmpty || _transactionRefController.text.trim().isEmpty || !_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('dashboard.paymentFillRequired'.tr())));
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      final agent = ref.read(authControllerProvider).agent!;
+      await ref.read(paymentRepositoryProvider).submitManualPayment(
+            amount: _planAmount,
+            planType: _selectedPlan,
+            userId: agent.id,
+            customerName: _payerNameController.text.trim(),
+            customerEmail: agent.email ?? '',
+            paymentReference: _transactionRefController.text.trim(),
+          );
+      await _submit();
+    } catch (e) {
+      if (mounted) {
+        final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        setState(() => _submitting = false);
+      }
     }
   }
 
@@ -131,8 +206,11 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       }
       ref.invalidate(myPropertiesProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${result.title} · ${'dashboard.submit'.tr()}')));
         Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('dashboard.listingSubmitted'.tr(args: [result.title])),
+          behavior: SnackBarBehavior.floating,
+        ));
       }
     } catch (e) {
       if (mounted) {
@@ -149,128 +227,389 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     return Material(
       type: MaterialType.transparency,
       child: DraggableScrollableSheet(
-      initialChildSize: 0.95,
-      minChildSize: 0.5,
-      maxChildSize: 0.98,
-      expand: false,
-      builder: (context, scrollController) {
-        if (_loading && widget.isEditing && _titleController.text.isEmpty) {
+        initialChildSize: 0.95,
+        minChildSize: 0.5,
+        maxChildSize: 0.98,
+        expand: false,
+        builder: (context, scrollController) {
           return Container(
             decoration: const BoxDecoration(
               color: AppColors.surfaceContainerLowest,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: _loading && widget.isEditing && _titleController.text.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : switch (_phase) {
+                    _Phase.plan => _buildPlanPhase(scrollController),
+                    _Phase.details => _buildDetailsPhase(scrollController),
+                    _Phase.payment => _buildPaymentPhase(scrollController),
+                  },
           );
-        }
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Form(
-          key: _formKey,
-          child: ListView(
-            controller: scrollController,
-            padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
-            children: [
-              Center(
-                child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(2))),
+        },
+      ),
+    );
+  }
+
+  Widget _sheetHandle() => Center(
+        child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(2))),
+      );
+
+  Widget _buildPlanPhase(ScrollController scrollController) {
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      children: [
+        _sheetHandle(),
+        Text('dashboard.selectPlanTitle'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text('dashboard.selectPlanSubtitle'.tr(), style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
+        const SizedBox(height: 20),
+        ..._planTiers.map((plan) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PlanCard(
+                name: plan.nameKey.tr(),
+                price: plan.priceKey.tr(),
+                description: plan.descKey.tr(),
+                cta: plan.ctaKey.tr(),
+                badge: plan.highlighted ? 'plans.premiumBadge'.tr() : null,
+                highlighted: plan.highlighted,
+                onTap: () => _selectPlan(plan.id),
               ),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildDetailsPhase(ScrollController scrollController) {
+    return Form(
+      key: _formKey,
+      child: ListView(
+        controller: scrollController,
+        padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+        children: [
+          _sheetHandle(),
+          Row(
+            children: [
+              if (!widget.isEditing)
+                IconButton(
+                  onPressed: () => setState(() => _phase = _Phase.plan),
+                  icon: const Icon(Icons.arrow_back),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
               Text(widget.isEditing ? 'common.edit'.tr() : 'dashboard.addListing'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 90,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    ..._images.map((url) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Stack(
-                            children: [
-                              ClipRRect(borderRadius: BorderRadius.circular(10), child: CachedNetworkImage(imageUrl: url, width: 80, height: 80, fit: BoxFit.cover)),
-                              Positioned(
-                                top: 2,
-                                right: 2,
-                                child: GestureDetector(
-                                  onTap: () => setState(() => _images.remove(url)),
-                                  child: const CircleAvatar(radius: 10, backgroundColor: Colors.black54, child: Icon(Icons.close, size: 12, color: Colors.white)),
-                                ),
-                              ),
-                            ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 90,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                ..._images.map((url) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Stack(
+                        children: [
+                          ClipRRect(borderRadius: BorderRadius.circular(10), child: CachedNetworkImage(imageUrl: url, width: 80, height: 80, fit: BoxFit.cover)),
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _images.remove(url)),
+                              child: const CircleAvatar(radius: 10, backgroundColor: Colors.black54, child: Icon(Icons.close, size: 12, color: Colors.white)),
+                            ),
                           ),
-                        )),
-                    GestureDetector(
-                      onTap: _loading ? null : _pickImage,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(10)),
-                        child: _loading ? const Center(child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.add_a_photo_outlined),
+                        ],
                       ),
-                    ),
-                  ],
+                    )),
+                GestureDetector(
+                  onTap: _loading ? null : _pickImage,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(10)),
+                    child: _loading ? const Center(child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.add_a_photo_outlined),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(controller: _titleController, decoration: InputDecoration(labelText: 'dashboard.propertyTitle'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
+          const SizedBox(height: 12),
+          TextFormField(controller: _descriptionController, maxLines: 3, decoration: InputDecoration(labelText: 'dashboard.description'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  initialValue: _listingType,
+                  decoration: const InputDecoration(labelText: 'Listing Type'),
+                  items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (v) => setState(() => _listingType = v!),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextFormField(controller: _titleController, decoration: InputDecoration(labelText: 'dashboard.propertyTitle'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
-              const SizedBox(height: 12),
-              TextFormField(controller: _descriptionController, maxLines: 3, decoration: InputDecoration(labelText: 'dashboard.description'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _listingType,
-                      decoration: const InputDecoration(labelText: 'Listing Type'),
-                      items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                      onChanged: (v) => setState(() => _listingType = v!),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _propertyType,
-                      decoration: const InputDecoration(labelText: 'Property Type'),
-                      items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                      onChanged: (v) => setState(() => _propertyType = v!),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'dashboard.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
-              const SizedBox(height: 12),
-              TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address')),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'dashboard.price'.tr()),
-                validator: (v) => v == null || double.tryParse(v) == null ? ' ' : null,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bedrooms'))),
-                  const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bathrooms'))),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (m²)')),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submitting ? null : _submit,
-                child: _submitting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('dashboard.submit'.tr()),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  initialValue: _propertyType,
+                  decoration: const InputDecoration(labelText: 'Property Type'),
+                  items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (v) => setState(() => _propertyType = v!),
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'dashboard.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
+          const SizedBox(height: 12),
+          TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address')),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(labelText: 'dashboard.price'.tr()),
+            validator: (v) => v == null || double.tryParse(v) == null ? ' ' : null,
           ),
-        );
-      },
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bedrooms'))),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bathrooms'))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (m²)')),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _submitting ? null : (widget.isEditing ? _submit : _onDetailsContinue),
+            child: _submitting
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(widget.isEditing || _planAmount == 0 ? 'dashboard.submit'.tr() : 'dashboard.continueToPayment'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentPhase(ScrollController scrollController) {
+    return ListView(
+      controller: scrollController,
+      padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+      children: [
+        _sheetHandle(),
+        Row(
+          children: [
+            IconButton(
+              onPressed: () => setState(() => _phase = _Phase.details),
+              icon: const Icon(Icons.arrow_back),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+            Text('dashboard.paymentTitle'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _PaymentTabButton(
+                label: 'dashboard.mobileMoney'.tr(),
+                icon: Icons.smartphone,
+                selected: _paymentTab == 'mobile',
+                onTap: () => setState(() => _paymentTab = 'mobile'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _PaymentTabButton(
+                label: 'dashboard.bankTransfer'.tr(),
+                icon: Icons.account_balance,
+                selected: _paymentTab == 'bank',
+                onTap: () => setState(() => _paymentTab = 'bank'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_paymentTab == 'mobile')
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(14)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _StepLine(number: 1, text: 'dashboard.dialInstruction'.tr()),
+                const SizedBox(height: 10),
+                _StepLine(number: 2, text: 'dashboard.merchantCodeInstruction'.tr(args: ['102934', _planAmount.toString()])),
+                const SizedBox(height: 10),
+                _StepLine(number: 3, text: 'dashboard.enterRefInstruction'.tr()),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(14)),
+            child: Column(
+              children: [
+                _BankRow(label: 'dashboard.bankName'.tr(), value: 'Millennium bim'),
+                _BankRow(label: 'dashboard.accountName'.tr(), value: 'House in Mozambique, Lda'),
+                _BankRow(label: 'dashboard.accountNumber'.tr(), value: '123 456 789 101'),
+                _BankRow(label: 'dashboard.amount'.tr(), value: '$_planAmount MZN', isLast: true),
+              ],
+            ),
+          ),
+        const SizedBox(height: 16),
+        TextFormField(controller: _payerNameController, decoration: InputDecoration(labelText: 'dashboard.payerName'.tr())),
+        const SizedBox(height: 12),
+        TextFormField(controller: _transactionRefController, decoration: InputDecoration(labelText: 'dashboard.transactionRef'.tr())),
+        const SizedBox(height: 12),
+        Text('dashboard.activationNotice'.tr(), style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+        const SizedBox(height: 16),
+        CheckboxListTile(
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          value: _agreedToTerms,
+          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+          title: Text('dashboard.termsAgree'.tr(), style: const TextStyle(fontSize: 13)),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: _submitting ? null : _submitPayment,
+          child: _submitting
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Text('dashboard.publishAd'.tr()),
+        ),
+      ],
+    );
+  }
+}
+
+class _PlanCard extends StatelessWidget {
+  final String name;
+  final String price;
+  final String description;
+  final String cta;
+  final String? badge;
+  final bool highlighted;
+  final VoidCallback onTap;
+
+  const _PlanCard({
+    required this.name,
+    required this.price,
+    required this.description,
+    required this.cta,
+    required this.badge,
+    required this.highlighted,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: highlighted ? AppColors.primary : AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: highlighted ? Colors.white : AppColors.onSurface)),
+              ),
+              if (badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(12)),
+                  child: Text(badge!, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(price, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: highlighted ? Colors.white : AppColors.primary)),
+          const SizedBox(height: 6),
+          Text(description, style: TextStyle(fontSize: 12.5, color: highlighted ? Colors.white70 : AppColors.onSurfaceVariant)),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: highlighted
+                ? ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.primary),
+                    onPressed: onTap,
+                    child: Text(cta),
+                  )
+                : OutlinedButton(onPressed: onTap, child: Text(cta)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentTabButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  const _PaymentTabButton({required this.label, required this.icon, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 12.5)),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: selected ? AppColors.primary : null,
+        foregroundColor: selected ? Colors.white : AppColors.onSurface,
+        side: BorderSide(color: selected ? AppColors.primary : AppColors.outlineVariant),
+      ),
+    );
+  }
+}
+
+class _StepLine extends StatelessWidget {
+  final int number;
+  final String text;
+  const _StepLine({required this.number, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(radius: 11, backgroundColor: AppColors.secondary, child: Text('$number', style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold))),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+      ],
+    );
+  }
+}
+
+class _BankRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isLast;
+  const _BankRow({required this.label, required this.value, this.isLast = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: isLast
+          ? null
+          : const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.outlineVariant, width: 0.5))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant)),
+          Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
