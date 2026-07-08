@@ -63,9 +63,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
+      final agent = ref.read(authControllerProvider).agent;
       if (state.matchedLocation.startsWith('/admin')) {
-        final agent = ref.read(authControllerProvider).agent;
         if (agent == null || !agent.isAdmin) return '/profile';
+      }
+      // Agent-only bottom-nav tabs.
+      if (state.matchedLocation == '/my-listings' || state.matchedLocation == '/my-leads') {
+        if (agent == null || !agent.isAgent) return '/profile';
       }
       return null;
     },
@@ -86,6 +90,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (context, state) => const ProfileTabScreen()),
+          ]),
+          // Agent-only tabs: the bottom nav swaps Explore/Agents for these
+          // when an agent or admin is signed in (see AppShell).
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/my-listings', builder: (context, state) => const MyListingsScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/my-leads', builder: (context, state) => const LeadsScreen()),
           ]),
         ],
       ),

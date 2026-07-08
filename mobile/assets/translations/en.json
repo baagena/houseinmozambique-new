@@ -23,7 +23,9 @@
     "explore": "Explore",
     "favorites": "Favorites",
     "agents": "Agents",
-    "profile": "Profile"
+    "profile": "Profile",
+    "listings": "Listings",
+    "leads": "Leads"
   },
   "onboarding": {
     "title1": "Find your place in Mozambique",
@@ -79,7 +81,15 @@
     "openInMaps": "Open in Maps",
     "listedBy": "Listed by",
     "featured": "Featured",
-    "newListing": "New"
+    "newListing": "New",
+    "call": "Call",
+    "email": "Email",
+    "responseTime": "Response time",
+    "whatsappMessage": "Hello! I'm interested in \"{}\" — {}"
+  },
+  "ads": {
+    "sponsored": "Sponsored",
+    "learnMore": "Learn more"
   },
   "agent": {
     "title": "Agents",
@@ -97,6 +107,10 @@
   "blog": {
     "title": "News & Insights",
     "readTime": "{} min read"
+  },
+  "ads": {
+    "sponsored": "Sponsored",
+    "learnMore": "Learn more"
   },
   "contact": {
     "title": "Contact",
@@ -127,10 +141,22 @@
     "becomeAgent": "Become an agent",
     "syncFavoritesTitle": "Sync your favorites",
     "syncFavoritesSubtitle": "Create a free account to keep favorites across devices.",
-    "syncFavoritesCta": "Get started"
+    "syncFavoritesCta": "Get started",
+    "yourAccount": "Your account",
+    "customerCardTitle": "Create a free account",
+    "customerCardBody": "One free account keeps your favorites in sync on every device and makes contacting agents faster.",
+    "benefitSyncFavorites": "Favorites synced across your devices",
+    "benefitFasterContact": "Reach out to agents with one tap",
+    "oneSignInNote": "One sign-in works for both customer and agent accounts.",
+    "becomeAgentSubtitle": "List properties, receive leads and grow your business.",
+    "editProfile": "Edit profile",
+    "adminConsole": "Admin Console",
+    "agentBadge": "Agent",
+    "adminBadge": "Admin"
   },
   "auth": {
-    "loginTitle": "Agent Login",
+    "loginTitle": "Sign In",
+    "loginSubtitle": "Welcome back. One sign-in for customer and agent accounts.",
     "registerTitle": "Become an Agent",
     "createAccountTitle": "Create Account",
     "email": "Email",
@@ -186,7 +212,9 @@
     "bankName": "Bank",
     "accountName": "Account Name",
     "accountNumber": "Account Number",
-    "amount": "Amount"
+    "amount": "Amount",
+    "amenitiesLabel": "Amenities",
+    "agentContactLabel": "Agent contact information (optional)"
   },
   "plans": {
     "standardName": "Standard",

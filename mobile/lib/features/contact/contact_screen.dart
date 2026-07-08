@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -48,7 +49,14 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('contact.success'.tr())));
-      Navigator.of(context).pop();
+      // This sheet can be the only route on the stack (e.g. after a login
+      // redirect); popping then would leave a black screen behind.
+      final router = GoRouter.of(context);
+      if (router.canPop()) {
+        router.pop();
+      } else {
+        router.go('/home');
+      }
     } catch (e) {
       if (!mounted) return;
       final message = e.asApiException?.message ?? 'contact.error'.tr();

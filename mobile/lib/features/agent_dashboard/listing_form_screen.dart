@@ -15,8 +15,14 @@ import '../../repositories/agent_dashboard_repository.dart';
 import '../../repositories/payment_repository.dart';
 import '../../repositories/property_repository.dart';
 
-const _propertyTypes = ['Villa', 'Apartment', 'House', 'Land', 'Commercial'];
-const _listingTypes = ['Buy', 'Rent', 'Short Stay'];
+// Kept identical to the website's post-property form (src/app/post-property/page.tsx)
+// so listings created from either app end up structured the same way.
+const _propertyTypes = ['House', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
+const _listingTypes = ['Buy', 'Rent', 'Short Stay', 'Auction'];
+const _amenitiesList = [
+  'WiFi', 'Pool', 'Security', 'Parking', 'Air Conditioning', 'Garden',
+  'Ocean View', 'Solar Power', 'Generator', 'Staff Quarters', 'Gym', 'Private Beach',
+];
 
 enum _Phase { plan, details, payment }
 
@@ -41,17 +47,25 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _cityController = TextEditingController();
+  final _neighborhoodController = TextEditingController();
   final _addressController = TextEditingController();
   final _priceController = TextEditingController();
   final _bedroomsController = TextEditingController(text: '1');
   final _bathroomsController = TextEditingController(text: '1');
   final _areaController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
+  final _agentPhoneController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _contactEmailController = TextEditingController();
+  final _responseTimeController = TextEditingController();
   final _payerNameController = TextEditingController();
   final _transactionRefController = TextEditingController();
 
   String _propertyType = _propertyTypes.first;
   String _listingType = _listingTypes.first;
   final List<String> _images = [];
+  final List<String> _selectedAmenities = [];
   bool _loading = false;
   bool _submitting = false;
 
@@ -79,6 +93,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       _titleController.text = property.title;
       _descriptionController.text = property.description;
       _cityController.text = property.city;
+      _neighborhoodController.text = property.neighborhood ?? '';
       _addressController.text = property.address ?? '';
       _priceController.text = property.price.toStringAsFixed(0);
       _bedroomsController.text = '${property.bedrooms}';
@@ -87,6 +102,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       _propertyType = property.type;
       _listingType = property.listingType;
       _images.addAll(property.images);
+      _selectedAmenities.addAll(property.amenities);
     } catch (_) {
       // Editing form will just start blank if the fetch fails.
     } finally {
@@ -99,27 +115,40 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _cityController.dispose();
+    _neighborhoodController.dispose();
     _addressController.dispose();
     _priceController.dispose();
     _bedroomsController.dispose();
     _bathroomsController.dispose();
     _areaController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    _agentPhoneController.dispose();
+    _whatsappController.dispose();
+    _contactEmailController.dispose();
+    _responseTimeController.dispose();
     _payerNameController.dispose();
     _transactionRefController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    // Downscale on-device: a full-resolution camera photo encoded as base64
+    // exceeds the API's request body limit, so the upload fails and the photo
+    // never shows up in the form.
+    final files = await picker.pickMultiImage(imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+    if (files.isEmpty || !mounted) return;
     setState(() => _loading = true);
     try {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-      if (file == null) return;
-      final bytes = await file.readAsBytes();
-      final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-      final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
-      final url = await ref.read(agentDashboardRepositoryProvider).uploadImage(base64Str);
-      setState(() => _images.add(url));
+      for (final file in files) {
+        final bytes = await file.readAsBytes();
+        final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
+        final url = await ref.read(agentDashboardRepositoryProvider).uploadImage(base64Str);
+        if (!mounted) return;
+        setState(() => _images.add(url));
+      }
     } catch (e) {
       if (mounted) {
         final message = e.asApiException?.message ?? 'dashboard.imagePickerError'.tr();
@@ -134,7 +163,13 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     final plan = _planTiers.firstWhere((p) => p.id == planId);
     if (!plan.selectable) {
       final router = GoRouter.of(context);
-      Navigator.of(context).pop();
+      // This sheet can be the only route on the stack (e.g. right after a
+      // login redirect); popping then would leave a black screen behind.
+      if (router.canPop()) {
+        router.pop();
+      } else {
+        router.go('/profile');
+      }
       router.push('/contact');
       return;
     }
@@ -179,22 +214,42 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     }
   }
 
+  /// Mirrors the website's buildDescription() (src/app/post-property/page.tsx) —
+  /// coordinates and agent contact details aren't separate Property columns, so
+  /// the website folds them into the description text. Matching that here keeps
+  /// listings structured the same regardless of which app created them.
+  String _buildDescription() {
+    final lines = [_descriptionController.text.trim()];
+    if (_latitudeController.text.trim().isNotEmpty && _longitudeController.text.trim().isNotEmpty) {
+      lines.add('Coordinates: ${_latitudeController.text.trim()}, ${_longitudeController.text.trim()}');
+    }
+    final contactLines = [
+      if (_agentPhoneController.text.trim().isNotEmpty) 'Agent phone: ${_agentPhoneController.text.trim()}',
+      if (_whatsappController.text.trim().isNotEmpty) 'WhatsApp: ${_whatsappController.text.trim()}',
+      if (_contactEmailController.text.trim().isNotEmpty) 'Contact email: ${_contactEmailController.text.trim()}',
+      if (_responseTimeController.text.trim().isNotEmpty) 'Preferred response time: ${_responseTimeController.text.trim()}',
+    ];
+    if (contactLines.isNotEmpty) lines.add(contactLines.join('\n'));
+    return lines.where((l) => l.isNotEmpty).join('\n\n');
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     final formData = {
       'title': _titleController.text.trim(),
-      'description': _descriptionController.text.trim(),
+      'description': _buildDescription(),
       'city': _cityController.text.trim(),
+      'neighborhood': _neighborhoodController.text.trim(),
       'address': _addressController.text.trim(),
       'price': _priceController.text.trim(),
-      'priceUnit': _listingType == 'Buy' ? 'sale' : (_listingType == 'Rent' ? 'monthly' : 'nightly'),
+      'priceUnit': _listingType == 'Rent' ? 'monthly' : (_listingType == 'Short Stay' ? 'nightly' : 'sale'),
       'propertyType': _propertyType,
       'listingType': _listingType,
       'bedrooms': _bedroomsController.text.trim(),
       'bathrooms': _bathroomsController.text.trim(),
       'area': _areaController.text.trim(),
-      'amenities': <String>[],
+      'amenities': _selectedAmenities,
     };
     try {
       final repo = ref.read(agentDashboardRepositoryProvider);
@@ -206,7 +261,12 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       }
       ref.invalidate(myPropertiesProvider);
       if (mounted) {
-        Navigator.of(context).pop();
+        final router = GoRouter.of(context);
+        if (router.canPop()) {
+          router.pop();
+        } else {
+          router.go('/dashboard/listings');
+        }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('dashboard.listingSubmitted'.tr(args: [result.title])),
           behavior: SnackBarBehavior.floating,
@@ -363,6 +423,8 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           const SizedBox(height: 12),
           TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'dashboard.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
           const SizedBox(height: 12),
+          TextFormField(controller: _neighborhoodController, decoration: const InputDecoration(labelText: 'Neighborhood')),
+          const SizedBox(height: 12),
           TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address')),
           const SizedBox(height: 12),
           TextFormField(
@@ -381,6 +443,39 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           ),
           const SizedBox(height: 12),
           TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (m²)')),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: TextFormField(controller: _latitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: const InputDecoration(labelText: 'Latitude'))),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(controller: _longitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: const InputDecoration(labelText: 'Longitude'))),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text('dashboard.amenitiesLabel'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _amenitiesList.map((amenity) {
+              final selected = _selectedAmenities.contains(amenity);
+              return FilterChip(
+                label: Text(amenity),
+                selected: selected,
+                onSelected: (v) => setState(() => v ? _selectedAmenities.add(amenity) : _selectedAmenities.remove(amenity)),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
+          Text('dashboard.agentContactLabel'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 10),
+          TextFormField(controller: _agentPhoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Agent phone number')),
+          const SizedBox(height: 12),
+          TextFormField(controller: _whatsappController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'WhatsApp number')),
+          const SizedBox(height: 12),
+          TextFormField(controller: _contactEmailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Contact email')),
+          const SizedBox(height: 12),
+          TextFormField(controller: _responseTimeController, decoration: const InputDecoration(labelText: 'Preferred response time', hintText: '09:00 - 18:00')),
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _submitting ? null : (widget.isEditing ? _submit : _onDetailsContinue),

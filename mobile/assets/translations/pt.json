@@ -23,7 +23,9 @@
     "explore": "Explorar",
     "favorites": "Favoritos",
     "agents": "Agentes",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "listings": "Anúncios",
+    "leads": "Contactos"
   },
   "onboarding": {
     "title1": "Encontre o seu lugar em Moçambique",
@@ -79,7 +81,15 @@
     "openInMaps": "Abrir no Mapa",
     "listedBy": "Anunciado por",
     "featured": "Destaque",
-    "newListing": "Novo"
+    "newListing": "Novo",
+    "call": "Ligar",
+    "email": "Email",
+    "responseTime": "Horário de resposta",
+    "whatsappMessage": "Olá! Tenho interesse em \"{}\" — {}"
+  },
+  "ads": {
+    "sponsored": "Patrocinado",
+    "learnMore": "Saber mais"
   },
   "agent": {
     "title": "Agentes",
@@ -97,6 +107,10 @@
   "blog": {
     "title": "Notícias e Perspetivas",
     "readTime": "{} min de leitura"
+  },
+  "ads": {
+    "sponsored": "Patrocinado",
+    "learnMore": "Saber mais"
   },
   "contact": {
     "title": "Contacto",
@@ -127,10 +141,22 @@
     "becomeAgent": "Tornar-se agente",
     "syncFavoritesTitle": "Sincronize os seus favoritos",
     "syncFavoritesSubtitle": "Crie uma conta gratuita para manter os favoritos em todos os dispositivos.",
-    "syncFavoritesCta": "Começar"
+    "syncFavoritesCta": "Começar",
+    "yourAccount": "A sua conta",
+    "customerCardTitle": "Crie uma conta gratuita",
+    "customerCardBody": "Uma conta gratuita mantém os seus favoritos sincronizados em todos os dispositivos e facilita o contacto com agentes.",
+    "benefitSyncFavorites": "Favoritos sincronizados em todos os dispositivos",
+    "benefitFasterContact": "Contacte agentes com um toque",
+    "oneSignInNote": "Um único acesso funciona para contas de cliente e de agente.",
+    "becomeAgentSubtitle": "Anuncie imóveis, receba contactos e faça crescer o seu negócio.",
+    "editProfile": "Editar perfil",
+    "adminConsole": "Consola de Administração",
+    "agentBadge": "Agente",
+    "adminBadge": "Admin"
   },
   "auth": {
-    "loginTitle": "Acesso de Agente",
+    "loginTitle": "Iniciar Sessão",
+    "loginSubtitle": "Bem-vindo de volta. Um único acesso para contas de cliente e de agente.",
     "registerTitle": "Torne-se Agente",
     "createAccountTitle": "Criar Conta",
     "email": "Email",
@@ -186,7 +212,9 @@
     "bankName": "Banco",
     "accountName": "Nome da Conta",
     "accountNumber": "Número da Conta",
-    "amount": "Valor"
+    "amount": "Valor",
+    "amenitiesLabel": "Comodidades",
+    "agentContactLabel": "Informações de contacto do agente (opcional)"
   },
   "plans": {
     "standardName": "Standard",

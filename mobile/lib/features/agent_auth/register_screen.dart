@@ -112,7 +112,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             bio: _isCustomer || _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
             specializations: _isCustomer || _specializations.isEmpty ? null : _specializations,
           );
-      if (mounted) context.go(widget.redirectTo ?? '/profile');
+      if (mounted) {
+        // Land on a real tab first so sheet-style redirect targets (e.g. the
+        // post-a-house form) keep a page underneath instead of a black screen.
+        context.go('/profile');
+        if (widget.redirectTo != null) context.push(widget.redirectTo!);
+      }
     } catch (e) {
       setState(() => _error = e.asApiException?.message ?? 'common.somethingWentWrong'.tr());
       // Surface the error near the top of whichever step the user is on.
