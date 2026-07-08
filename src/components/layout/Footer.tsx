@@ -126,7 +126,7 @@ export default function Footer() {
 <ul className="space-y-4 ">
   <li>
     <a
-      href="tel:+258841234567"
+      href="tel:+258879329012"
       className="group flex items-center gap-3 transition-all duration-300"
     >
       <span>
@@ -147,7 +147,7 @@ export default function Footer() {
       </span>
 
       <span className="text-[#43474e] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#002045]">
-        +258 84 123 4567
+        +258 879329012
       </span>
     </a>
   </li>

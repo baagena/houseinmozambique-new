@@ -181,7 +181,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-black text-[#002045] tracking-tight mb-1">{t.contact.directLine}</h3>
-                      <p className="text-[#002045] font-black text-lg">+258 84 123 4567</p>
+                      <p className="text-[#002045] font-black text-lg">+258 879329012</p>
                       <p className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Mon - Fri, 8am - 6pm</p>
                     </div>
                   </div>
