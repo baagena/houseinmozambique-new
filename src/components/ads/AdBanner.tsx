@@ -37,26 +37,34 @@ function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
 
   return (
     <div
-      className={`w-full h-full overflow-hidden shadow-sm ${
+      className={`relative w-full h-full overflow-hidden shadow-sm ${
         compact ? 'rounded-2xl border border-white/70 ring-1 ring-[#002045]/5' : 'rounded-2xl'
       }`}
       style={{ background: bg }}
     >
-      <div className={`flex items-center justify-between h-full ${compact ? 'gap-4 px-4 py-3 md:px-5' : 'flex-col md:flex-row gap-6 px-8 py-7'}`}>
+      {/* Subtle sheen so a solid-color ad still reads as a designed card, not a flat bar */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 15% -20%, rgba(255,255,255,0.16), transparent 55%)' }}
+      />
+      <div className={`relative flex items-center justify-between h-full ${compact ? 'gap-4 px-5 py-4 sm:px-6' : 'flex-col md:flex-row gap-6 px-8 py-7'}`}>
         {ad.imageUrl && (
-          <div className={`${compact ? 'hidden lg:block w-12 h-12' : 'hidden md:block w-16 h-16'} rounded-xl overflow-hidden flex-shrink-0`}>
+          <div className={`${compact ? 'hidden sm:block w-11 h-11 lg:w-14 lg:h-14' : 'hidden md:block w-16 h-16'} rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-white/20`}>
             <img src={ad.imageUrl} alt="" className="w-full h-full object-cover" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className={`${compact ? 'text-[9px]' : 'text-[10px]'} font-bold uppercase tracking-widest mb-1 opacity-65`} style={{ color: text }}>
+          <span
+            className={`inline-block ${compact ? 'text-[9px] px-2 py-0.5' : 'text-[10px] px-2.5 py-1'} font-bold uppercase tracking-widest mb-1.5 rounded-full`}
+            style={{ color: text, background: 'rgba(255,255,255,0.14)' }}
+          >
             Sponsored
-          </p>
-          <p className={`font-extrabold leading-tight truncate ${compact ? 'text-sm md:text-base' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
+          </span>
+          <p className={`font-extrabold leading-tight truncate ${compact ? 'text-sm sm:text-base' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
             {ad.title}
           </p>
           {ad.description && (
-            <p className={`${compact ? 'hidden lg:block text-xs max-w-2xl truncate' : 'text-sm'} mt-1 opacity-75`} style={{ color: text }}>
+            <p className={`${compact ? 'hidden sm:block text-xs max-w-2xl truncate' : 'text-sm'} mt-1 opacity-75`} style={{ color: text }}>
               {ad.description}
             </p>
           )}
@@ -186,7 +194,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
   const canNavigate = compact ? ads.length > 1 : showArrows;
 
   return (
-    <div className={`relative w-full ${canNavigate ? compact ? '' : 'px-10 md:px-12' : ''}`}>
+    <div className={`relative w-full ${canNavigate ? 'px-9 md:px-12' : ''}`}>
       {/* Slide track */}
       <div className="overflow-hidden rounded-2xl">
         <div
@@ -201,12 +209,28 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
         </div>
       </div>
 
+      {/* Dots — so a rotating slot never reads as "just one plain ad" */}
+      {ads.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-3">
+          {ads.map((ad, i) => (
+            <button
+              key={ad.id}
+              onClick={() => goTo(i)}
+              aria-label={`Show sponsored slide ${i + 1} of ${ads.length}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === current ? 'w-6 bg-[#002045]' : 'w-1.5 bg-[#002045]/20 hover:bg-[#002045]/40'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Prev / Next arrows */}
-      {/* {canNavigate && (
+      {canNavigate && (
         <>
           <button
             onClick={() => goTo(current === 0 ? maxIndex : current - 1)}
-            className={`${compact ? 'left-2 bg-white/90' : 'left-0 bg-white'} absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]`}
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
             aria-label="Previous"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -215,7 +239,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
           </button>
           <button
             onClick={() => goTo(current >= maxIndex ? 0 : current + 1)}
-            className={`${compact ? 'right-2 bg-white/90' : 'right-0 bg-white'} absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]`}
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
             aria-label="Next"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -223,7 +247,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
             </svg>
           </button>
         </>
-      )} */}
+      )}
     </div>
   );
 }
