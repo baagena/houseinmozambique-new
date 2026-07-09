@@ -70,7 +70,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Land on a real tab first so sheet-style redirect targets (e.g. the
         // post-a-house form) keep a page underneath instead of a black screen.
         context.go('/profile');
-        if (widget.redirectTo != null) context.push(widget.redirectTo!);
+        final agent = ref.read(authControllerProvider).agent;
+        if (widget.redirectTo != null) {
+          context.push(widget.redirectTo!);
+        } else if (agent != null && agent.isAdmin) {
+          // Admins sign in with the same form; take them straight to their
+          // console instead of leaving them to hunt for it.
+          context.push('/admin');
+        }
       }
     } catch (e) {
       setState(() => _error = e.asApiException?.message ?? 'common.somethingWentWrong'.tr());

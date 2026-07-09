@@ -7,6 +7,7 @@ import '../../models/agent.dart';
 import '../../repositories/admin_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
+import '../../widgets/status_badge.dart';
 import 'admin_agent_form_screen.dart';
 
 class AdminAgentsScreen extends ConsumerWidget {
@@ -60,17 +61,6 @@ class _AgentTile extends ConsumerWidget {
   final Agent agent;
   const _AgentTile({required this.agent});
 
-  Color _roleColor() {
-    switch (agent.role) {
-      case 'ADMIN':
-        return AppColors.tertiary;
-      case 'REVOKED':
-        return AppColors.error;
-      default:
-        return AppColors.primary;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
@@ -86,11 +76,9 @@ class _AgentTile extends ConsumerWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              margin: const EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(color: _roleColor().withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-              child: Text(agent.role, style: TextStyle(color: _roleColor(), fontSize: 11, fontWeight: FontWeight.w600)),
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: StatusBadge(status: agent.role),
             ),
             PopupMenuButton<String>(
               onSelected: (value) async {

@@ -194,6 +194,7 @@
     "submit": "Submit for review",
     "listingSubmitted": "\"{}\" was submitted for review!",
     "imagePickerError": "Couldn't open your photo gallery. Try updating Google Play Services, or restart the app and try again.",
+    "imageUploadFailed": "{} photo(s) failed to upload: {}",
     "selectPlanTitle": "Choose your plan",
     "selectPlanSubtitle": "Pick how you'd like to publish this listing.",
     "continueToPayment": "Continue to payment",

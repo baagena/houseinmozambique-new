@@ -7,8 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../controllers/favorites_controller.dart';
 import '../../core/network/api_client.dart';
-import '../../core/network/api_config.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/agent_contact.dart';
 import '../../models/property.dart';
 import '../../repositories/property_repository.dart';
 import '../../widgets/error_view.dart';
@@ -19,71 +19,6 @@ final propertyDetailProvider =
     FutureProvider.autoDispose.family<(Property, List<Property>), String>((ref, id) {
   return ref.watch(propertyRepositoryProvider).getById(id);
 });
-
-/// The listing form folds agent contact details and coordinates into the
-/// description text (see listing_form_screen.dart / the website's
-/// post-property page). Pull them back out so they can be shown as tappable
-/// actions instead of raw text.
-class _ParsedDetails {
-  final String description;
-  final String? agentPhone;
-  final String? whatsapp;
-  final String? contactEmail;
-  final String? responseTime;
-  final String? coordinates;
-
-  const _ParsedDetails({
-    required this.description,
-    this.agentPhone,
-    this.whatsapp,
-    this.contactEmail,
-    this.responseTime,
-    this.coordinates,
-  });
-
-  factory _ParsedDetails.parse(String raw) {
-    String? phone, whatsapp, email, responseTime, coordinates;
-    final kept = <String>[];
-    for (final line in raw.split('\n')) {
-      final t = line.trim();
-      String? value(String prefix) =>
-          t.toLowerCase().startsWith(prefix.toLowerCase()) ? t.substring(prefix.length).trim() : null;
-
-      final v = value('Agent phone:') ??
-          value('WhatsApp:') ??
-          value('Contact email:') ??
-          value('Preferred response time:') ??
-          value('Coordinates:');
-      if (v == null) {
-        kept.add(line);
-        continue;
-      }
-      if (t.toLowerCase().startsWith('agent phone:')) phone = v;
-      if (t.toLowerCase().startsWith('whatsapp:')) whatsapp = v;
-      if (t.toLowerCase().startsWith('contact email:')) email = v;
-      if (t.toLowerCase().startsWith('preferred response time:')) responseTime = v;
-      if (t.toLowerCase().startsWith('coordinates:')) coordinates = v;
-    }
-    final cleaned = kept.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
-    return _ParsedDetails(
-      description: cleaned,
-      agentPhone: phone,
-      whatsapp: whatsapp,
-      contactEmail: email,
-      responseTime: responseTime,
-      coordinates: coordinates,
-    );
-  }
-}
-
-/// Mozambican numbers are usually written without the country code; wa.me
-/// only accepts full international numbers.
-String _internationalDigits(String raw) {
-  var digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
-  if (digits.startsWith('00')) digits = digits.substring(2);
-  if (digits.length == 9 && digits.startsWith('8')) digits = '258$digits';
-  return digits;
-}
 
 class PropertyDetailScreen extends ConsumerWidget {
   final String propertyId;
@@ -140,7 +75,7 @@ class _PropertyDetailBody extends ConsumerStatefulWidget {
 class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
   final _pageController = PageController();
   int _currentImage = 0;
-  late final _ParsedDetails _details = _ParsedDetails.parse(widget.property.description);
+  late final AgentContact _contact = AgentContact.fromProperty(widget.property);
 
   Property get property => widget.property;
 
@@ -158,11 +93,9 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
     });
   }
 
-  String get _propertyUrl => '${ApiConfig.rootUrl}/property/${property.id}';
-
-  Future<void> _launch(Uri uri) async {
+  Future<void> _guarded(Future<void> Function() action) async {
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await action();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('common.somethingWentWrong'.tr())));
@@ -170,23 +103,18 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
     }
   }
 
-  void _call(String number) => _launch(Uri.parse('tel:$number'));
+  void _call(String number) => _guarded(() => launchCall(number));
 
-  void _openWhatsApp(String number) {
-    final digits = _internationalDigits(number);
-    final message = 'property.whatsappMessage'.tr(args: [property.title, _propertyUrl]);
-    _launch(Uri.parse('https://wa.me/$digits?text=${Uri.encodeComponent(message)}'));
-  }
+  void _openWhatsApp(String number) => _guarded(() => launchWhatsApp(number, property));
 
-  void _email(String address) {
-    final subject = Uri.encodeComponent('Inquiry about ${property.title}');
-    final body = Uri.encodeComponent('Hello,\n\nI am interested in "${property.title}" ($_propertyUrl).\n');
-    _launch(Uri.parse('mailto:$address?subject=$subject&body=$body'));
-  }
+  void _email(String address) => _guarded(() => launchEmail(address, property));
 
   void _openMaps() {
-    final query = _details.coordinates ?? property.address ?? property.location;
-    _launch(Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}'));
+    final query = _contact.coordinates ?? property.address ?? property.location;
+    _guarded(() => launchUrl(
+          Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}'),
+          mode: LaunchMode.externalApplication,
+        ));
   }
 
   void _openFullscreenGallery(int initialIndex) {
@@ -201,9 +129,9 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
   Widget build(BuildContext context) {
     final images = property.images;
     // Tappable contact channels, deduplicated against the host record.
-    final phone = _details.agentPhone ?? property.host?.phone;
-    final whatsapp = _details.whatsapp;
-    final email = _details.contactEmail ?? property.host?.email;
+    final phone = _contact.phone;
+    final whatsapp = _contact.whatsapp;
+    final email = _contact.email;
 
     return Stack(
       children: [
@@ -238,6 +166,10 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                                   imageUrl: images[i],
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(color: AppColors.surfaceVariant),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: AppColors.surfaceVariant,
+                                    child: const Icon(Icons.broken_image_outlined, color: AppColors.onSurfaceVariant),
+                                  ),
                                 ),
                               ),
                             ),
@@ -298,7 +230,18 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(imageUrl: images[i], width: 72, height: 54, fit: BoxFit.cover),
+                                child: CachedNetworkImage(
+                                  imageUrl: images[i],
+                                  width: 72,
+                                  height: 54,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) => Container(
+                                    width: 72,
+                                    height: 54,
+                                    color: AppColors.surfaceVariant,
+                                    child: const Icon(Icons.broken_image_outlined, size: 18, color: AppColors.onSurfaceVariant),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -342,7 +285,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                     const Divider(height: 32),
                     Text('property.aboutThisPlace'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Text(_details.description.isEmpty ? property.description : _details.description,
+                    Text(_contact.description.isEmpty ? property.description : _contact.description,
                         style: const TextStyle(height: 1.5)),
                     if (property.amenities.isNotEmpty) ...[
                       const Divider(height: 32),
@@ -354,7 +297,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                         children: property.amenities.map((a) => Chip(label: Text(a))).toList(),
                       ),
                     ],
-                    if (property.address != null || _details.coordinates != null) ...[
+                    if (property.address != null || _contact.coordinates != null) ...[
                       const Divider(height: 32),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.map_outlined),
@@ -419,14 +362,14 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                           ],
                         ],
                       ),
-                      if (_details.responseTime != null && _details.responseTime!.isNotEmpty) ...[
+                      if (_contact.responseTime != null && _contact.responseTime!.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         Row(
                           children: [
                             const Icon(Icons.schedule_outlined, size: 15, color: AppColors.onSurfaceVariant),
                             const SizedBox(width: 6),
                             Text(
-                              '${'property.responseTime'.tr()}: ${_details.responseTime}',
+                              '${'property.responseTime'.tr()}: ${_contact.responseTime}',
                               style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant),
                             ),
                           ],
@@ -519,6 +462,7 @@ class _FullscreenGalleryState extends State<_FullscreenGallery> {
               imageUrl: widget.images[i],
               fit: BoxFit.contain,
               placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Colors.white)),
+              errorWidget: (context, url, error) => const Icon(Icons.broken_image_outlined, color: Colors.white54, size: 48),
             ),
           ),
         ),

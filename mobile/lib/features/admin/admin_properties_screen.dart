@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../repositories/admin_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
+import '../../widgets/status_badge.dart';
 import 'admin_property_form_screen.dart';
 
 class AdminPropertiesScreen extends ConsumerStatefulWidget {
@@ -19,17 +20,6 @@ class AdminPropertiesScreen extends ConsumerStatefulWidget {
 class _AdminPropertiesScreenState extends ConsumerState<AdminPropertiesScreen> {
   String? _filter;
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'PUBLISHED':
-        return Colors.green;
-      case 'REJECTED':
-        return AppColors.error;
-      default:
-        return AppColors.secondary;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final propertiesAsync = ref.watch(adminAllPropertiesProvider);
@@ -40,21 +30,10 @@ class _AdminPropertiesScreenState extends ConsumerState<AdminPropertiesScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final f in const [null, 'PENDING', 'PUBLISHED', 'REJECTED'])
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(f ?? 'All'),
-                        selected: _filter == f,
-                        onSelected: (_) => setState(() => _filter = f),
-                      ),
-                    ),
-                ],
-              ),
+            child: FilterPills(
+              options: const [('All', null), ('Pending', 'PENDING'), ('Published', 'PUBLISHED'), ('Rejected', 'REJECTED')],
+              selected: _filter,
+              onSelected: (v) => setState(() => _filter = v),
             ),
           ),
           Expanded(
@@ -88,17 +67,7 @@ class _AdminPropertiesScreenState extends ConsumerState<AdminPropertiesScreen> {
                           ),
                           title: Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                           subtitle: Text('${p.host?.name ?? 'Unknown'} · ${p.city}'),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(color: _statusColor(p.status).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-                                child: Text(p.status, style: TextStyle(color: _statusColor(p.status), fontSize: 10, fontWeight: FontWeight.w600)),
-                              ),
-                            ],
-                          ),
+                          trailing: StatusBadge(status: p.status),
                           onTap: () async {
                             final changed = await Navigator.of(context).push<bool>(
                               MaterialPageRoute(builder: (_) => AdminPropertyFormScreen(property: p)),

@@ -194,6 +194,7 @@
     "submit": "Submeter para revisão",
     "listingSubmitted": "\"{}\" foi submetido para revisão!",
     "imagePickerError": "Não foi possível abrir a galeria de fotos. Tente atualizar o Google Play Services ou reinicie a aplicação.",
+    "imageUploadFailed": "{} foto(s) não foram carregadas: {}",
     "selectPlanTitle": "Escolha o seu plano",
     "selectPlanSubtitle": "Escolha como quer publicar este anúncio.",
     "continueToPayment": "Continuar para pagamento",

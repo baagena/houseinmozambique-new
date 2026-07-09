@@ -119,7 +119,10 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceContainer,
-        selectedColor: AppColors.primaryContainer,
+        // Light container when selected so the (dark) label and checkmark
+        // stay readable — a dark selected chip made its own label invisible.
+        selectedColor: AppColors.secondaryContainer,
+        checkmarkColor: AppColors.onSecondaryContainer,
         labelStyle: const TextStyle(color: AppColors.onSurface),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,

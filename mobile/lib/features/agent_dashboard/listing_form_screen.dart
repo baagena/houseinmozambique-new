@@ -132,27 +132,50 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     super.dispose();
   }
 
+  void _showError(String message) {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     // Downscale on-device: a full-resolution camera photo encoded as base64
     // exceeds the API's request body limit, so the upload fails and the photo
     // never shows up in the form.
-    final files = await picker.pickMultiImage(imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+    List<XFile> files;
+    try {
+      files = await picker.pickMultiImage(imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+    } catch (_) {
+      // Some older gallery apps reject the multi-select intent (e.g. Samsung
+      // pickers on Android 7); retry with the plain single-image picker.
+      try {
+        final single = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+        files = single == null ? [] : [single];
+      } catch (e) {
+        _showError('${'dashboard.imagePickerError'.tr()}\n($e)');
+        return;
+      }
+    }
     if (files.isEmpty || !mounted) return;
     setState(() => _loading = true);
+    var failed = 0;
+    Object? lastError;
     try {
       for (final file in files) {
-        final bytes = await file.readAsBytes();
-        final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-        final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
-        final url = await ref.read(agentDashboardRepositoryProvider).uploadImage(base64Str);
-        if (!mounted) return;
-        setState(() => _images.add(url));
+        try {
+          final bytes = await file.readAsBytes();
+          final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+          final base64Str = 'data:$mime;base64,${base64Encode(bytes)}';
+          final url = await ref.read(agentDashboardRepositoryProvider).uploadImage(base64Str);
+          if (!mounted) return;
+          setState(() => _images.add(url));
+        } catch (e) {
+          failed++;
+          lastError = e;
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        final message = e.asApiException?.message ?? 'dashboard.imagePickerError'.tr();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      if (failed > 0) {
+        final detail = lastError.asApiException?.message ?? '$lastError';
+        _showError('dashboard.imageUploadFailed'.tr(args: ['$failed', detail]));
       }
     } finally {
       if (mounted) setState(() => _loading = false);

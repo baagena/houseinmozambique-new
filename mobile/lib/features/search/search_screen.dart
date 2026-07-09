@@ -100,7 +100,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               if (index >= state.results.length) {
                                 return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
                               }
-                              return PropertyCard(property: state.results[index], width: double.infinity);
+                              return PropertyCard(property: state.results[index], width: double.infinity, swipeableImages: true);
                             },
                           ),
           ),
