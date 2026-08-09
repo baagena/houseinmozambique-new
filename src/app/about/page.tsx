@@ -90,8 +90,10 @@ export default function AboutPage() {
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {services.map((service) => (
               <section key={service.title} className="rounded-[2rem] bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#002045]/10">
-                <span className="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-2xl bg-[#845326]/10 text-[#845326]">
-                  {service.icon}
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#845326]/10">
+                  <span className="material-symbols-outlined text-2xl leading-none text-[#845326]">
+                    {service.icon}
+                  </span>
                 </span>
                 <h3 className="mt-5 text-lg font-black leading-tight text-[#002045]">{service.title}</h3>
                 <p className="mt-3 text-sm font-medium leading-relaxed text-[#74777f]">{service.desc}</p>

@@ -266,6 +266,35 @@ export default function PropertiesClient({ initialProperties, initialType, initi
               </div>
             </div>
 
+            {/* Category strip — the only listing-type control below the `lg` breakpoint,
+                where the filter sidebar is hidden */}
+            <div className="lg:hidden -mx-6 mb-10 overflow-x-auto custom-scrollbar px-6">
+              <div className="flex w-max gap-2">
+                {[
+                  { id: '', label: t.nav.allProperties },
+                  { id: 'Buy', label: t.nav.forSale },
+                  { id: 'Rent', label: t.nav.forRent },
+                  { id: 'Short Stay', label: t.nav.shortStays },
+                  { id: 'Auction', label: t.nav.auctions },
+                ].map((cat) => (
+                  <button
+                    key={cat.id || 'all'}
+                    onClick={() => {
+                      setDealType(cat.id);
+                      syncFilters({ type: cat.id === '' ? null : cat.id });
+                    }}
+                    className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-xs font-black tracking-wide transition-all ${
+                      dealType === cat.id
+                        ? 'border-[#002045] bg-[#002045] text-white shadow-lg shadow-[#002045]/20'
+                        : 'border-[#c4c6cf]/40 bg-white text-[#43474e] hover:border-[#002045]'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
               {sorted.map((p) => (

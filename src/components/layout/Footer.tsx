@@ -73,16 +73,22 @@ export default function Footer() {
 
           {/* Discover */}
           <div>
-            <h4 className="font-bold text-[#191c1e] mb-6">
+            <Link
+              href="/services"
+              className="group mb-6 flex items-center gap-1.5 font-bold text-[#191c1e] hover:text-[#002045] transition-colors"
+            >
               {t.footer.discover}
-            </h4>
+              <span className="material-symbols-outlined text-base opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0">
+                arrow_forward
+              </span>
+            </Link>
             <ul className="space-y-4">
               {[
                 // { label: t.footer.marketReports, href: "#" },
                 // { label: t.footer.neighborhoodGuides, href: "#" },
-                { label: t.footer.propertyRealEstate, href: "/properties" },
-                { label: t.footer.assessingPictures, href: "/news" },
-                { label: t.footer.realEstateAgent, href: "/agents" },
+                { label: t.footer.propertyRealEstate, href: "/services/property-advertising" },
+                { label: t.footer.assessingPictures, href: "/services/property-assessment" },
+                { label: t.footer.realEstateAgent, href: "/services/agent-listing" },
                 // { label: t.footer.pricingPlans, href: "/pricing" },
                 { label: t.footer.contactUs, href: "/contact" },
               ].map((item) => (
