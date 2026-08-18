@@ -30,6 +30,7 @@ const ADMIN_LINKS: SidebarLink[] = [
   { label: 'Hub Overview', href: '/dashboard/admin', icon: 'analytics' },
   { label: 'Manage Agents', href: '/dashboard/admin/agents', icon: 'group' },
   { label: 'Contact Messages', href: '/dashboard/admin/activities', icon: 'mail' },
+  { label: 'Subscribers', href: '/dashboard/admin/subscribers', icon: 'group_add' },
   { label: 'Blog', href: '/dashboard/admin/blog', icon: 'article' },
   { label: 'All Properties', href: '/dashboard/admin/properties', icon: 'domain' },
   { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'verified' },

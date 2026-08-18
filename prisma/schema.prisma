@@ -91,7 +91,38 @@ model Inquiry {
   agentId     String?  
   agent       Agent?   @relation(fields: [agentId], references: [id])
   isRead      Boolean  @default(false)
+  repliedAt   DateTime? // set when an admin answers by email
+  replies     InquiryReply[]
   createdAt   DateTime @default(now())
+}
+
+/// An emailed answer to a contact message, kept so the team can see what was said.
+model InquiryReply {
+  id        String   @id @default(cuid())
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId String
+  subject   String
+  body      String   @db.Text
+  sentBy    String // admin name at the time of sending
+  sentTo    String
+  createdAt DateTime @default(now())
+
+  @@index([inquiryId])
+}
+
+/// Newsletter audience. Kept apart from Inquiry so the mailing list is its own
+/// thing and contact messages stay a pure inbox.
+model Subscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  isActive       Boolean   @default(true)
+  source         String    @default("footer") // where the signup came from
+  lastEmailedAt  DateTime?
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([isActive])
 }
 
 model Payment {

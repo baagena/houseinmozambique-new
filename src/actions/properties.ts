@@ -174,6 +174,13 @@ export async function createProperty(formData: any, imageUrls: string[]) {
       throw new Error('You must be logged in as an agent to post a property.');
     }
 
+    if (agent.role === 'REVOKED') {
+      throw new Error('Agent access has been revoked.');
+    }
+
+    // Staff postings are already vetted, so they skip the approval queue.
+    const isAdmin = agent.role === 'ADMIN';
+
     // 2. Insert into Prisma
     const property = await prisma.property.create({
       data: {
@@ -194,7 +201,8 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         images: imageUrls,
         tags: formData.tags ?? [],
         hostId: agent.id,
-        status: 'PENDING',
+        status: isAdmin ? 'PUBLISHED' : 'PENDING',
+        ...(isAdmin && { approvedAt: new Date() }),
         isNew: true,
       },
     });

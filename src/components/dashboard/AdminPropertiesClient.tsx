@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import AdminPropertyActions from './AdminPropertyActions';
 
 export interface AdminProperty {
@@ -87,7 +88,17 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
           <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Property inventory</h2>
           <p className="mt-1 text-sm text-[#74777f]">Edit, publish, or remove any listing on the platform.</p>
         </div>
-        <span className="text-[13px] font-medium text-[#9aa0a8]">{properties.length} listings</span>
+        <div className="flex items-center gap-4">
+          <span className="text-[13px] font-medium text-[#9aa0a8]">{properties.length} listings</span>
+          {/* Admins post directly: no payment step, and the listing goes live immediately. */}
+          <Link
+            href="/post-property"
+            className="flex items-center gap-1.5 rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_home</span>
+            Add property
+          </Link>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">

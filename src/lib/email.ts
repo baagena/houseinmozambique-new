@@ -257,3 +257,111 @@ If you did not sign up, please ignore this email.
 `,
   });
 }
+
+/** Escape user-supplied text before it goes into an HTML email body. */
+function escapeEmailHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    return entities[character];
+  });
+}
+
+/** Turn a plain-text admin reply into safe HTML paragraphs. */
+function textToHtmlParagraphs(value: string) {
+  return escapeEmailHtml(value)
+    .split(/\n{2,}/)
+    .map((block) => `<p style="color: #43474e; line-height: 1.7;">${block.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+}
+
+/**
+ * The answer an admin types in the dashboard, delivered to whoever sent the
+ * contact message. Replies land back in the team inbox, not the no-reply sender.
+ */
+export async function sendInquiryReplyEmail(data: {
+  to: string;
+  name: string;
+  subject: string;
+  body: string;
+  originalMessage: string;
+  originalSubject: string;
+}) {
+  return sendEmail({
+    to: data.to,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: data.subject,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045; font-size: 20px;">House in Mozambique</h1>
+        <p style="color: #43474e;">Hi ${escapeEmailHtml(data.name)},</p>
+        ${textToHtmlParagraphs(data.body)}
+        <div style="background: #f7f9fb; padding: 16px 20px; border-radius: 12px; margin: 24px 0; border-left: 3px solid #845326;">
+          <p style="color: #74777f; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;">
+            Your original message
+          </p>
+          <p style="color: #74777f; font-size: 13px; margin: 0 0 6px;">
+            <strong>${escapeEmailHtml(data.originalSubject)}</strong>
+          </p>
+          <p style="color: #74777f; font-size: 13px; white-space: pre-wrap; margin: 0;">${escapeEmailHtml(data.originalMessage)}</p>
+        </div>
+        <p style="color: #74777f;">You can reply straight to this email and it will reach our team.</p>
+        <p style="color: #74777f;">Best regards,<br/>House in Mozambique Team</p>
+      </div>
+    `,
+    text: `Hi ${data.name},
+
+${data.body}
+
+--- Your original message ---
+${data.originalSubject}
+${data.originalMessage}
+
+You can reply straight to this email and it will reach our team.
+
+Best regards,
+House in Mozambique Team
+`,
+  });
+}
+
+/**
+ * One newsletter broadcast, addressed to a single subscriber so recipients never
+ * see each other's addresses. Every send carries its own unsubscribe link.
+ */
+export async function sendSubscriberBroadcastEmail(data: {
+  to: string;
+  subject: string;
+  body: string;
+  unsubscribeUrl: string;
+}) {
+  return sendEmail({
+    to: data.to,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: data.subject,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
+        <h1 style="color: #002045; font-size: 20px;">House in Mozambique</h1>
+        ${textToHtmlParagraphs(data.body)}
+        <hr style="border: none; border-top: 1px solid #eceef1; margin: 28px 0 16px;" />
+        <p style="color: #9aa0a8; font-size: 12px;">
+          You are receiving this because you subscribed to House in Mozambique updates.
+          <a href="${data.unsubscribeUrl}" style="color: #845326;">Unsubscribe</a>.
+        </p>
+      </div>
+    `,
+    text: `${data.body}
+
+---
+You are receiving this because you subscribed to House in Mozambique updates.
+Unsubscribe: ${data.unsubscribeUrl}
+`,
+  });
+}

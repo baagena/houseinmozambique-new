@@ -5,14 +5,69 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { createProperty, uploadSingleImage } from '@/actions/properties';
+import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
 
+/**
+ * Paid plans only. The Standard tier is advertised as free on /pricing, so it
+ * must not be sent through the payment step — anything not listed here posts
+ * without payment rather than blocking the listing.
+ */
 const planAmounts: Record<string, number> = {
-  standard: 1500,
   premium: 3500,
   pro: 7500,
   boost: 2500,
 };
+
+/** Longest edge, in pixels, of an uploaded photo after downscaling. */
+const MAX_IMAGE_EDGE = 1600;
+const IMAGE_QUALITY = 0.82;
+
+/**
+ * Phone photos run to 5-16 MB, and the raw base64 of one of those overflows the
+ * server action body limit — which is why uploads used to die silently. Downscale
+ * and re-encode in the browser so every upload is a few hundred KB.
+ */
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error(`"${file.name}" is not an image file.`));
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.width, image.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('This browser could not process the image.'));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      try {
+        resolve(canvas.toDataURL('image/jpeg', IMAGE_QUALITY));
+      } catch {
+        reject(new Error(`"${file.name}" could not be processed. Try a different photo.`));
+      }
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`"${file.name}" could not be read as an image.`));
+    };
+
+    image.src = objectUrl;
+  });
+}
 
 const propertyTypes = ['House', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
 const amenities = [
@@ -41,9 +96,12 @@ function PostPropertyContent() {
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [contactMethods, setContactMethods] = useState<string[]>(['dashboard']);
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  // Photos are compressed as soon as they are picked, so what we hold here is
+  // already an upload-sized data URL plus the original name for the thumbnail.
+  const [photos, setPhotos] = useState<{ name: string; dataUrl: string }[]>([]);
+  const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [listingType, setListingType] = useState('Buy');
   const [propertyType, setPropertyType] = useState('House');
   const [title, setTitle] = useState('');
@@ -65,7 +123,85 @@ function PostPropertyContent() {
 
   const editId = searchParams.get('edit');
   const planType = searchParams.get('plan') || 'standard';
-  const amount = planAmounts[planType] || planAmounts.standard;
+  const amount = planAmounts[planType] ?? 0;
+
+  // Editing an existing listing, posting on the free tier, and staff posting are
+  // all free actions — none of them should be sent through the payment step.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoadingListing, setIsLoadingListing] = useState(Boolean(editId));
+  const requiresPayment = amount > 0 && !editId && !isAdmin;
+
+  // Check the session up front rather than letting someone fill in the whole
+  // form (and pay) only to be told at the very end that they are not signed in.
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('unauthenticated'))))
+      .then((data) => {
+        if (cancelled) return;
+        setIsAuthenticated(true);
+        setIsAdmin(data.user?.role === 'ADMIN');
+      })
+      .catch(() => {
+        if (!cancelled) setIsAuthenticated(false);
+      })
+      .finally(() => {
+        if (!cancelled) setAuthChecked(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Editing: pull the current values in so the form updates the listing instead
+  // of silently creating a duplicate.
+  useEffect(() => {
+    if (!editId) return;
+    let cancelled = false;
+
+    setIsLoadingListing(true);
+    fetch(`/api/property/${editId}`, { credentials: 'include' })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload.error || 'This listing could not be loaded.');
+        return payload.property;
+      })
+      .then((property) => {
+        if (cancelled || !property) return;
+        setTitle(property.title ?? '');
+        setDescription(property.description ?? '');
+        setCity(property.city ?? '');
+        setNeighborhood(property.neighborhood ?? '');
+        setAddress(property.address ?? '');
+        setBedrooms(String(property.bedrooms ?? ''));
+        setBathrooms(String(property.bathrooms ?? ''));
+        setArea(String(property.area ?? ''));
+        setPrice(String(property.price ?? ''));
+        setPropertyType(property.type ?? 'House');
+        setListingType(property.listingType ?? 'Buy');
+        setSelectedAmenities(property.amenities ?? []);
+        setPhotos(
+          (property.images ?? []).map((url: string, index: number) => ({
+            name: `Existing photo ${index + 1}`,
+            dataUrl: url,
+          }))
+        );
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setFormError(error.message);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingListing(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editId]);
 
   const summary = useMemo(() => {
     return [
@@ -143,65 +279,89 @@ function PostPropertyContent() {
     }
 
     setFormError('');
+
+    // Free tier, staff, and edits go straight to publishing.
+    if (!requiresPayment) {
+      void submitListing();
+      return;
+    }
+
     setStep('payment');
   };
 
-  const handlePaymentSuccess = async () => {
+  /**
+   * Uploads any new photos and then creates or updates the listing. Every
+   * failure path sets `formError`, which both the details and payment steps
+   * render — a submission must never fail silently.
+   */
+  const submitListing = async () => {
     setIsUploadingPhotos(true);
     setFormError('');
 
     try {
       const uploadedImages: string[] = [];
+      const newPhotos = photos.filter((photo) => photo.dataUrl.startsWith('data:'));
+      let uploaded = 0;
 
-      for (const file of photoFiles) {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => {
-            if (typeof reader.result === 'string') {
-              resolve(reader.result);
-            } else {
-              reject(new Error('Unable to read file as base64.'));
-            }
-          };
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(file);
-        });
+      for (const photo of photos) {
+        // Photos already hosted (an existing listing being edited) are kept as-is.
+        if (!photo.dataUrl.startsWith('data:')) {
+          uploadedImages.push(photo.dataUrl);
+          continue;
+        }
 
-        const uploadResult = await uploadSingleImage(base64);
+        uploaded += 1;
+        setUploadProgress(`Uploading photo ${uploaded} of ${newPhotos.length}…`);
+
+        const uploadResult = await uploadSingleImage(photo.dataUrl);
         if (!uploadResult.success) {
-          throw new Error(uploadResult.error || 'Failed to upload property image.');
+          throw new Error(uploadResult.error || `"${photo.name}" could not be uploaded.`);
         }
         uploadedImages.push((uploadResult as { success: true; url: string }).url);
       }
 
-      const result = await createProperty(
-        {
-          title: title.trim(),
-          description: buildDescription(),
-          city: city.trim(),
-          neighborhood: neighborhood.trim() || null,
-          address: address.trim() || null,
-          price,
-          priceUnit,
-          propertyType,
-          listingType,
-          bedrooms,
-          bathrooms,
-          area,
-          amenities: selectedAmenities,
-        },
-        uploadedImages
-      );
+      setUploadProgress(editId ? 'Saving your changes…' : 'Publishing your listing…');
+
+      const formData = {
+        title: title.trim(),
+        description: buildDescription(),
+        city: city.trim(),
+        neighborhood: neighborhood.trim() || null,
+        address: address.trim() || null,
+        price,
+        priceUnit,
+        propertyType,
+        listingType,
+        bedrooms,
+        bathrooms,
+        area,
+        amenities: selectedAmenities,
+      };
+
+      const result = editId
+        ? await updateProperty(editId, formData, uploadedImages)
+        : await createProperty(formData, uploadedImages);
 
       if (!result.success) {
-        throw new Error(result.error || 'Payment was recorded, but the property could not be submitted for review.');
+        throw new Error(result.error || 'The listing could not be saved. Please try again.');
       }
 
       setStep('success');
     } catch (error: any) {
-      setFormError(error?.message || 'Unable to upload images and submit the listing.');
+      const message =
+        typeof error?.message === 'string' && error.message
+          ? error.message
+          : 'Something went wrong while saving the listing. Please try again.';
+      setFormError(
+        /body exceeded|payload|413|too large|ERR_CONNECTION/i.test(message)
+          ? 'The photos were too large to send. Remove the largest ones and try again.'
+          : message
+      );
+      // Drop back to the form so the error is visible and the entry is not lost.
+      setStep('details');
     } finally {
       setIsUploadingPhotos(false);
+      setUploadProgress('');
     }
   };
 
@@ -217,10 +377,33 @@ function PostPropertyContent() {
     );
   };
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setPhotoFiles((current) => [...current, ...files].slice(0, 12));
-    setPhotos((current) => [...current, ...files.map((file) => file.name)].slice(0, 12));
+    // Let the same file be picked again after a failure.
+    event.target.value = '';
+    if (files.length === 0) return;
+
+    setIsPreparingPhotos(true);
+    setFormError('');
+
+    const prepared: { name: string; dataUrl: string }[] = [];
+    const rejected: string[] = [];
+
+    for (const file of files) {
+      try {
+        prepared.push({ name: file.name, dataUrl: await compressImage(file) });
+      } catch (error: any) {
+        rejected.push(error?.message || `"${file.name}" could not be added.`);
+      }
+    }
+
+    setPhotos((current) => [...current, ...prepared].slice(0, 12));
+    if (rejected.length > 0) setFormError(rejected.join(' '));
+    setIsPreparingPhotos(false);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((current) => current.filter((_, position) => position !== index));
   };
 
   if (step === 'payment') {
@@ -238,7 +421,23 @@ function PostPropertyContent() {
             </button>
             <span className="text-xs font-black uppercase tracking-[0.2em] text-[#845326]">{planType}</span>
           </div>
-          <PaymentForm planType={planType} amount={amount} onSuccess={handlePaymentSuccess} />
+
+          {formError && (
+            <p className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
+              {formError}
+            </p>
+          )}
+
+          {isUploadingPhotos && (
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#c4c6cf]/30 bg-white px-4 py-3">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#002045]/20 border-t-[#002045]" />
+              <p className="text-sm font-bold text-[#002045]">
+                {uploadProgress || 'Publishing your listing…'}
+              </p>
+            </div>
+          )}
+
+          <PaymentForm planType={planType} amount={amount} onSuccess={submitListing} />
         </div>
       </main>
     );
@@ -253,10 +452,37 @@ function PostPropertyContent() {
             {t.postProperty.publishAsset}
           </h1>
           <p className="mt-3 text-sm font-medium leading-relaxed text-[#43474e]/70">
-            Your listing submission was received. Our team will review it before publication.
+            {editId
+              ? 'Your changes were saved.'
+              : isAdmin
+              ? 'The listing was published and is live on the site.'
+              : 'Your listing submission was received. Our team will review it before publication.'}
           </p>
           <Link href="/dashboard/agent/listings" className="mt-8 inline-flex rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
             {t.auth.myListings}
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  // Posting writes against the signed-in account, so say so before any work is done.
+  if (authChecked && !isAuthenticated) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#f7f9fb] px-4">
+        <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <span className="material-symbols-outlined text-5xl text-[#845326]">lock</span>
+          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+            Sign in to post a property
+          </h1>
+          <p className="mt-3 text-sm font-medium leading-relaxed text-[#43474e]/70">
+            Listings are attached to your account so you can edit, suspend, or remove them later.
+          </p>
+          <Link
+            href={`/auth?redirect=/post-property${editId ? `%3Fedit=${editId}` : ''}`}
+            className="mt-7 inline-flex rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]"
+          >
+            Sign in
           </Link>
         </div>
       </main>
@@ -267,6 +493,12 @@ function PostPropertyContent() {
     <main className="min-h-screen bg-[#f7f9fb] px-4 py-10 md:px-8">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_380px]">
         <section className="space-y-6">
+          {isLoadingListing && (
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-sm">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#002045]/20 border-t-[#002045]" />
+              <p className="text-sm font-bold text-[#002045]">Loading your listing…</p>
+            </div>
+          )}
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
             <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-[#845326]">
               {editId ? 'Edit Listing' : t.nav.postHouse}
@@ -322,14 +554,33 @@ function PostPropertyContent() {
               </div>
               <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#002045] px-5 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
                 <span className="material-symbols-outlined text-lg">upload</span>
-                {t.postProperty.uploadMediaBtn}
-                <input type="file" multiple accept="image/*,video/*" onChange={handlePhotoUpload} className="sr-only" />
+                {isPreparingPhotos ? 'Preparing…' : t.postProperty.uploadMediaBtn}
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  disabled={isPreparingPhotos || isUploadingPhotos}
+                  className="sr-only"
+                />
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {photos.map((photo) => (
-                <div key={photo} className="flex aspect-[4/3] items-end rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6] p-3">
-                  <p className="truncate text-[10px] font-black uppercase tracking-widest text-[#74777f]">{photo}</p>
+              {photos.map((photo, index) => (
+                <div
+                  key={`${photo.name}-${index}`}
+                  className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo.dataUrl} alt={photo.name} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(index)}
+                    title="Remove photo"
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">close</span>
+                  </button>
                 </div>
               ))}
               {Array.from({ length: Math.max(1, 4 - photos.length) }).map((_, index) => (
@@ -338,6 +589,9 @@ function PostPropertyContent() {
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-xs font-medium text-[#74777f]">
+              Photos are resized in your browser before uploading, so large phone pictures work fine.
+            </p>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
@@ -394,12 +648,21 @@ function PostPropertyContent() {
               <button
             type="button"
             onClick={handleProceedToPayment}
-            className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]"
+            disabled={isUploadingPhotos || isPreparingPhotos || isLoadingListing}
+            className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85] disabled:opacity-60"
           >
-            {t.postProperty.saveAndProceed}
+            {isUploadingPhotos
+              ? 'Working…'
+              : editId
+              ? 'Save changes'
+              : requiresPayment
+              ? t.postProperty.saveAndProceed
+              : 'Publish listing'}
           </button>
-          {isUploadingPhotos && (
-            <p className="mt-3 text-sm font-medium text-[#002045]">Uploading images, please wait...</p>
+          {(isUploadingPhotos || isPreparingPhotos) && (
+            <p className="mt-3 text-sm font-medium text-[#002045]">
+              {isPreparingPhotos ? 'Preparing photos…' : uploadProgress || 'Uploading images, please wait...'}
+            </p>
           )}
             </div>
           </div>
