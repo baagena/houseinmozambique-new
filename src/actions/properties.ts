@@ -52,34 +52,109 @@ async function requireAgent() {
   return { userId: agent.id };
 }
 
+/**
+ * Loads a listing and confirms the signed-in agent or private owner owns it.
+ * Every self-service listing action goes through here, so one account can never
+ * touch another account's portfolio.
+ */
+async function requireOwnedProperty(id: string) {
+  const auth = await requireAgent();
+  if ('error' in auth) {
+    return { error: auth.error };
+  }
+
+  const property = await prisma.property.findUnique({ where: { id } });
+
+  if (!property || property.hostId !== auth.userId) {
+    return { error: 'Not authorized to manage this listing.' };
+  }
+
+  return { userId: auth.userId, property };
+}
+
+function revalidateListing(id: string) {
+  revalidatePath('/dashboard/agent');
+  revalidatePath('/dashboard/agent/listings');
+  revalidatePath('/properties');
+  revalidatePath(`/properties/${id}`);
+  revalidatePath('/');
+}
+
 export async function deleteAgentProperty(id: string) {
   try {
-    const auth = await requireAgent();
-    if ('error' in auth) {
-      return { success: false, error: auth.error };
-    }
-
-    const property = await prisma.property.findUnique({
-      where: { id },
-    });
-
-    if (!property || property.hostId !== auth.userId) {
-      return { success: false, error: 'Not authorized to delete this listing.' };
+    const owned = await requireOwnedProperty(id);
+    if ('error' in owned) {
+      return { success: false, error: owned.error };
     }
 
     await prisma.property.delete({
       where: { id },
     });
 
-    revalidatePath('/dashboard/agent/listings');
-    revalidatePath('/dashboard/agent');
-    revalidatePath('/properties');
-    revalidatePath(`/properties/${id}`);
+    revalidateListing(id);
 
-    return { success: true, property };
+    return { success: true, property: owned.property };
   } catch (error: any) {
     console.error('Failed to delete agent property:', error);
     return { success: false, error: error.message || 'Delete failed.' };
+  }
+}
+
+/**
+ * Takes a listing off the public site without deleting it. Owners run this
+ * themselves — no administrator involvement — and can bring it back later.
+ */
+export async function suspendAgentProperty(id: string) {
+  try {
+    const owned = await requireOwnedProperty(id);
+    if ('error' in owned) {
+      return { success: false, error: owned.error };
+    }
+
+    if (owned.property.status === 'SUSPENDED') {
+      return { success: true, property: owned.property };
+    }
+
+    const property = await prisma.property.update({
+      where: { id },
+      data: { status: 'SUSPENDED' },
+    });
+
+    revalidateListing(id);
+
+    return { success: true, property };
+  } catch (error: any) {
+    console.error('Failed to suspend agent property:', error);
+    return { success: false, error: error.message || 'Suspend failed.' };
+  }
+}
+
+/**
+ * Reverses a suspension. A listing an admin has already approved goes straight
+ * back live; one that was never approved returns to the moderation queue.
+ */
+export async function republishAgentProperty(id: string) {
+  try {
+    const owned = await requireOwnedProperty(id);
+    if ('error' in owned) {
+      return { success: false, error: owned.error };
+    }
+
+    if (owned.property.status !== 'SUSPENDED') {
+      return { success: false, error: 'Only a suspended listing can be reactivated.' };
+    }
+
+    const property = await prisma.property.update({
+      where: { id },
+      data: { status: owned.property.approvedAt ? 'PUBLISHED' : 'PENDING' },
+    });
+
+    revalidateListing(id);
+
+    return { success: true, property };
+  } catch (error: any) {
+    console.error('Failed to republish agent property:', error);
+    return { success: false, error: error.message || 'Reactivation failed.' };
   }
 }
 
@@ -151,15 +226,22 @@ export async function createProperty(formData: any, imageUrls: string[]) {
 
 export async function updateProperty(id: string, formData: any, imageUrls: string[]) {
   try {
-    const auth = await requireAgent();
-    if ('error' in auth) {
-      return { success: false, error: auth.error };
+    const owned = await requireOwnedProperty(id);
+    if ('error' in owned) {
+      return { success: false, error: owned.error };
     }
 
-    const property = await prisma.property.findUnique({ where: { id } });
-    if (!property || property.hostId !== auth.userId) {
-      return { success: false, error: 'Not authorized to edit this listing.' };
-    }
+    const { property } = owned;
+
+    // An already-approved listing stays live when its owner edits it, so updates
+    // do not need an administrator. Anything not yet approved keeps waiting, and
+    // a suspended listing stays suspended until the owner reactivates it.
+    const status =
+      property.status === 'SUSPENDED'
+        ? 'SUSPENDED'
+        : property.approvedAt
+        ? 'PUBLISHED'
+        : 'PENDING';
 
     const updated = await prisma.property.update({
       where: { id },
@@ -180,14 +262,12 @@ export async function updateProperty(id: string, formData: any, imageUrls: strin
         amenities: formData.amenities,
         images: imageUrls,
         tags: formData.tags ?? [],
-        status: 'PENDING',
+        status,
         isNew: true,
       },
     });
 
-    revalidatePath('/dashboard/agent/listings');
-    revalidatePath('/properties');
-    revalidatePath(`/properties/${id}`);
+    revalidateListing(id);
 
     return { success: true, property: updated };
   } catch (error: any) {

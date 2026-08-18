@@ -60,7 +60,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-[#f7f9fb] overflow-hidden">
-      <DashboardSidebar role={roleLabel as 'admin' | 'agent'} userName={user.name} />
+      <DashboardSidebar role={roleLabel as 'admin' | 'agent'} userName={user.name} accountRole={user.role} />
       
       <main className="flex-1 overflow-y-auto custom-scrollbar relative">
         {/* Top Header */}

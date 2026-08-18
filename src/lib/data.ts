@@ -88,8 +88,11 @@ export async function getPropertyById(id: string) {
   });
 }
 
+// The public directory lists professional agents only — private owners get the
+// same listing tools but are not advertised as agents.
 export async function getAgents() {
   return await prisma.agent.findMany({
+    where: { role: 'AGENT' },
     orderBy: { rating: 'desc' },
     include: { _count: { select: { properties: true } } },
   });
@@ -97,7 +100,7 @@ export async function getAgents() {
 
 export async function getFeaturedAgents() {
   return await prisma.agent.findMany({
-    where: { isFeatured: true },
+    where: { isFeatured: true, role: 'AGENT' },
     take: 10,
   });
 }

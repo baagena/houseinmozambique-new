@@ -17,6 +17,9 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
   }
 
-  const property = await prisma.property.update({ where: { id }, data: { status } });
+  const property = await prisma.property.update({
+    where: { id },
+    data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
+  });
   return NextResponse.json({ success: true, property });
 }

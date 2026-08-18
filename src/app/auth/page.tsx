@@ -56,6 +56,10 @@ function AuthForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Two self-service partitions: professional agents and private owners. Owners
+  // skip the professional profile steps but get the same listing controls.
+  const [accountType, setAccountType] = useState<'AGENT' | 'OWNER'>('AGENT');
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -85,7 +89,7 @@ function AuthForm() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(tab === 'signup' ? { ...formData, accountType } : formData),
       });
 
       const data = await response.json();
@@ -179,6 +183,9 @@ function AuthForm() {
         : [...prev.specializations, spec]
     }));
   };
+
+  // Private owners have no professional profile to fill in, so their sign-up is shorter.
+  const totalSteps = accountType === 'OWNER' ? 2 : 3;
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
@@ -306,7 +313,7 @@ function AuthForm() {
                 onClick={() => setTab('signup')}
                 className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signup' ? 'text-[#002045]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
               >
-                {lang === 'en' ? 'Agent registration' : 'Registo de Agente'}
+                {lang === 'en' ? 'Create account' : 'Criar conta'}
                 {tab === 'signup' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
               </button>
             </div>
@@ -314,13 +321,13 @@ function AuthForm() {
             {/* Step Indicator (signup only) */}
             {tab === 'signup' && (
               <div className="flex items-center gap-2 mb-8">
-                {[1, 2, 3].map((s) => (
+                {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
                   <div
                     key={s}
                     className={`h-1 flex-1 rounded-full transition-colors duration-300 ${s <= step ? 'bg-[#002045]' : 'bg-[#eceef1]'}`}
                   />
                 ))}
-                <span className="text-[12px] font-medium text-[#9aa0a8] ml-3">{lang === 'en' ? 'Step' : 'Passo'} {step} / 3</span>
+                <span className="text-[12px] font-medium text-[#9aa0a8] ml-3">{lang === 'en' ? 'Step' : 'Passo'} {step} / {totalSteps}</span>
               </div>
             )}
 
@@ -388,6 +395,47 @@ function AuthForm() {
                   {/* Step 1: Credentials */}
                   {step === 1 && (
                     <div className="space-y-4">
+                      {/* Account partition: agents and private owners both get their
+                          own secure workspace and manage only their own listings. */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[13px] font-medium text-[#5b616b]">
+                          {lang === 'en' ? 'I am registering as' : 'Estou a registar-me como'}
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {([
+                            {
+                              value: 'AGENT' as const,
+                              icon: 'real_estate_agent',
+                              label: lang === 'en' ? 'Real estate agent' : 'Agente imobiliário',
+                              hint: lang === 'en' ? 'Agency or commissioner' : 'Agência ou comissário',
+                            },
+                            {
+                              value: 'OWNER' as const,
+                              icon: 'key',
+                              label: lang === 'en' ? 'Private owner' : 'Proprietário privado',
+                              hint: lang === 'en' ? 'Listing my own property' : 'Listar o meu imóvel',
+                            },
+                          ]).map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => { setAccountType(option.value); setStep(1); }}
+                              className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors ${
+                                accountType === option.value
+                                  ? 'border-[#002045] bg-[#002045]/[0.04]'
+                                  : 'border-[#e3e6ea] hover:bg-[#f5f6f8]'
+                              }`}
+                            >
+                              <span className={`material-symbols-outlined text-[20px] ${accountType === option.value ? 'text-[#002045]' : 'text-[#9aa0a8]'}`}>
+                                {option.icon}
+                              </span>
+                              <span className="text-[13px] font-medium text-[#002045] leading-tight">{option.label}</span>
+                              <span className="text-[11px] text-[#9aa0a8] leading-tight">{option.hint}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       <div className="space-y-1.5">
                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.fullNameLabel}</label>
                          <input
@@ -427,6 +475,7 @@ function AuthForm() {
                   {/* Step 2: Professional Details */}
                   {step === 2 && (
                     <div className="space-y-4">
+                      {accountType === 'AGENT' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.profRoleLabel}</label>
@@ -448,6 +497,7 @@ function AuthForm() {
                           />
                         </div>
                       </div>
+                      )}
                       <div className="space-y-1.5">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.locationLabel}</label>
                         <input
@@ -463,7 +513,7 @@ function AuthForm() {
                   )}
 
                   {/* Step 3: Narrative */}
-                  {step === 3 && (
+                  {step === 3 && accountType === 'AGENT' && (
                     <div className="space-y-5">
                       <div className="space-y-1.5">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.bioLabel}</label>
@@ -503,7 +553,7 @@ function AuthForm() {
                         {t.auth.backBtn}
                       </button>
                     )}
-                    {step < 3 ? (
+                    {step < totalSteps ? (
                       <button
                         onClick={nextStep}
                         className="flex-[2] h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] flex items-center justify-center gap-2"

@@ -19,7 +19,10 @@ export async function POST(request: Request, { params }: Params) {
     const { status } = body;
     if (!status) return NextResponse.json({ error: 'Missing status' }, { status: 400 });
 
-    const property = await prisma.property.update({ where: { id }, data: { status } });
+    const property = await prisma.property.update({
+      where: { id },
+      data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
+    });
 
     return NextResponse.json({ success: true, property });
   } catch (err: any) {
@@ -60,9 +63,10 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const updated = await prisma.property.update({
       where: { id },
-      data: { status },
+      data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
     });
 
+    revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');
     revalidatePath('/dashboard/admin/properties');
     revalidatePath('/properties');

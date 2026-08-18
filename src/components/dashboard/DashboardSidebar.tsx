@@ -14,6 +14,8 @@ interface SidebarLink {
 interface DashboardSidebarProps {
   role: 'admin' | 'agent';
   userName: string;
+  /** Raw account role, so a private owner is not labelled as an agent. */
+  accountRole?: string;
 }
 
 const AGENT_LINKS: SidebarLink[] = [
@@ -32,14 +34,18 @@ const ADMIN_LINKS: SidebarLink[] = [
   { label: 'All Properties', href: '/dashboard/admin/properties', icon: 'domain' },
   { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'verified' },
   { label: 'Edit Pages', href: '/dashboard/admin/content', icon: 'edit_document' },
+  { label: 'Pricing Plans', href: '/dashboard/admin/pricing', icon: 'sell' },
   { label: 'Advertisements', href: '/dashboard/admin/ads', icon: 'campaign' },
   { label: 'System Settings', href: '/dashboard/admin/settings', icon: 'tune' },
 ];
 
-export default function DashboardSidebar({ role, userName }: DashboardSidebarProps) {
+export default function DashboardSidebar({ role, userName, accountRole }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const links = role === 'admin' ? ADMIN_LINKS : AGENT_LINKS;
+  const isOwner = accountRole === 'OWNER';
+  const workspaceLabel = role === 'admin' ? 'admin' : isOwner ? 'owner' : 'agent';
+  const roleCaption = role === 'admin' ? 'Administrator' : isOwner ? 'Property owner' : 'Verified agent';
 
   const handleLogout = async () => {
     try {
@@ -66,7 +72,7 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
           </div>
           <div className="leading-tight">
             <p className="text-[13px] font-semibold text-[#002045] tracking-tight">House in Mozambique</p>
-            <p className="text-[11px] font-medium text-[#9aa0a8] capitalize">{role} workspace</p>
+            <p className="text-[11px] font-medium text-[#9aa0a8] capitalize">{workspaceLabel} workspace</p>
           </div>
         </Link>
       </div>
@@ -99,7 +105,7 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
           </div>
           <div className="flex-1 overflow-hidden leading-tight">
             <p className="text-[12px] font-semibold text-[#002045] truncate">{userName}</p>
-            <p className="text-[11px] font-medium text-[#9aa0a8] truncate">{role === 'admin' ? 'Administrator' : 'Verified agent'}</p>
+            <p className="text-[11px] font-medium text-[#9aa0a8] truncate">{roleCaption}</p>
           </div>
           <button
             onClick={handleLogout}

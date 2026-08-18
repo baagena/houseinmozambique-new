@@ -35,11 +35,9 @@ export default function AgentDashboardClient({ agentName, myProperties, myInquir
   const publishedListings = myProperties.filter((property) => property.status === 'PUBLISHED').length;
   const pendingListings = myProperties.filter((property) => property.status !== 'PUBLISHED').length;
   const portfolioValue = myProperties.reduce((sum, property) => sum + (Number(property.price) || 0), 0);
-  const formattedPortfolioValue = portfolioValue.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedPortfolioValue = `MT ${portfolioValue.toLocaleString('en-US', {
     maximumFractionDigits: 0,
-  });
+  })}`;
 
   return (
     <div className="space-y-12">

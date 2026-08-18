@@ -7,6 +7,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password, name, title, location, yearsExperience, bio, specializations } = body;
+    // Two self-service partitions share this endpoint: professional agents and
+    // private owners listing their own property. Both manage only their own listings.
+    const role = body.accountType === "OWNER" || body.role === "OWNER" ? "OWNER" : "AGENT";
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -46,12 +49,12 @@ export async function POST(request: Request) {
         password: hashedPassword,
         name,
         initials,
-        title: title || 'Agent',
-        location: location || 'Mozambique',
-        yearsExperience: yearsExperience || 0,
-        bio: bio || '',
-        specializations: specializations || [],
-        role: 'AGENT',
+        title: role === "OWNER" ? (title || "Property Owner") : (title || "Agent"),
+        location: location || "Mozambique",
+        yearsExperience: role === "OWNER" ? 0 : (yearsExperience || 0),
+        bio: bio || "",
+        specializations: role === "OWNER" ? [] : (specializations || []),
+        role,
       },
     });
 

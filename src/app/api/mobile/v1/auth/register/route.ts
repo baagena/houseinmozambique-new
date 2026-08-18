@@ -8,7 +8,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password, name, phone, title, location, yearsExperience, bio, specializations } = body;
-    const role = body.role === 'CUSTOMER' ? 'CUSTOMER' : 'AGENT';
+    const requestedRole = body.accountType || body.role;
+    const role =
+      requestedRole === 'CUSTOMER' ? 'CUSTOMER' : requestedRole === 'OWNER' ? 'OWNER' : 'AGENT';
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -42,7 +44,8 @@ export async function POST(request: Request) {
         name,
         initials,
         phone: phone || null,
-        title: role === 'CUSTOMER' ? 'Customer' : (title || 'Agent'),
+        title:
+          role === 'CUSTOMER' ? 'Customer' : role === 'OWNER' ? title || 'Property Owner' : title || 'Agent',
         location: location || 'Mozambique',
         yearsExperience: yearsExperience || 0,
         bio: bio || '',
@@ -52,7 +55,7 @@ export async function POST(request: Request) {
       select: AGENT_SELF_SELECT,
     });
 
-    if (role === 'AGENT') {
+    if (role === 'AGENT' || role === 'OWNER') {
       try {
         await sendAgentVerificationEmail({ name: newAgent.name, email: newAgent.email });
       } catch (emailError) {

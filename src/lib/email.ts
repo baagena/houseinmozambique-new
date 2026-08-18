@@ -207,7 +207,7 @@ export async function sendPropertySubmissionNotification(property: {
           <li><strong>Type:</strong> ${property.type}</li>
           <li><strong>Listing:</strong> ${property.listingType}</li>
           <li><strong>Location:</strong> ${property.location}, ${property.city}</li>
-          <li><strong>Price:</strong> ${property.price.toLocaleString()} ${property.priceUnit}</li>
+          <li><strong>Price:</strong> MT ${property.price.toLocaleString()} (${property.priceUnit})</li>
           <li><strong>Review URL:</strong> <a href="${SITE_URL}/dashboard/admin/approvals">Admin approvals</a></li>
         </ul>
       </div>
@@ -218,7 +218,7 @@ Title: ${property.title}
 Type: ${property.type}
 Listing: ${property.listingType}
 Location: ${property.location}, ${property.city}
-Price: ${property.price.toLocaleString()} ${property.priceUnit}
+Price: MT ${property.price.toLocaleString()} (${property.priceUnit})
 
 Review URL: ${SITE_URL}/dashboard/admin/approvals
 `,

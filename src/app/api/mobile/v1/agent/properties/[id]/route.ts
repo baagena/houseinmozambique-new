@@ -18,6 +18,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { formData, imageUrls } = await request.json();
 
+    // Mirrors the web dashboard: an approved listing stays live through an edit,
+    // so its owner never needs an administrator to put it back.
+    const status =
+      property.status === 'SUSPENDED'
+        ? 'SUSPENDED'
+        : property.approvedAt
+        ? 'PUBLISHED'
+        : 'PENDING';
+
     const updated = await prisma.property.update({
       where: { id },
       data: {
@@ -37,7 +46,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         amenities: formData.amenities,
         images: imageUrls,
         tags: formData.tags ?? [],
-        status: 'PENDING',
+        status,
         isNew: true,
       },
     });

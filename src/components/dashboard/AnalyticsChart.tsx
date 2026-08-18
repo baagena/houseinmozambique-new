@@ -77,7 +77,7 @@ export default function AnalyticsChart({ data }: AnalyticsChartProps) {
                   border: '1px solid #f2f4f6',
                   borderRadius: '12px'
                 }}
-                formatter={(value) => `$${(value as number).toLocaleString()}`}
+                formatter={(value) => `MT ${(value as number).toLocaleString()}`}
               />
               <Bar 
                 dataKey="revenue" 

@@ -73,7 +73,7 @@ function PostPropertyContent() {
       { label: t.postProperty.classificationLabel, value: propertyType },
       { label: t.postProperty.locationCityLabel, value: city || t.postProperty.targetNotSet },
       { label: t.postProperty.neighborhoodLabel, value: neighborhood || t.postProperty.targetNotSet },
-      { label: t.postProperty.valuationLabel, value: price ? `$${Number(price).toLocaleString()}` : t.postProperty.valuationMissing },
+      { label: t.postProperty.valuationLabel, value: price ? `MT ${Number(price).toLocaleString()}` : t.postProperty.valuationMissing },
       { label: t.postProperty.photographyLabel, value: `${photos.length} uploaded` },
       { label: 'Agent contact', value: contactMethods.map((method) => contactOptions.find((option) => option.id === method)?.label).filter(Boolean).join(', ') },
     ];

@@ -82,10 +82,10 @@ function timeAgo(date: string): string {
 
 function formatPrice(price: number, unit: string): string {
   const formatted = price >= 1000000
-    ? `$${(price / 1000000).toFixed(1)}M`
+    ? `MT ${(price / 1000000).toFixed(1)}M`
     : price >= 1000
-    ? `$${(price / 1000).toFixed(0)}k`
-    : `$${price.toLocaleString()}`;
+    ? `MT ${(price / 1000).toFixed(0)}k`
+    : `MT ${price.toLocaleString()}`;
   if (unit === 'monthly') return `${formatted}/mo`;
   if (unit === 'nightly') return `${formatted}/nt`;
   return formatted;

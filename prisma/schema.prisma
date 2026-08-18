@@ -74,7 +74,8 @@ model Property {
   images          String[]
   host            Agent    @relation(fields: [hostId], references: [id])
   hostId          String
-  status          String   @default("PENDING") // PENDING, PUBLISHED, REJECTED
+  status          String   @default("PENDING") // PENDING, PUBLISHED, REJECTED, SUSPENDED
+  approvedAt      DateTime? // set the first time an admin publishes; lets owners re-publish their own suspended listings
   tags            String[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -140,6 +141,33 @@ model SiteContent {
 
   @@unique([key, lang])
   @@index([lang])
+}
+
+model PricingPlan {
+  id            String   @id @default(cuid())
+  slug          String   @unique // "standard", "premium", "pro", or an admin-defined key
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  highlighted   Boolean  @default(false)
+  ctaMode       String   @default("checkout") // "checkout" -> /post-property, "contact" -> /contact
+  nameEn        String
+  namePt        String
+  descriptionEn String
+  descriptionPt String
+  priceEn       String // free-form so admins can write "3,000 - 5,000" or "Grátis"
+  pricePt       String
+  unitEn        String
+  unitPt        String
+  badgeEn       String?
+  badgePt       String?
+  ctaEn         String
+  ctaPt         String
+  featuresEn    Json // [{ label: string, included: boolean, star: boolean }]
+  featuresPt    Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([sortOrder])
 }
 
 model Advertisement {

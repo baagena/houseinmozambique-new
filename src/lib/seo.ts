@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://houseinmozambique.com').replace(/\/$/, '');
 export const SITE_NAME = 'House in Mozambique';
 export const SITE_TAGLINE = 'The Modern Estate Curator';
-export const PRICE_CURRENCY = 'USD';
+export const PRICE_CURRENCY = 'MZN';
 export const TWITTER_HANDLE = '@houseinmoz';
 
 export const DEFAULT_DESCRIPTION =

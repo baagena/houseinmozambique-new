@@ -33,9 +33,15 @@ export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'RE
 
     const property = await prisma.property.update({
       where: { id },
-      data: { status },
+      data: {
+        status,
+        // Stamp the first approval so the owner can suspend and re-publish
+        // their own listing later without coming back through moderation.
+        ...(status === 'PUBLISHED' && { approvedAt: new Date() }),
+      },
     });
 
+    revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');
     revalidatePath('/dashboard/admin/properties');
     revalidatePath('/properties');

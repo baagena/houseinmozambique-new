@@ -22,7 +22,7 @@ export async function GET() {
     ads,
   ] = await Promise.all([
     getFeaturedProperties(),
-    prisma.agent.findMany({ where: { isFeatured: true }, take: 10, select: AGENT_PUBLIC_SELECT }),
+    prisma.agent.findMany({ where: { isFeatured: true, role: 'AGENT' }, take: 10, select: AGENT_PUBLIC_SELECT }),
     getPropertiesByCity('Maputo'),
     getPropertiesByCity('Inhambane'),
     getPropertiesByCity('Beira'),
