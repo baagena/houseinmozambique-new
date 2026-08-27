@@ -16,8 +16,7 @@ class PropertyCardSkeleton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 4 / 3,
+            Expanded(
               child: DecoratedBox(
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
               ),

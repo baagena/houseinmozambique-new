@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+new_version/
 .pnp
 .pnp.js
 

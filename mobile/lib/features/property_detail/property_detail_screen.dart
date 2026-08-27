@@ -540,8 +540,18 @@ class _StickyContactBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(property.priceLabel('MT '), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
-                  Text('property.listedBy'.tr(), style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                  Text(
+                    property.priceLabel('MT '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                  ),
+                  Text(
+                    'property.listedBy'.tr(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant),
+                  ),
                 ],
               ),
             ),
@@ -595,7 +605,7 @@ class _PressableButtonState extends State<_PressableButton> {
           height: 48,
           child: ElevatedButton.icon(
             icon: Icon(widget.icon, size: 18),
-            label: Text(widget.label),
+            label: Text(widget.label, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false),
             onPressed: widget.onTap,
           ),
         ),

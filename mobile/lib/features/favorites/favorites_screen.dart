@@ -50,7 +50,7 @@ class FavoritesScreen extends ConsumerWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.8,
             ),
             itemCount: properties.length,
             itemBuilder: (context, index) => PropertyCard(property: properties[index], width: double.infinity, swipeableImages: true),

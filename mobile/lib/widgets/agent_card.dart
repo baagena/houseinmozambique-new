@@ -17,13 +17,14 @@ class AgentCard extends StatelessWidget {
       child: SizedBox(
         width: width,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              radius: 40,
+              radius: 36,
               backgroundColor: AppColors.surfaceVariant,
               backgroundImage: agent.avatar != null ? CachedNetworkImageProvider(agent.avatar!) : null,
               child: agent.avatar == null
-                  ? Text(agent.initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))
+                  ? Text(agent.initials, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
                   : null,
             ),
             const SizedBox(height: 8),

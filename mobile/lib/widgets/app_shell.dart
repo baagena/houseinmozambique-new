@@ -26,7 +26,7 @@ class _NavEntry {
 const _guestEntries = [
   _NavEntry(Icons.home_outlined, Icons.home, 'nav.home', 0),
   _NavEntry(Icons.search_outlined, Icons.search, 'nav.explore', 1),
-  _NavEntry(Icons.add_home_outlined, Icons.add_home_outlined, 'home.postHouse', null),
+  _NavEntry(Icons.add_home_outlined, Icons.add_home_outlined, 'nav.post', null),
   _NavEntry(Icons.groups_outlined, Icons.groups, 'nav.agents', 2),
   _NavEntry(Icons.person_outline, Icons.person, 'nav.profile', 3),
 ];
@@ -36,7 +36,7 @@ const _guestEntries = [
 const _agentEntries = [
   _NavEntry(Icons.home_outlined, Icons.home, 'nav.home', 0),
   _NavEntry(Icons.home_work_outlined, Icons.home_work, 'nav.listings', 4),
-  _NavEntry(Icons.add_home_outlined, Icons.add_home_outlined, 'home.postHouse', null),
+  _NavEntry(Icons.add_home_outlined, Icons.add_home_outlined, 'nav.post', null),
   _NavEntry(Icons.inbox_outlined, Icons.inbox, 'nav.leads', 5),
   _NavEntry(Icons.person_outline, Icons.person, 'nav.profile', 3),
 ];
@@ -101,21 +101,24 @@ class _BottomNav extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: entries.map((entry) {
-              return _NavItem(
-                icon: entry.icon,
-                selectedIcon: entry.selectedIcon,
-                label: entry.labelKey.tr(),
-                selected: entry.branchIndex != null && entry.branchIndex == currentBranch,
-                isAction: entry.isAction,
-                badgeCount: entry.labelKey == 'nav.leads' ? unreadLeads : 0,
-                onTap: () => onEntrySelected(entry),
-              );
-            }).toList(),
+        top: false,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: SizedBox(
+            height: 68,
+            child: Row(
+              children: entries.map((entry) {
+                return _NavItem(
+                  icon: entry.icon,
+                  selectedIcon: entry.selectedIcon,
+                  label: entry.labelKey.tr(),
+                  selected: entry.branchIndex != null && entry.branchIndex == currentBranch,
+                  isAction: entry.isAction,
+                  badgeCount: entry.labelKey == 'nav.leads' ? unreadLeads : 0,
+                  onTap: () => onEntrySelected(entry),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),
@@ -157,14 +160,15 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedScale(
-              scale: highlighted ? 1.15 : 1.0,
+              scale: highlighted ? 1.12 : 1.0,
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutBack,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: isAction
                       ? AppColors.secondary
@@ -177,14 +181,24 @@ class _NavItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
-                color: highlighted ? AppColors.primary : AppColors.onSurfaceVariant,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.1,
+                  fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
+                  color: highlighted ? AppColors.primary : AppColors.onSurfaceVariant,
+                ),
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
               ),
-              child: Text(label),
             ),
           ],
         ),

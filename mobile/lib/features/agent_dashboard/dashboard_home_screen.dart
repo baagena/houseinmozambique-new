@@ -25,6 +25,9 @@ class DashboardHomeScreen extends ConsumerWidget {
             Text('${agent.name} 👋', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           Row(
+            // Both cards match the taller one instead of floating at
+            // different heights when one label wraps.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
                 child: _StatCard(

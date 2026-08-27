@@ -37,6 +37,13 @@ class HouseInMozambiqueApp extends ConsumerWidget {
       title: 'House in Mozambique',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      // Several rows and cards are laid out at a fixed height (the home
+      // property rows, the bottom nav). Let the system font size grow, but
+      // cap it so those never clip their last line.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.2,
+        child: child ?? const SizedBox.shrink(),
+      ),
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,

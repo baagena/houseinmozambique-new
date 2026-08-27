@@ -65,7 +65,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       body: Column(
         children: [
           SizedBox(
-            height: 48,
+            // Chips keep their own tap-target height; the row just has to be
+            // tall enough for it, otherwise they get squeezed and overflow.
+            height: 56,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -93,7 +95,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 16,
-                              childAspectRatio: 0.68,
+                              childAspectRatio: 0.8,
                             ),
                             itemCount: state.results.length + (state.hasMore ? 1 : 0),
                             itemBuilder: (context, index) {
@@ -122,21 +124,23 @@ class _TypeChip extends ConsumerWidget {
     final selected = state.filters.listingType == value;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => ref.read(propertySearchControllerProvider.notifier).updateFilters(
-              (f) => PropertyFilters(
-                listingType: selected ? null : value,
-                city: f.city,
-                propertyType: f.propertyType,
-                minPrice: f.minPrice,
-                maxPrice: f.maxPrice,
-                bedrooms: f.bedrooms,
-                bathrooms: f.bathrooms,
-                sort: f.sort,
+      child: Center(
+        child: ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          onSelected: (_) => ref.read(propertySearchControllerProvider.notifier).updateFilters(
+                (f) => PropertyFilters(
+                  listingType: selected ? null : value,
+                  city: f.city,
+                  propertyType: f.propertyType,
+                  minPrice: f.minPrice,
+                  maxPrice: f.maxPrice,
+                  bedrooms: f.bedrooms,
+                  bathrooms: f.bathrooms,
+                  sort: f.sort,
+                ),
               ),
-            ),
+        ),
       ),
     );
   }

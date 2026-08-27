@@ -96,7 +96,7 @@ class AgentDetailScreen extends ConsumerWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.68,
+                  childAspectRatio: 0.8,
                 ),
                 itemCount: properties.length,
                 itemBuilder: (context, i) => PropertyCard(property: properties[i], width: double.infinity, swipeableImages: true),
