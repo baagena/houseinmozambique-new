@@ -31,14 +31,14 @@ function trackClick(id: string) {
 /* ─────────────────────────────────── Ad card variants ─── */
 
 function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
-  const bg = ad.bgColor || '#1a3c5e';
+  const bg = ad.bgColor || '#13233F';
   const text = ad.textColor || '#ffffff';
-  const accent = ad.accentColor || '#f4a61d';
+  const accent = ad.accentColor || '#C4922F';
 
   return (
     <div
       className={`relative w-full h-full overflow-hidden shadow-sm ${
-        compact ? 'rounded-2xl border border-white/70 ring-1 ring-[#002045]/5' : 'rounded-2xl'
+        compact ? 'rounded-2xl border border-white/70 ring-1 ring-[#13233F]/5' : 'rounded-2xl'
       }`}
       style={{ background: bg }}
     >
@@ -60,7 +60,7 @@ function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
           >
             Sponsored
           </span>
-          <p className={`font-extrabold leading-tight truncate ${compact ? 'text-sm sm:text-base' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
+          <p className={`font-semibold leading-tight truncate ${compact ? 'text-sm sm:text-base' : 'text-xl md:text-2xl'}`} style={{ color: text }}>
             {ad.title}
           </p>
           {ad.description && (
@@ -87,7 +87,7 @@ function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
 }
 
 function CardRowAd({ ad }: { ad: Ad }) {
-  const accent = ad.accentColor || '#002045';
+  const accent = ad.accentColor || '#13233F';
   return (
     <div className="border border-[#e8e8e8] rounded-2xl p-5 bg-white flex flex-col sm:flex-row items-start sm:items-center gap-4 h-full hover:shadow-md transition-shadow">
       {ad.imageUrl && (
@@ -218,7 +218,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
               onClick={() => goTo(i)}
               aria-label={`Show sponsored slide ${i + 1} of ${ads.length}`}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === current ? 'w-6 bg-[#002045]' : 'w-1.5 bg-[#002045]/20 hover:bg-[#002045]/40'
+                i === current ? 'w-6 bg-[#13233F]' : 'w-1.5 bg-[#13233F]/20 hover:bg-[#13233F]/40'
               }`}
             />
           ))}
@@ -230,7 +230,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
         <>
           <button
             onClick={() => goTo(current === 0 ? maxIndex : current - 1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#13233F] z-10 border border-[#e8e8e8]"
             aria-label="Previous"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -239,7 +239,7 @@ function AdCarousel({ ads, compact }: { ads: Ad[]; compact?: boolean }) {
           </button>
           <button
             onClick={() => goTo(current >= maxIndex ? 0 : current + 1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#002045] z-10 border border-[#e8e8e8]"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow-md bg-white flex items-center justify-center hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all text-[#13233F] z-10 border border-[#e8e8e8]"
             aria-label="Next"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">

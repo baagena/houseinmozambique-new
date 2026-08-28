@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Montserrat } from 'next/font/google';
+import { DM_Sans, Montserrat, Newsreader, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/layout/Navbar';
-import FooterWrapper from '@/components/layout/FooterWrapper';
+import SiteChrome from '@/components/layout/SiteChrome';
+import ChatWidget from '@/components/layout/ChatWidget';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
 import { getContentOverrides } from '@/lib/content';
 import JsonLd from '@/components/seo/JsonLd';
@@ -15,7 +15,6 @@ import {
   organizationJsonLd,
   websiteJsonLd,
 } from '@/lib/seo';
-import Script from 'next/script';
 
 const dmsans = DM_Sans({
   subsets: ['latin'],
@@ -26,6 +25,27 @@ const dmsans = DM_Sans({
 const montserrat = Montserrat({
   subsets: ['latin'],
   variable: '--font-montserrat',
+  display: 'swap',
+});
+
+/* ── Redesign type system: editorial serif + Inter UI + mono for data ── */
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  variable: '--font-newsreader',
+  weight: ['400', '500', '600'],
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-plexmono',
+  weight: ['400', '500', '600'],
   display: 'swap',
 });
 
@@ -83,7 +103,10 @@ export default async function RootLayout({
   const contentOverrides = await getContentOverrides();
 
   return (
-    <html lang="en" className={`${montserrat.variable} ${dmsans.variable}`}>
+    <html
+      lang="en"
+      className={`${montserrat.variable} ${dmsans.variable} ${newsreader.variable} ${inter.variable} ${plexMono.variable}`}
+    >
       <head>
         <link
           rel="stylesheet"
@@ -93,14 +116,9 @@ export default async function RootLayout({
       <body>
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <LanguageProvider overrides={contentOverrides}>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <FooterWrapper />
+          <SiteChrome>{children}</SiteChrome>
         </LanguageProvider>
-        <Script
-          src="//code.tidio.co/dskhwbtaf4xshe1pluqs7ilizketnylv.js"
-          strategy="lazyOnload"
-        />
+        <ChatWidget />
       </body>
     </html>
   );

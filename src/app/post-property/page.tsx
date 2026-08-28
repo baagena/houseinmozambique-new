@@ -408,18 +408,18 @@ function PostPropertyContent() {
 
   if (step === 'payment') {
     return (
-      <main className="min-h-screen bg-[#f7f9fb] px-4 py-10 md:px-8">
+      <main className="min-h-screen bg-[#F5F2EC] px-4 py-10 md:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 flex items-center justify-between">
             <button
               type="button"
               onClick={() => setStep('details')}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-black uppercase tracking-widest text-[#002045] shadow-sm"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#13233F] shadow-sm"
             >
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               {t.postProperty.previousStep}
             </button>
-            <span className="text-xs font-black uppercase tracking-[0.2em] text-[#845326]">{planType}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#A87A22]">{planType}</span>
           </div>
 
           {formError && (
@@ -429,9 +429,9 @@ function PostPropertyContent() {
           )}
 
           {isUploadingPhotos && (
-            <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#c4c6cf]/30 bg-white px-4 py-3">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#002045]/20 border-t-[#002045]" />
-              <p className="text-sm font-bold text-[#002045]">
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#E6E1D6]/30 bg-white px-4 py-3">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#13233F]/20 border-t-[#13233F]" />
+              <p className="text-sm font-bold text-[#13233F]">
                 {uploadProgress || 'Publishing your listing…'}
               </p>
             </div>
@@ -445,20 +445,20 @@ function PostPropertyContent() {
 
   if (step === 'success') {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f9fb] px-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#F5F2EC] px-4">
         <div className="max-w-xl rounded-2xl bg-white p-8 text-center shadow-sm">
-          <span className="material-symbols-outlined text-6xl text-[#845326]">task_alt</span>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tighter text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+          <span className="material-symbols-outlined text-6xl text-[#A87A22]">task_alt</span>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#13233F]" style={{ fontFamily: 'var(--serif)' }}>
             {t.postProperty.publishAsset}
           </h1>
-          <p className="mt-3 text-sm font-medium leading-relaxed text-[#43474e]/70">
+          <p className="mt-3 text-sm font-medium leading-relaxed text-[#5E6B7A]/70">
             {editId
               ? 'Your changes were saved.'
               : isAdmin
               ? 'The listing was published and is live on the site.'
               : 'Your listing submission was received. Our team will review it before publication.'}
           </p>
-          <Link href="/dashboard/agent/listings" className="mt-8 inline-flex rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
+          <Link href="/dashboard/agent/listings" className="mt-8 inline-flex rounded-xl bg-[#13233F] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#e9c877]">
             {t.auth.myListings}
           </Link>
         </div>
@@ -469,18 +469,18 @@ function PostPropertyContent() {
   // Posting writes against the signed-in account, so say so before any work is done.
   if (authChecked && !isAuthenticated) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f9fb] px-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#F5F2EC] px-4">
         <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
-          <span className="material-symbols-outlined text-5xl text-[#845326]">lock</span>
-          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+          <span className="material-symbols-outlined text-5xl text-[#A87A22]">lock</span>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#13233F]" style={{ fontFamily: 'var(--serif)' }}>
             Sign in to post a property
           </h1>
-          <p className="mt-3 text-sm font-medium leading-relaxed text-[#43474e]/70">
+          <p className="mt-3 text-sm font-medium leading-relaxed text-[#5E6B7A]/70">
             Listings are attached to your account so you can edit, suspend, or remove them later.
           </p>
           <Link
             href={`/auth?redirect=/post-property${editId ? `%3Fedit=${editId}` : ''}`}
-            className="mt-7 inline-flex rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]"
+            className="mt-7 inline-flex rounded-xl bg-[#13233F] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#e9c877]"
           >
             Sign in
           </Link>
@@ -490,29 +490,29 @@ function PostPropertyContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f9fb] px-4 py-10 md:px-8">
+    <main className="min-h-screen bg-[#F5F2EC] px-4 py-10 md:px-8">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_380px]">
         <section className="space-y-6">
           {isLoadingListing && (
             <div className="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-sm">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#002045]/20 border-t-[#002045]" />
-              <p className="text-sm font-bold text-[#002045]">Loading your listing…</p>
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#13233F]/20 border-t-[#13233F]" />
+              <p className="text-sm font-bold text-[#13233F]">Loading your listing…</p>
             </div>
           )}
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
-            <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-[#845326]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#A87A22]">
               {editId ? 'Edit Listing' : t.nav.postHouse}
             </p>
-            <h1 className="text-4xl font-extrabold tracking-tighter text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
+            <h1 className="text-4xl font-semibold tracking-tight text-[#13233F]" style={{ fontFamily: 'var(--serif)' }}>
               {t.postProperty.identityLabel}
             </h1>
             <div className="mt-8 grid gap-5 md:grid-cols-2">
               <label className="md:col-span-2">
-                <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#74777f]">{t.postProperty.identityLabel}</span>
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">{t.postProperty.identityLabel}</span>
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none focus:border-[#002045]/30"
+                  className="w-full rounded-xl border border-[#E6E1D6]/30 bg-[#F5F2EC] px-4 py-3 text-sm font-bold text-[#13233F] outline-none focus:border-[#13233F]/30"
                   placeholder={t.postProperty.identityPlaceholder}
                 />
               </label>
@@ -523,12 +523,12 @@ function PostPropertyContent() {
               <FieldInput label={t.postProperty.areaLabel} type="number" value={area} onChange={setArea} placeholder="320" />
               <FieldInput label={t.postProperty.valuationLabel} type="number" value={price} onChange={setPrice} placeholder="450000" />
               <label className="md:col-span-2">
-                <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#74777f]">{t.postProperty.narrativeLabel}</span>
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">{t.postProperty.narrativeLabel}</span>
                 <textarea
                   rows={6}
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
-                  className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none"
+                  className="w-full rounded-xl border border-[#E6E1D6]/30 bg-[#F5F2EC] px-4 py-3 text-sm font-bold text-[#13233F] outline-none"
                   placeholder={t.postProperty.narrativePlaceholder}
                 />
               </label>
@@ -536,7 +536,7 @@ function PostPropertyContent() {
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
-            <h2 className="mb-6 text-lg font-black text-[#002045]">{t.postProperty.locationCityLabel}</h2>
+            <h2 className="mb-6 text-lg font-semibold text-[#13233F]">{t.postProperty.locationCityLabel}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <FieldInput label={t.postProperty.locationCityLabel} value={city} onChange={setCity} placeholder="Maputo" />
               <FieldInput label={t.postProperty.neighborhoodLabel} value={neighborhood} onChange={setNeighborhood} placeholder="Sommerschield" />
@@ -549,10 +549,10 @@ function PostPropertyContent() {
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
             <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <h2 className="text-lg font-black text-[#002045]">{t.postProperty.photographyLabel}</h2>
-                <p className="mt-1 text-sm font-medium text-[#74777f]">{t.postProperty.photographyDesc}</p>
+                <h2 className="text-lg font-semibold text-[#13233F]">{t.postProperty.photographyLabel}</h2>
+                <p className="mt-1 text-sm font-medium text-[#5E6B7A]">{t.postProperty.photographyDesc}</p>
               </div>
-              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#002045] px-5 py-3 text-xs font-black uppercase tracking-widest text-[#febc85]">
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#13233F] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#e9c877]">
                 <span className="material-symbols-outlined text-lg">upload</span>
                 {isPreparingPhotos ? 'Preparing…' : t.postProperty.uploadMediaBtn}
                 <input
@@ -569,7 +569,7 @@ function PostPropertyContent() {
               {photos.map((photo, index) => (
                 <div
                   key={`${photo.name}-${index}`}
-                  className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-[#c4c6cf]/30 bg-[#f2f4f6]"
+                  className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-[#E6E1D6]/30 bg-[#EDEAE2]"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photo.dataUrl} alt={photo.name} className="h-full w-full object-cover" />
@@ -584,31 +584,31 @@ function PostPropertyContent() {
                 </div>
               ))}
               {Array.from({ length: Math.max(1, 4 - photos.length) }).map((_, index) => (
-                <div key={index} className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-[#c4c6cf]/50 bg-[#f7f9fb]">
-                  <span className="material-symbols-outlined text-[#c4c6cf]">add_photo_alternate</span>
+                <div key={index} className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-[#E6E1D6]/50 bg-[#F5F2EC]">
+                  <span className="material-symbols-outlined text-[#E6E1D6]">add_photo_alternate</span>
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-xs font-medium text-[#74777f]">
+            <p className="mt-4 text-xs font-medium text-[#5E6B7A]">
               Photos are resized in your browser before uploading, so large phone pictures work fine.
             </p>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
-            <h2 className="mb-6 text-lg font-black text-[#002045]">{t.postProperty.featuresLabel}</h2>
+            <h2 className="mb-6 text-lg font-semibold text-[#13233F]">{t.postProperty.featuresLabel}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {amenities.map((amenity) => (
-                <label key={amenity} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#c4c6cf]/20 bg-[#f7f9fb] p-4">
-                  <input type="checkbox" checked={selectedAmenities.includes(amenity)} onChange={() => toggleAmenity(amenity)} className="h-5 w-5 accent-[#002045]" />
-                  <span className="text-sm font-bold text-[#002045]">{amenity}</span>
+                <label key={amenity} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#E6E1D6]/20 bg-[#F5F2EC] p-4">
+                  <input type="checkbox" checked={selectedAmenities.includes(amenity)} onChange={() => toggleAmenity(amenity)} className="h-5 w-5 accent-[#13233F]" />
+                  <span className="text-sm font-bold text-[#13233F]">{amenity}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
-            <h2 className="text-lg font-black text-[#002045]">Agent Contact Information</h2>
-            <p className="mt-1 text-sm font-medium text-[#74777f]">
+            <h2 className="text-lg font-semibold text-[#13233F]">Agent Contact Information</h2>
+            <p className="mt-1 text-sm font-medium text-[#5E6B7A]">
               Choose how buyers and renters can reach the agent: direct phone call, WhatsApp, or the dashboard message box.
             </p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
@@ -623,20 +623,20 @@ function PostPropertyContent() {
                   key={option.id}
                   className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                     contactMethods.includes(option.id)
-                      ? 'border-[#002045] bg-[#002045] text-white'
-                      : 'border-[#c4c6cf]/20 bg-[#f7f9fb] text-[#002045]'
+                      ? 'border-[#13233F] bg-[#13233F] text-white'
+                      : 'border-[#E6E1D6]/20 bg-[#F5F2EC] text-[#13233F]'
                   }`}
                 >
                   <input type="checkbox" checked={contactMethods.includes(option.id)} onChange={() => toggleContact(option.id)} className="sr-only" />
                   <span className="material-symbols-outlined">{option.icon}</span>
-                  <span className="text-xs font-black uppercase tracking-widest">{option.label}</span>
+                  <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <Link href="/" className="inline-flex items-center justify-center rounded-xl border border-[#c4c6cf]/30 bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-[#74777f]">
+            <Link href="/" className="inline-flex items-center justify-center rounded-xl border border-[#E6E1D6]/30 bg-white px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">
               {t.postProperty.discardListing}
             </Link>
             <div className="flex flex-col items-stretch gap-3 sm:items-end">
@@ -649,7 +649,7 @@ function PostPropertyContent() {
             type="button"
             onClick={handleProceedToPayment}
             disabled={isUploadingPhotos || isPreparingPhotos || isLoadingListing}
-            className="inline-flex items-center justify-center rounded-xl bg-[#002045] px-6 py-3 text-xs font-black uppercase tracking-widest text-[#febc85] disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-xl bg-[#13233F] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#e9c877] disabled:opacity-60"
           >
             {isUploadingPhotos
               ? 'Working…'
@@ -660,7 +660,7 @@ function PostPropertyContent() {
               : 'Publish listing'}
           </button>
           {(isUploadingPhotos || isPreparingPhotos) && (
-            <p className="mt-3 text-sm font-medium text-[#002045]">
+            <p className="mt-3 text-sm font-medium text-[#13233F]">
               {isPreparingPhotos ? 'Preparing photos…' : uploadProgress || 'Uploading images, please wait...'}
             </p>
           )}
@@ -668,22 +668,22 @@ function PostPropertyContent() {
           </div>
         </section>
 
-        <aside className="h-fit rounded-2xl bg-[#002045] p-6 text-white shadow-sm lg:sticky lg:top-8">
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[#febc85]">{t.postProperty.reviewPortfolio}</p>
+        <aside className="h-fit rounded-2xl bg-[#13233F] p-6 text-white shadow-sm lg:sticky lg:top-8">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#e9c877]">{t.postProperty.reviewPortfolio}</p>
           <div className="space-y-4">
             <div className="border-b border-white/10 pb-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.postProperty.objectIdentity}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">{t.postProperty.objectIdentity}</p>
               <p className="mt-1 text-sm font-bold">{title || t.postProperty.concept}</p>
             </div>
             {summary.map((item) => (
               <div key={item.label} className="border-b border-white/10 pb-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{item.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">{item.label}</p>
                 <p className="mt-1 text-sm font-bold">{item.value}</p>
               </div>
             ))}
           </div>
           <div className="mt-8 rounded-2xl bg-white/10 p-5">
-            <p className="text-xs font-black uppercase tracking-widest text-[#febc85]">{t.postProperty.needHelp}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#e9c877]">{t.postProperty.needHelp}</p>
             <p className="mt-2 text-sm font-medium leading-relaxed text-white/70">{t.postProperty.supportDesc}</p>
           </div>
         </aside>
@@ -709,13 +709,13 @@ function FieldInput({
 }) {
   return (
     <label className={className}>
-      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#74777f]">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none focus:border-[#002045]/30"
+        className="w-full rounded-xl border border-[#E6E1D6]/30 bg-[#F5F2EC] px-4 py-3 text-sm font-bold text-[#13233F] outline-none focus:border-[#13233F]/30"
       />
     </label>
   );
@@ -734,11 +734,11 @@ function FieldSelect({
 }) {
   return (
     <label>
-      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#74777f]">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-[#c4c6cf]/30 bg-[#f7f9fb] px-4 py-3 text-sm font-bold text-[#002045] outline-none"
+        className="w-full rounded-xl border border-[#E6E1D6]/30 bg-[#F5F2EC] px-4 py-3 text-sm font-bold text-[#13233F] outline-none"
       >
         {options.map((option) => (
           <option key={option}>{option}</option>
@@ -752,8 +752,8 @@ export default function PostPropertyPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-[#f7f9fb]">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#002045]/10 border-t-[#002045]" />
+        <main className="flex min-h-screen items-center justify-center bg-[#F5F2EC]">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#13233F]/10 border-t-[#13233F]" />
         </main>
       }
     >

@@ -193,11 +193,11 @@ function AuthForm() {
   return (
     <main className="min-h-screen flex flex-col md:flex-row md:h-screen md:overflow-hidden">
       {/* Left: Professional Editorial Visual */}
-      <section className="hidden md:flex md:w-5/12 lg:w-1/2 relative overflow-hidden bg-[#002045] items-center p-12 lg:p-24 uppercase-off">
+      <section className="hidden md:flex md:w-5/12 lg:w-1/2 relative overflow-hidden bg-[#13233F] items-center p-12 lg:p-24 uppercase-off">
         <div className="absolute inset-0 z-0 scale-105">
           <Image src={BG_IMG} alt="Professional Agency Office" fill className="object-cover opacity-50 brightness-[0.7] mix-blend-luminosity" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#002045] via-[#002045]/40 to-transparent opacity-100" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#002045]/40 via-transparent to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#13233F] via-[#13233F]/40 to-transparent opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#13233F]/40 via-transparent to-transparent opacity-60" />
         </div>
         
         <div className="relative z-10 w-full max-w-xl">
@@ -211,7 +211,7 @@ function AuthForm() {
                 <span className="text-[11px] font-medium text-white/90 tracking-wide">{t.auth.accessBadge}</span>
               </div>
 
-              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
                 {t.auth.signInHeroTitle}
               </h2>
 
@@ -222,7 +222,7 @@ function AuthForm() {
               <footer className="pt-8 border-t border-white/10 flex items-center gap-6 mt-8">
                 <div className="flex -space-x-2.5">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-lg border-2 border-[#002045] bg-[#f2f4f6] flex items-center justify-center overflow-hidden">
+                    <div key={i} className="w-10 h-10 rounded-lg border-2 border-[#13233F] bg-[#EDEAE2] flex items-center justify-center overflow-hidden">
                       <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-400" />
                     </div>
                   ))}
@@ -237,11 +237,11 @@ function AuthForm() {
             /* Sign Up Left Side: Step-by-Step Registration Guide */
             <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
               <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#845326]/20 backdrop-blur-xl border border-[#845326]/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fab983]" />
-                  <span className="text-[11px] font-medium text-[#fab983] tracking-wide">{t.auth.registrationBadge}</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#A87A22]/20 backdrop-blur-xl border border-[#A87A22]/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#e9c877]" />
+                  <span className="text-[11px] font-medium text-[#e9c877] tracking-wide">{t.auth.registrationBadge}</span>
                 </div>
-                <h2 className="text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-[1.1]" style={{ fontFamily: 'var(--font-headline)' }}>
+                <h2 className="text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-[1.1]" style={{ fontFamily: 'var(--serif)' }}>
                    {t.auth.registrationTitle}
                 </h2>
               </div>
@@ -257,7 +257,7 @@ function AuthForm() {
                   return (
                     <div key={s.id} className={`relative flex gap-4 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
                       {/* Step Indicator */}
-                      <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#845326] text-white border-[#fab983]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
+                      <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#A87A22] text-white border-[#e9c877]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
                         {isCompleted ? (
                           <span className="material-symbols-outlined text-[20px]">check</span>
                         ) : (
@@ -269,7 +269,7 @@ function AuthForm() {
                       <div className={`flex-1 px-4 py-3 rounded-xl transition-colors duration-300 ${isActive ? 'bg-white/5 backdrop-blur-xl border border-white/10' : ''}`}>
                         <h3 className="text-white font-medium text-[15px] tracking-tight mb-0.5 flex justify-between items-center">
                           {s.title}
-                          {isActive && <span className="text-[11px] font-medium text-[#fab983]">Current</span>}
+                          {isActive && <span className="text-[11px] font-medium text-[#e9c877]">Current</span>}
                         </h3>
                         <p className={`text-[13px] leading-relaxed ${isActive ? 'text-[#9fb4d6]' : 'text-[#9fb4d6]/60'}`}>
                           {s.description}
@@ -289,12 +289,12 @@ function AuthForm() {
       {/* Right: Modern Multi-step Form */}
       <section className="flex-1 flex flex-col bg-white overflow-y-auto">
         <header className="flex justify-between items-center px-8 lg:px-12 py-6">
-          <Link href="/" className="md:hidden font-semibold text-[#002045] text-xl tracking-tight [font-family:var(--font-headline)]">
+          <Link href="/" className="md:hidden font-semibold text-[#13233F] text-xl tracking-tight [font-family:var(--serif)]">
              HIM.
           </Link>
           <nav className="flex gap-6 ml-auto items-center">
-            <Link href="/" className="text-[13px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Home</Link>
-            <Link href="/agents" className="text-[13px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Agents</Link>
+            <Link href="/" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Home</Link>
+            <Link href="/agents" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Agents</Link>
           </nav>
         </header>
 
@@ -304,17 +304,17 @@ function AuthForm() {
             <div className="flex gap-6 mb-9 border-b border-[#eceef1]">
               <button
                 onClick={() => { setTab('signin'); setStep(1); }}
-                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signin' ? 'text-[#002045]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
+                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signin' ? 'text-[#13233F]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
               >
                 {t.nav.signIn}
-                {tab === 'signin' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
+                {tab === 'signin' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#13233F]" />}
               </button>
               <button
                 onClick={() => setTab('signup')}
-                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signup' ? 'text-[#002045]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
+                className={`-mb-px pb-3 text-sm font-medium transition-colors relative ${tab === 'signup' ? 'text-[#13233F]' : 'text-[#9aa0a8] hover:text-[#5b616b]'}`}
               >
                 {lang === 'en' ? 'Create account' : 'Criar conta'}
-                {tab === 'signup' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#002045]" />}
+                {tab === 'signup' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#13233F]" />}
               </button>
             </div>
 
@@ -324,7 +324,7 @@ function AuthForm() {
                 {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
                   <div
                     key={s}
-                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${s <= step ? 'bg-[#002045]' : 'bg-[#eceef1]'}`}
+                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${s <= step ? 'bg-[#13233F]' : 'bg-[#eceef1]'}`}
                   />
                 ))}
                 <span className="text-[12px] font-medium text-[#9aa0a8] ml-3">{lang === 'en' ? 'Step' : 'Passo'} {step} / {totalSteps}</span>
@@ -332,10 +332,10 @@ function AuthForm() {
             )}
 
             <div className="mb-7">
-              <h2 className="text-2xl font-semibold text-[#002045] mb-1.5 tracking-tight">
+              <h2 className="text-2xl font-semibold text-[#13233F] mb-1.5 tracking-tight">
                 {tab === 'signin' ? t.auth.welcomeBtn : step === 1 ? t.auth.getStarted : step === 2 ? t.auth.yourDetails : t.auth.aboutYou}
               </h2>
-              <p className="text-sm text-[#74777f] leading-relaxed">
+              <p className="text-sm text-[#5E6B7A] leading-relaxed">
                 {tab === 'signin'
                   ? t.auth.loginDesc
                   : step === 1 ? t.auth.signupStep1Desc : step === 2 ? t.auth.signupStep2Desc : t.auth.signupStep3Desc}
@@ -359,7 +359,7 @@ function AuthForm() {
                        <input
                         type="email"
                         required
-                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                         placeholder="agent@houseinmoz.com"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -368,12 +368,12 @@ function AuthForm() {
                     <div className="space-y-1.5">
                        <div className="flex justify-between items-center">
                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.passwordLabel}</label>
-                         <button type="button" className="text-[13px] font-medium text-[#845326] hover:underline">{t.auth.forgotPassword}</button>
+                         <button type="button" className="text-[13px] font-medium text-[#A87A22] hover:underline">{t.auth.forgotPassword}</button>
                        </div>
                        <input
                         type="password"
                         required
-                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                        className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                         placeholder="••••••••"
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -383,7 +383,7 @@ function AuthForm() {
                   <button
                     onClick={handleAuth}
                     disabled={isLoading}
-                    className="w-full h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? 'Signing in…' : t.auth.signInBtn}
                     {!isLoading && <span className="material-symbols-outlined text-[18px]">login</span>}
@@ -422,14 +422,14 @@ function AuthForm() {
                               onClick={() => { setAccountType(option.value); setStep(1); }}
                               className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors ${
                                 accountType === option.value
-                                  ? 'border-[#002045] bg-[#002045]/[0.04]'
+                                  ? 'border-[#13233F] bg-[#13233F]/[0.04]'
                                   : 'border-[#e3e6ea] hover:bg-[#f5f6f8]'
                               }`}
                             >
-                              <span className={`material-symbols-outlined text-[20px] ${accountType === option.value ? 'text-[#002045]' : 'text-[#9aa0a8]'}`}>
+                              <span className={`material-symbols-outlined text-[20px] ${accountType === option.value ? 'text-[#13233F]' : 'text-[#9aa0a8]'}`}>
                                 {option.icon}
                               </span>
-                              <span className="text-[13px] font-medium text-[#002045] leading-tight">{option.label}</span>
+                              <span className="text-[13px] font-medium text-[#13233F] leading-tight">{option.label}</span>
                               <span className="text-[11px] text-[#9aa0a8] leading-tight">{option.hint}</span>
                             </button>
                           ))}
@@ -441,7 +441,7 @@ function AuthForm() {
                          <input
                           type="text"
                           required
-                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="e.g. Ricardo Santos"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -452,7 +452,7 @@ function AuthForm() {
                          <input
                           type="email"
                           required
-                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="ricardo@houseinmoz.com"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -463,7 +463,7 @@ function AuthForm() {
                          <input
                           type="password"
                           required
-                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="••••••••"
                           value={formData.password}
                           onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -480,7 +480,7 @@ function AuthForm() {
                         <div className="space-y-1.5">
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.profRoleLabel}</label>
                           <select
-                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                             value={formData.title}
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                           >
@@ -491,7 +491,7 @@ function AuthForm() {
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expLabel}</label>
                           <input
                             type="number"
-                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] tabular-nums outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                            className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] tabular-nums outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                             value={formData.yearsExperience}
                             onChange={(e) => setFormData({...formData, yearsExperience: parseInt(e.target.value)})}
                           />
@@ -503,7 +503,7 @@ function AuthForm() {
                         <input
                           type="text"
                           required
-                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#002045] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                          className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="e.g. Maputo City, Polana"
                           value={formData.location}
                           onChange={(e) => setFormData({...formData, location: e.target.value})}
@@ -519,7 +519,7 @@ function AuthForm() {
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.bioLabel}</label>
                         <textarea
                           rows={4}
-                          className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#43474e] outline-none transition-colors focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 resize-none"
+                          className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#5E6B7A] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none"
                           placeholder="Tell us a little about your experience and how you help clients…"
                           value={formData.bio}
                           onChange={(e) => setFormData({...formData, bio: e.target.value})}
@@ -533,7 +533,7 @@ function AuthForm() {
                               key={k}
                               type="button"
                               onClick={() => toggleSpecialization(k)}
-                              className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${formData.specializations.includes(k) ? 'bg-[#002045] text-white' : 'bg-[#f1f3f5] text-[#5b616b] hover:bg-[#e6e8ea]'}`}
+                              className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${formData.specializations.includes(k) ? 'bg-[#13233F] text-white' : 'bg-[#f1f3f5] text-[#5b616b] hover:bg-[#E6E1D6]'}`}
                             >
                               {(t.auth.specializations as any)[k]}
                             </button>
@@ -547,7 +547,7 @@ function AuthForm() {
                     {step > 1 && (
                       <button
                         onClick={prevStep}
-                        className="flex-1 h-11 border border-[#e3e6ea] text-[#002045] text-[14px] font-medium rounded-lg hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 h-11 border border-[#e3e6ea] text-[#13233F] text-[14px] font-medium rounded-lg hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                       >
                         <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                         {t.auth.backBtn}
@@ -556,7 +556,7 @@ function AuthForm() {
                     {step < totalSteps ? (
                       <button
                         onClick={nextStep}
-                        className="flex-[2] h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] flex items-center justify-center gap-2"
+                        className="flex-[2] h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] flex items-center justify-center gap-2"
                       >
                          {t.auth.saveAndContinue}
                         <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -565,7 +565,7 @@ function AuthForm() {
                       <button
                         onClick={handleAuth}
                         disabled={isLoading}
-                        className="flex-[2] h-11 bg-[#002045] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-[2] h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                          {isLoading ? 'Submitting…' : t.auth.completeRegistration}
                         {!isLoading && <span className="material-symbols-outlined text-[18px]">how_to_reg</span>}
@@ -590,13 +590,13 @@ function AuthForm() {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  <span className="text-[13px] font-medium text-[#002045]">Google</span>
+                  <span className="text-[13px] font-medium text-[#13233F]">Google</span>
                 </button>
                 <button type="button" className="flex items-center justify-center gap-2.5 h-11 border border-[#e3e6ea] rounded-lg hover:bg-[#f5f6f8] transition-colors">
                    <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" fill="#0077B5"/>
                   </svg>
-                  <span className="text-[13px] font-medium text-[#002045]">LinkedIn</span>
+                  <span className="text-[13px] font-medium text-[#13233F]">LinkedIn</span>
                 </button>
               </div>
 
@@ -607,7 +607,7 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => handleDevQuickLogin('agent')}
-                      className="h-10 bg-white text-[#002045] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
+                      className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">person</span>
                       Agent login
@@ -615,7 +615,7 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => handleDevQuickLogin('admin')}
-                      className="h-10 bg-white text-[#002045] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
+                      className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                       Admin login
@@ -630,8 +630,8 @@ function AuthForm() {
         <footer className="px-8 lg:px-12 py-6 border-t border-[#eceef1] flex flex-col lg:flex-row justify-between items-center gap-3">
            <p className="text-[12px] font-medium text-[#9aa0a8]">© 2024 House in Mozambique</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Privacy</a>
-            <a href="/terms" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Terms</a>
+            <a href="/privacy" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Privacy</a>
+            <a href="/terms" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Terms</a>
           </div>
         </footer>
       </section>
@@ -641,7 +641,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#002045] text-white">Authenticating...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#13233F] text-white">Authenticating...</div>}>
       <AuthForm />
     </Suspense>
   );

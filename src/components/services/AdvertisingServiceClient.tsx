@@ -36,20 +36,20 @@ export default function AdvertisingServiceClient() {
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:items-start">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#845326]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#A87A22]">
               {t.services.whatItIs}
             </p>
-            <p className="mt-5 text-xl font-bold leading-relaxed text-[#002045] md:text-2xl">
+            <p className="lead mt-4 max-w-[46ch] text-[var(--ink)]">
               {t.services.advBody1}
             </p>
-            <p className="mt-5 text-base font-medium leading-relaxed text-[#43474e]">
+            <p className="mt-4 max-w-[54ch] text-[0.95rem] leading-relaxed text-[#5E6B7A]">
               {t.services.advBody2}
             </p>
           </div>
 
           {/* Where the listing ends up */}
-          <aside className="rounded-[2rem] border border-[#c4c6cf]/25 bg-white p-8 shadow-sm">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#845326]">
+          <aside className="rounded-[14px] border border-[#E6E1D6]/25 bg-white p-8 shadow-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#A87A22]">
               {t.nav.properties}
             </p>
             <div className="mt-5 space-y-2">
@@ -57,16 +57,16 @@ export default function AdvertisingServiceClient() {
                 <Link
                   key={cat.type}
                   href={`/properties?type=${encodeURIComponent(cat.type)}`}
-                  className="group flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-[#f7f9fb]"
+                  className="group flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-[#F5F2EC]"
                 >
-                  <span className="text-sm font-bold text-[#002045]">{t.nav[cat.labelKey]}</span>
-                  <span className="material-symbols-outlined text-lg leading-none text-[#c4c6cf] transition-all group-hover:translate-x-1 group-hover:text-[#845326]">
+                  <span className="text-sm font-bold text-[#13233F]">{t.nav[cat.labelKey]}</span>
+                  <span className="material-symbols-outlined text-lg leading-none text-[#E6E1D6] transition-all group-hover:translate-x-1 group-hover:text-[#A87A22]">
                     arrow_forward
                   </span>
                 </Link>
               ))}
             </div>
-            <p className="mt-6 border-t border-[#c4c6cf]/20 pt-5 text-xs font-medium italic leading-relaxed text-[#74777f]">
+            <p className="mt-6 border-t border-[#E6E1D6]/20 pt-5 text-xs font-medium italic leading-relaxed text-[#5E6B7A]">
               {t.services.priceNote}
             </p>
           </aside>
@@ -74,11 +74,11 @@ export default function AdvertisingServiceClient() {
       </section>
 
       {/* ── What you get — icon cards ── */}
-      <section className="border-y border-[#c4c6cf]/20 bg-white py-20">
+      <section className="border-y border-[#E6E1D6]/20 bg-white py-20">
         <div className="mx-auto max-w-6xl px-6">
           <h2
-            className="text-3xl font-black tracking-tight text-[#002045] md:text-4xl"
-            style={{ fontFamily: 'var(--font-headline)' }}
+            className="text-3xl font-semibold tracking-tight text-[#13233F] md:text-4xl"
+            style={{ fontFamily: 'var(--serif)' }}
           >
             {t.services.whatYouGet}
           </h2>
@@ -87,16 +87,16 @@ export default function AdvertisingServiceClient() {
             {benefits.map((benefit, i) => (
               <div
                 key={benefit}
-                className={`flex items-start gap-5 rounded-[1.75rem] border border-[#c4c6cf]/25 p-7 transition-all hover:border-[#845326]/40 hover:shadow-lg hover:shadow-[#002045]/5 ${
+                className={`flex items-start gap-5 rounded-[1.75rem] border border-[#E6E1D6]/25 p-7 transition-all hover:border-[#A87A22]/40 hover:shadow-lg hover:shadow-[#13233F]/5 ${
                   i === benefits.length - 1 ? 'md:col-span-2' : ''
                 }`}
               >
-                <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#845326]/10">
-                  <span className="material-symbols-outlined text-2xl leading-none text-[#845326]">
+                <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#A87A22]/10">
+                  <span className="material-symbols-outlined text-2xl leading-none text-[#A87A22]">
                     {BENEFIT_ICONS[i]}
                   </span>
                 </span>
-                <p className="text-base font-medium leading-relaxed text-[#43474e]">{benefit}</p>
+                <p className="text-base font-medium leading-relaxed text-[#5E6B7A]">{benefit}</p>
               </div>
             ))}
           </div>
@@ -106,8 +106,8 @@ export default function AdvertisingServiceClient() {
       {/* ── How it works — horizontal timeline ── */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2
-          className="text-3xl font-black tracking-tight text-[#002045] md:text-4xl"
-          style={{ fontFamily: 'var(--font-headline)' }}
+          className="text-3xl font-semibold tracking-tight text-[#13233F] md:text-4xl"
+          style={{ fontFamily: 'var(--serif)' }}
         >
           {t.services.howItWorks}
         </h2>
@@ -117,12 +117,12 @@ export default function AdvertisingServiceClient() {
             <li key={step} className="relative">
               {/* connector */}
               {i < steps.length - 1 && (
-                <span className="absolute left-12 right-0 top-5 hidden h-px bg-[#c4c6cf]/40 md:block" />
+                <span className="absolute left-12 right-0 top-5 hidden h-px bg-[#E6E1D6]/40 md:block" />
               )}
-              <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#002045] text-xs font-black text-[#fab983]">
+              <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#13233F] text-xs font-semibold text-[#e9c877]">
                 {i + 1}
               </span>
-              <p className="mt-5 pr-4 text-sm font-medium leading-relaxed text-[#43474e]">{step}</p>
+              <p className="mt-5 pr-4 text-sm font-medium leading-relaxed text-[#5E6B7A]">{step}</p>
             </li>
           ))}
         </ol>
@@ -130,14 +130,14 @@ export default function AdvertisingServiceClient() {
         <div className="mt-14 flex flex-wrap gap-3">
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#002045] px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#fab983] transition-all hover:opacity-90 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#13233F] px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#e9c877] transition-all hover:opacity-90 active:scale-95"
           >
             {t.services.pricingCta}
             <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
           </Link>
           <Link
             href="/post-property"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#002045]/20 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#002045] transition-all hover:bg-[#002045]/5"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#13233F]/20 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:bg-[#13233F]/5"
           >
             {t.nav.postHouse}
           </Link>

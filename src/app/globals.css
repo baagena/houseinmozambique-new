@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./him.css";
 
 @theme {
   /* ── Brand Palette ── */
@@ -118,4 +119,50 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+/* ============================================================
+   HOUSE IN MOZAMBIQUE — redesign design system
+   Navy · gold · editorial serif + mono data.
+   Ported from the approved prototype (new_version/.../site/styles.css).
+   Everything here is scoped to `.site` (the public shell) so the
+   admin/agent dashboards keep their existing look.
+   ============================================================ */
+@theme {
+  --color-ink: #13233F;
+  --color-ink-deep: #0E1A30;
+  --color-text: #1C2430;
+  --color-muted: #5E6B7A;
+  --color-paper: #F5F2EC;
+  --color-line: #E6E1D6;
+  --color-gold: #C4922F;
+  --color-gold-deep: #A87A22;
+  --color-verified: #3F7A55;
+
+  --font-serif-display: var(--font-newsreader), Georgia, serif;
+  --font-sans-ui: var(--font-inter), system-ui, sans-serif;
+  --font-mono-data: var(--font-plexmono), ui-monospace, monospace;
+}
+
+:root {
+  --ink: #13233F;
+  --ink-deep: #0E1A30;
+  --hm-text: #1C2430;
+  --hm-muted: #5E6B7A;
+  --paper: #F5F2EC;
+  --hm-surface: #FFFFFF;
+  --line: #E6E1D6;
+  --gold: #C4922F;
+  --gold-deep: #A87A22;
+  --verified: #3F7A55;
+  --hm-danger: #B4472F;
+  --radius-card: 14px;
+  --radius-ctrl: 10px;
+  --shadow-card: 0 1px 2px rgba(19, 35, 63, .04), 0 8px 24px rgba(19, 35, 63, .06);
+  --shadow-float: 0 6px 16px rgba(19, 35, 63, .1), 0 16px 40px rgba(19, 35, 63, .12);
+  --pad-section: clamp(48px, 7vw, 88px);
+  --wrap: 1200px;
+  --serif: var(--font-newsreader), Georgia, serif;
+  --sans: var(--font-inter), system-ui, sans-serif;
+  --mono: var(--font-plexmono), ui-monospace, monospace;
 }

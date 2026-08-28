@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/ui/SafeImage';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SERVICES, getService, serviceHref } from '@/components/services/catalog';
 
@@ -26,68 +26,45 @@ export default function ServiceLayout({
   const service = getService(slug);
   const others = SERVICES.filter((entry) => entry.slug !== slug);
 
-  return (
-    <main className="bg-[#f7f9fb]">
-      {/* ── Hero ── */}
-      <header className="relative overflow-hidden bg-[#002045] px-6 pt-28 text-white">
-        <Image
-          src={service.image}
-          alt=""
-          aria-hidden
-          fill
-          priority
-          className="object-cover opacity-25"
-        />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#002045] via-[#002045]/90 to-[#002045]/60" />
+  // The secondary CTA complements the primary rather than restating it.
+  const secondary =
+    primaryLabelKey === 'talkToUs'
+      ? { href: '/pricing', label: t.services.pricingCta }
+      : { href: '/contact', label: t.services.talkToUs };
 
-        <div className="relative z-10 mx-auto max-w-6xl pb-16">
-          {/* Breadcrumb */}
-          <nav className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/50">
-            <Link href="/" className="transition-colors hover:text-white">
-              {t.nav.home}
-            </Link>
-            <span>/</span>
-            <Link href="/services" className="transition-colors hover:text-white">
-              {t.nav.services}
-            </Link>
-            <span>/</span>
-            <span className="text-[#fab983]">
+  return (
+    <>
+      {/* ── Hero ── */}
+      <header className="page-hero">
+        <div className="page-hero__bg">
+          <SafeImage src={service.image} alt="" aria-hidden fill priority className="object-cover" sizes="100vw" />
+        </div>
+        <div className="wrap">
+          <nav className="crumbs pt-0" aria-label="Breadcrumb">
+            <Link href="/">{t.nav.home}</Link> / <Link href="/services">{t.nav.services}</Link> /{' '}
+            <span style={{ color: '#e9c877' }}>
               {t.services.serviceNumber} {String(service.index).padStart(2, '0')}
             </span>
           </nav>
 
-          <div className="mt-10 flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
-            <span className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-3xl border border-white/15 bg-white/10 backdrop-blur-sm">
-              <span className="material-symbols-outlined text-[32px] leading-none text-[#fab983]">
+          <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:gap-6 md:gap-7">
+            <span className="grid h-14 w-14 flex-none place-items-center rounded-[16px] border border-white/15 bg-white/10 md:h-16 md:w-16">
+              <span className="material-symbols-outlined text-[1.7rem] text-[#e9c877] md:text-[1.9rem]">
                 {service.icon}
               </span>
             </span>
-            <div>
-              <h1
-                className="max-w-3xl text-4xl font-black leading-[1.05] tracking-tight md:text-6xl"
-                style={{ fontFamily: 'var(--font-headline)' }}
-              >
-                {t.services[service.titleKey]}
-              </h1>
-              <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-white/75 md:text-lg">
-                {t.services[service.taglineKey]}
-              </p>
+            <div className="min-w-0">
+              <h1>{t.services[service.titleKey]}</h1>
+              <p>{t.services[service.taglineKey]}</p>
 
-              <div className="mt-9 flex flex-wrap gap-3">
-                <Link
-                  href={primaryHref}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#002045] transition-all hover:opacity-90 active:scale-95"
-                >
+              <div className="hero-cta">
+                <Link href={primaryHref} className="btn btn--gold">
                   {t.services[primaryLabelKey]}
-                  <span className="material-symbols-outlined text-lg leading-none">
-                    arrow_forward
-                  </span>
+                  <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
                 </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/25 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-white/10"
-                >
-                  {t.services.talkToUs}
+                {/* Never repeat the primary label — pick the action it isn't. */}
+                <Link href={secondary.href} className="btn btn--ghost-l">
+                  {secondary.label}
                 </Link>
               </div>
             </div>
@@ -98,49 +75,36 @@ export default function ServiceLayout({
       {children}
 
       {/* ── Other services ── */}
-      <section className="mx-auto max-w-6xl px-6 pb-24">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-black tracking-tight text-[#002045]">
-            {t.services.otherServices}
-          </h2>
-          <Link
-            href="/services"
-            className="flex-shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-[#845326] hover:underline"
-          >
-            {t.services.allServices}
-          </Link>
-        </div>
+      <section className="section pt0">
+        <div className="wrap">
+          <div className="section-title-row">
+            <h2>{t.services.otherServices}</h2>
+            <Link href="/services">{t.services.allServices} →</Link>
+          </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {others.map((entry) => (
-            <Link
-              key={entry.slug}
-              href={serviceHref(entry.slug)}
-              className="group flex items-start gap-5 rounded-[2rem] bg-white p-7 shadow-sm transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#002045]/10"
-            >
-              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#845326]/10">
-                <span className="material-symbols-outlined text-2xl leading-none text-[#845326]">
-                  {entry.icon}
+          <div className="two-cards">
+            {others.map((entry) => (
+              <Link key={entry.slug} href={serviceHref(entry.slug)} className="mv group flex gap-5">
+                <span className="grid h-12 w-12 flex-none place-items-center rounded-[12px] bg-[var(--paper)] text-[var(--gold-deep)]">
+                  <span className="material-symbols-outlined text-[1.35rem]">{entry.icon}</span>
                 </span>
-              </span>
-              <span>
-                <span className="block text-lg font-black leading-tight text-[#002045]">
-                  {t.services[entry.titleKey]}
-                </span>
-                <span className="mt-2 block text-sm font-medium leading-relaxed text-[#74777f]">
-                  {t.services[entry.taglineKey]}
-                </span>
-                <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#845326]">
-                  {t.services.exploreService}
-                  <span className="material-symbols-outlined text-sm leading-none transition-transform group-hover:translate-x-1">
-                    arrow_forward
+                <span>
+                  <span className="h-ui block text-[var(--ink)]">{t.services[entry.titleKey]}</span>
+                  <span className="muted mt-2 block text-[0.88rem] leading-relaxed">
+                    {t.services[entry.taglineKey]}
+                  </span>
+                  <span className="mono mt-4 inline-flex items-center gap-1 text-[0.7rem] uppercase tracking-[0.1em] text-[var(--gold-deep)]">
+                    {t.services.exploreService}
+                    <span className="material-symbols-outlined text-[0.95rem] transition-transform group-hover:translate-x-1">
+                      arrow_forward
+                    </span>
                   </span>
                 </span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

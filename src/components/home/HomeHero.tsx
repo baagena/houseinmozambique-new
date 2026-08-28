@@ -1,69 +1,117 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const HERO_IMG =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBnVQfCtu9Dd90Gdaa2jDdkQ2z_Xeq6krQV6VJSeeyr13PvW80MmDQcH-QeJC6-1GKkzV5nE8eC-oB960jNWV5NYzaMhoQgOBB_ED4LDUKHYjKwZsumdyys8aRuChvRvDjuHfbLGt1QSdJYKQAeL8abuA-5Ig01BoaOcMtiY0uz_ScZ6QCDlYyJ86LBji7ohI7-8f8rVevJejxSG_Ix29FhghbOU5HOZO5N5eNnpEQybQLaXXWyNNLP6GDDoAs0pkHE0QaBbHYyynY';
+const HERO_IMG = '/hero-marina.jpg';
 
-export default function HomeHero({ hasTopBanner }: { hasTopBanner?: boolean }) {
+const TABS = [
+  { value: 'Buy', key: 'buy' },
+  { value: 'Rent', key: 'rent' },
+  { value: 'Short Stay', key: 'shortStay' },
+  { value: 'Auction', key: 'auction' },
+] as const;
+
+const PROPERTY_TYPES = ['Villa', 'Apartment', 'Penthouse', 'Land', 'Lodge', 'Studio', 'Bungalow'];
+
+/** Round MZN bands — kept in Meticais so the copy never mixes currencies. */
+const PRICE_CAPS = [500_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000];
+
+export default function HomeHero() {
   const { t } = useLanguage();
+  const router = useRouter();
+
+  const [tab, setTab] = useState<string>('Buy');
+  const [location, setLocation] = useState('');
+  const [propertyType, setPropertyType] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (tab) params.set('type', tab);
+    if (location.trim()) params.set('location', location.trim());
+    if (propertyType) params.set('propertyType', propertyType);
+    if (maxPrice) params.set('max', maxPrice);
+    router.push(`/properties?${params.toString()}`);
+  };
 
   return (
-    <section className={`px-4 md:px-8 relative ${hasTopBanner ? 'mb-12 pt-3' : 'mb-16 pt-20 md:pt-28'}`}>
-      <div className={`max-w-7xl mx-auto relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex items-center justify-center py-12 md:py-16 transition-all ${
-        hasTopBanner ? 'min-h-[460px] md:min-h-[540px]' : 'min-h-[520px] md:min-h-[640px]'
-      }`}>
-        <div className="absolute inset-0 z-0 scale-105 hover:scale-100 transition-transform duration-1000">
-          <Image src={HERO_IMG} alt="Luxury Villa in Mozambique" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#00162f]/88 via-[#002045]/54 to-[#00162f]/8" />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#00162f]/72 to-transparent" />
-        </div>
-        
-        <div className={`relative z-10 px-6 max-w-4xl w-full transition-all flex flex-col items-center justify-center text-center ${hasTopBanner ? 'pb-14' : 'pb-20'}`}>
-          {/* <span className={`inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black tracking-[0.3em] uppercase animate-fade-in ${
-            hasTopBanner ? 'mb-5' : 'mb-8'
-          }`}>
-            {t.home.heroBadge}
-          </span> */}
-          <span
-    className={`inline-block ml-auto mr-auto px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-black tracking-[0.25em] uppercase ${
-      hasTopBanner ? 'mb-6' : 'mb-8'
-    }`}
-  >
-    {t.home.heroBadge}
-  </span>
-          <h1 className={`font-black text-white leading-tight tracking-tighter break-words max-w-full ${
-            hasTopBanner ? 'text-4xl md:text-6xl mb-6' : 'text-4xl md:text-7xl mb-6'
-          }`} style={{ fontFamily: 'var(--font-headline)' }}>
-            {t.home.heroTitle}
-          </h1>
-          <p className="text-white/80 text-base md:text-lg font-medium max-w-xl leading-relaxed">
-            {t.home.heroSubtitle}
-          </p>
-        </div>
+    <section className="hero">
+      <div className="hero__bg">
+        <Image
+          src={HERO_IMG}
+          alt="Waterfront at dusk on the Mozambican coast"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
       </div>
 
-      {/* ── Search Bar Wrapper ── */}
-      <div className="max-w-6xl mx-auto -mt-16 md:-mt-20 relative z-20 px-4">
-        <div className="bg-white/90 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,32,69,0.15)] p-3 md:p-4 border border-white">
-          <nav className="bg-[#f2f4f6] rounded-2xl p-1.5 grid grid-cols-2 lg:grid-cols-4 gap-1.5">
-            {[
-              { label: t.nav.buy, value: 'Buy' },
-              { label: t.nav.rent, value: 'Rent' },
-              { label: t.nav.shortStay, value: 'Short Stay' },
-              { label: t.nav.auction, value: 'Auction' },
-            ].map((opt) => (
-              <Link
-                key={opt.value}
-                href={`/properties?type=${encodeURIComponent(opt.value)}`}
-                className="flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-center text-xs font-black uppercase tracking-widest text-[#43474e] transition-all duration-300 hover:bg-white hover:text-[#002045] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002045]/20"
-              >
-                {opt.label}
-              </Link>
-            ))}
-          </nav>
+      <div className="hero__inner">
+        <div className="wrap">
+          <span className="eyebrow">{t.home.heroBadge}</span>
+          <h1 className="display-xl">{t.home.heroTitle}</h1>
+          <p>{t.home.heroSubtitle}</p>
+
+          <form className="search" role="search" onSubmit={submit}>
+            <div className="search__tabs">
+              {TABS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={tab === opt.value ? 'is-active' : ''}
+                  onClick={() => setTab(opt.value)}
+                  aria-pressed={tab === opt.value}
+                >
+                  {t.nav[opt.key]}
+                </button>
+              ))}
+            </div>
+
+            <div className="search__field">
+              <label htmlFor="hero-location">{t.home.locationLabel}</label>
+              <input
+                id="hero-location"
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={t.home.searchPlaceholder}
+              />
+            </div>
+
+            <div className="search__field">
+              <label htmlFor="hero-type">{t.home.propertyAssetLabel}</label>
+              <select id="hero-type" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
+                <option value="">{t.home.allTypes}</option>
+                {PROPERTY_TYPES.map((pt) => (
+                  <option key={pt} value={pt}>
+                    {pt}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="search__field">
+              <label htmlFor="hero-price">{t.propertiesList.max}</label>
+              <select id="hero-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}>
+                <option value="">{t.propertiesList.anyPrice}</option>
+                {PRICE_CAPS.map((cap) => (
+                  <option key={cap} value={cap}>
+                    MT {cap.toLocaleString('en-US')}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" className="btn btn--gold search__go">
+              {t.home.findProperty}
+              <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
+            </button>
+          </form>
         </div>
       </div>
     </section>

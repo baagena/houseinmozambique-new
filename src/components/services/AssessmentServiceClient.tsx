@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/ui/SafeImage';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import ServiceLayout from '@/components/services/ServiceLayout';
 
@@ -31,19 +31,19 @@ export default function AssessmentServiceClient() {
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#845326]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#A87A22]">
               {t.services.whatItIs}
             </p>
-            <p className="mt-5 text-xl font-bold leading-relaxed text-[#002045] md:text-2xl">
+            <p className="lead mt-4 max-w-[46ch] text-[var(--ink)]">
               {t.services.shootBody1}
             </p>
-            <p className="mt-5 text-base font-medium leading-relaxed text-[#43474e]">
+            <p className="mt-4 max-w-[54ch] text-[0.95rem] leading-relaxed text-[#5E6B7A]">
               {t.services.shootBody2}
             </p>
           </div>
 
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] shadow-2xl shadow-[#002045]/10">
-            <Image
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[14px] shadow-2xl shadow-[#13233F]/10">
+            <SafeImage
               src={SHOT_IMAGE}
               alt="Interior photographed for a property listing"
               fill
@@ -55,11 +55,11 @@ export default function AssessmentServiceClient() {
       </section>
 
       {/* ── What you get — numbered rows ── */}
-      <section className="border-y border-[#c4c6cf]/20 bg-white py-20">
+      <section className="border-y border-[#E6E1D6]/20 bg-white py-20">
         <div className="mx-auto max-w-5xl px-6">
           <h2
-            className="text-3xl font-black tracking-tight text-[#002045] md:text-4xl"
-            style={{ fontFamily: 'var(--font-headline)' }}
+            className="text-3xl font-semibold tracking-tight text-[#13233F] md:text-4xl"
+            style={{ fontFamily: 'var(--serif)' }}
           >
             {t.services.whatYouGet}
           </h2>
@@ -68,12 +68,12 @@ export default function AssessmentServiceClient() {
             {deliverables.map((item, i) => (
               <li
                 key={item}
-                className="group flex items-baseline gap-6 border-t border-[#c4c6cf]/25 py-7 last:border-b md:gap-10"
+                className="group flex items-baseline gap-6 border-t border-[#E6E1D6]/25 py-7 last:border-b md:gap-10"
               >
-                <span className="w-10 flex-shrink-0 text-2xl font-black tabular-nums text-[#c4c6cf] transition-colors group-hover:text-[#845326]">
+                <span className="w-10 flex-shrink-0 text-2xl font-semibold tabular-nums text-[#E6E1D6] transition-colors group-hover:text-[#A87A22]">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <p className="text-base font-medium leading-relaxed text-[#43474e] md:text-lg">
+                <p className="text-base font-medium leading-relaxed text-[#5E6B7A] md:text-lg">
                   {item}
                 </p>
               </li>
@@ -84,10 +84,10 @@ export default function AssessmentServiceClient() {
 
       {/* ── How it works — vertical stepper on navy ── */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="overflow-hidden rounded-[2.5rem] bg-[#002045] p-8 text-white md:p-14">
+        <div className="overflow-hidden rounded-[14px] bg-[#13233F] p-8 text-white md:p-14">
           <h2
-            className="text-3xl font-black tracking-tight md:text-4xl"
-            style={{ fontFamily: 'var(--font-headline)' }}
+            className="text-3xl font-semibold tracking-tight md:text-4xl"
+            style={{ fontFamily: 'var(--serif)' }}
           >
             {t.services.howItWorks}
           </h2>
@@ -99,7 +99,7 @@ export default function AssessmentServiceClient() {
                 {i < steps.length - 1 && (
                   <span className="absolute bottom-2 left-[19px] top-11 w-px bg-white/15" />
                 )}
-                <span className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-black text-[#fab983]">
+                <span className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-semibold text-[#e9c877]">
                   {i + 1}
                 </span>
                 <p className="pt-2 text-base font-medium leading-relaxed text-white/80">{step}</p>
@@ -109,7 +109,7 @@ export default function AssessmentServiceClient() {
 
           <Link
             href="/contact"
-            className="mt-12 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#002045] transition-all hover:opacity-90 active:scale-95"
+            className="mt-12 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:opacity-90 active:scale-95"
           >
             {t.services.talkToUs}
             <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>

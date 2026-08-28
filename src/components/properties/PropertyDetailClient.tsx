@@ -1,11 +1,11 @@
 'use client';
 
-import Image from 'next/image';
+import SafeImage from '@/components/ui/SafeImage';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { formatPrice } from '@/lib/utils';
-import PropertyGallery from '@/components/properties/PropertyGallery';
+import { formatPrice, formatListingTitle } from '@/lib/utils';
+import PropertyCard from '@/components/properties/PropertyCard';
 
 interface PropertyDetailClientProps {
   property: PropertyDetail;
@@ -20,6 +20,7 @@ interface PropertyAgent {
   avatar?: string | null;
   isVerified?: boolean;
   rating?: number;
+  phone?: string | null;
 }
 
 interface SimilarProperty {
@@ -40,6 +41,8 @@ interface PropertyDetail extends SimilarProperty {
   area: number;
   amenities: string[];
   listingType: string;
+  type?: string;
+  city?: string;
   isSuperhost?: boolean;
   isRareFind?: boolean;
   isPremium?: boolean;
@@ -57,6 +60,16 @@ function getCoordinates(description: string | null | undefined) {
   return { lat, lng };
 }
 
+/** The coordinate line is metadata, not prose — keep it out of the description. */
+function stripCoordinates(description: string) {
+  return description.replace(/Coordinates:\s*-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?/i, '').trim();
+}
+
+/** A short, stable reference derived from the listing id — shown on the PDP only. */
+function refCode(id: string) {
+  return id.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase();
+}
+
 export default function PropertyDetailClient({ property, similar }: PropertyDetailClientProps) {
   const { t } = useLanguage();
   const agent = property.host;
@@ -66,20 +79,36 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
     : null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+  const isShortStay = property.listingType === 'Short Stay';
+  const isRent = property.listingType === 'Rent';
+  const period = isShortStay ? t.property.perNight : isRent ? t.property.perMonth : '';
+
+  const title = formatListingTitle(property.title);
+  const images = property.images?.length ? property.images : [''];
+  const galleryImages = images.slice(0, 5);
+  const amenities = showAllAmenities ? property.amenities : property.amenities.slice(0, 8);
+
+  const whatsappHref = agent?.phone
+    ? `https://wa.me/${agent.phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(
+        `Hi, I'm interested in "${property.title}" (Ref ${refCode(property.id)}) on House in Mozambique.`
+      )}`
+    : null;
 
   const handleInquiry = async (type: 'contact' | 'viewing') => {
     setIsSubmitting(true);
     try {
-      const subject = type === 'viewing' 
-        ? `Viewing request for ${property.title}` 
-        : `Inquiry about ${property.title}`;
-        
-      const message = type === 'viewing'
-        ? `I would like to book a viewing for "${property.title}". Please let me know your available dates and times.`
-        : `I am interested in your property listing "${property.title}". Please send me more information and available viewing times.`;
+      const subject =
+        type === 'viewing'
+          ? `Viewing request for ${property.title}`
+          : `Inquiry about ${property.title}`;
 
-      // In a real app we'd ask for the user's details first if not logged in.
-      // For now we'll just prompt them for email and name.
+      const message =
+        type === 'viewing'
+          ? `I would like to book a viewing for "${property.title}". Please let me know your available dates and times.`
+          : `I am interested in your property listing "${property.title}". Please send me more information and available viewing times.`;
+
       const name = prompt('Please enter your name:') || 'Guest';
       const email = prompt('Please enter your email address:') || 'guest@example.com';
 
@@ -92,8 +121,8 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
           subject,
           message,
           propertyId: property.id,
-          agentId: agent?.id
-        })
+          agentId: agent?.id,
+        }),
       });
 
       if (res.ok) {
@@ -109,290 +138,342 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
   };
 
   return (
-    <div className="pt-24 bg-[#f7f9fb]">
-      <main className="max-w-7xl mx-auto px-4 md:px-8">
-        <PropertyGallery
-          images={property.images}
-          title={property.title}
-          isSuperhost={property.isSuperhost || false}
-          isRareFind={property.isRareFind || false}
-          isNew={property.isNew || false}
-          isPremium={property.isPremium || false}
-        />
+    <div className="pdp-page">
+      <div className="wrap">
+        <nav className="crumbs" aria-label="Breadcrumb">
+          <Link href="/">{t.nav.home}</Link> / <Link href="/properties">{t.propertyDetails.backToProperties}</Link>{' '}
+          / <span className="text-[var(--ink)]">{title}</span>
+        </nav>
 
-        <div className="flex flex-col lg:flex-row gap-16 pb-24">
-          <div className="flex-1">
-            <div className="mb-10">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {property.isSuperhost && (
-                  <span className="bg-[#febc85]/30 text-[#845326] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
-                    {t.property.superhost}
-                  </span>
-                )}
-                {property.isRareFind && (
-                  <span className="bg-[#ffdad3] text-[#3e0500] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
-                    {t.property.rareFind}
-                  </span>
-                )}
-                {property.isNew && (
-                  <span className="bg-[#002045] text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
-                    {t.property.newListing}
-                  </span>
-                )}
+        {/* ── Gallery mosaic (horizontal swipe under 680px) ── */}
+        <div className="gallery" data-count={galleryImages.length}>
+          {galleryImages.map((src, i) => (
+            <div key={i}>
+              <SafeImage
+                src={src}
+                alt={`${title} — ${i + 1}`}
+                fill
+                priority={i === 0}
+                className="object-cover"
+                sizes={i === 0 ? '(max-width: 680px) 100vw, 50vw' : '25vw'}
+              />
+              {i === galleryImages.length - 1 && images.length > 5 && (
+                <span className="gallery__more">
+                  {t.propertyDetails.viewAllPhotos} · {images.length}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="pdp">
+          {/* ── Main column ── */}
+          <div>
+            <h1 className="display-l">{title}</h1>
+            <p className="pdp__loc">
+              <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
+              {property.location}
+              <span className="ref ml-2">
+                {t.propertyDetails.refCode} {refCode(property.id)}
+              </span>
+            </p>
+
+            {/* Land and commercial listings have no beds/baths — omit them rather
+                than printing a zero. */}
+            <div className="spec-strip">
+              {property.bedrooms > 0 && (
+                <div className="spec">
+                  <div className="k">{t.property.beds}</div>
+                  <div className="v">{property.bedrooms}</div>
+                </div>
+              )}
+              {property.bathrooms > 0 && (
+                <div className="spec">
+                  <div className="k">{t.property.baths}</div>
+                  <div className="v">{property.bathrooms}</div>
+                </div>
+              )}
+              {property.area > 0 && (
+                <div className="spec">
+                  <div className="k">{t.propertyDetails.areaLabel}</div>
+                  <div className="v">
+                    {property.area} {t.property.area}
+                  </div>
+                </div>
+              )}
+              {property.type && (
+                <div className="spec">
+                  <div className="k">{t.propertyDetails.propertyType}</div>
+                  <div className="v">{property.type}</div>
+                </div>
+              )}
+              <div className="spec">
+                <div className="k">{t.propertyDetails.listingTypeLabel}</div>
+                <div className="v">{property.listingType}</div>
               </div>
-              <h1 className="text-4xl font-extrabold text-[#002045] tracking-tight mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-                {property.title}
-              </h1>
-              <div className="flex items-center text-[#43474e] gap-1 mb-8">
-                <span className="material-symbols-outlined text-xl">location_on</span>
-                <span className="font-medium underline decoration-[#c4c6cf] underline-offset-4 cursor-pointer">
-                  {property.location}
+            </div>
+
+            <hr />
+
+            <h2 className="block-h">{t.propertyDetails.aboutHome}</h2>
+            <div className="about whitespace-pre-line text-[var(--hm-text)] leading-relaxed">
+              {stripCoordinates(property.description)}
+            </div>
+
+            {property.amenities.length > 0 && (
+              <>
+                <hr />
+                <h2 className="block-h">{t.propertyDetails.whatThisPlaceOffers}</h2>
+                <ul className="highlights">
+                  {amenities.map((a) => (
+                    <li key={a}>
+                      <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+                {property.amenities.length > 8 && !showAllAmenities && (
+                  <button className="btn btn--ghost btn--sm mt-5" onClick={() => setShowAllAmenities(true)}>
+                    {t.propertyDetails.showAllAmenities} {property.amenities.length}{' '}
+                    {t.propertyDetails.amenitiesText}
+                  </button>
+                )}
+              </>
+            )}
+
+            {agent && (
+              <>
+                <hr />
+                <h2 className="block-h">{t.propertyDetails.listedBy}</h2>
+                <div className="agent-inline">
+                  <span className="avi">
+                    {agent.avatar ? (
+                      <SafeImage src={agent.avatar} alt="" fill className="object-cover" sizes="58px" />
+                    ) : (
+                      agent.initials
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="name">
+                      <span className="truncate">{agent.name}</span>
+                      {agent.isVerified && (
+                        <span className="material-symbols-outlined vtick text-[1rem]">verified</span>
+                      )}
+                    </div>
+                    <div className="role">{agent.title}</div>
+                    {agent.rating ? (
+                      <div className="meta2 mono">★ {agent.rating}</div>
+                    ) : null}
+                  </div>
+                  <div className="acts">
+                    {agent.phone && (
+                      <a href={`tel:${agent.phone}`} aria-label={t.propertyDetails.callAgent}>
+                        <span className="material-symbols-outlined text-[1.15rem]">call</span>
+                      </a>
+                    )}
+                    {whatsappHref && (
+                      <a
+                        href={whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={t.propertyDetails.whatsapp}
+                      >
+                        <span className="material-symbols-outlined text-[1.15rem]">chat</span>
+                      </a>
+                    )}
+                    <a href={`/agents#${agent.id}`} aria-label={t.propertyDetails.listedBy}>
+                      <span className="material-symbols-outlined text-[1.15rem]">arrow_forward</span>
+                    </a>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <hr />
+
+            {/* ── Location. Exact map when the agent supplied coordinates,
+                   otherwise the styled approximate-area block. ── */}
+            <h2 className="block-h">{t.propertyDetails.whereYoullBe}</h2>
+            {mapSrc ? (
+              <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)]">
+                <iframe
+                  title={`Map location for ${property.title}`}
+                  src={mapSrc}
+                  className="h-[320px] w-full border-0"
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div className="map-approx">
+                <span className="map-approx__ring" />
+                <span className="map-approx__pin">
+                  <span className="material-symbols-outlined text-[1.7rem]">location_on</span>
+                </span>
+                <span className="map-approx__tag">
+                  {t.propertyDetails.approxArea} · {property.city || property.location}
+                </span>
+              </div>
+            )}
+            <p className="muted mt-4 max-w-[60ch] text-[0.9rem]">
+              {mapSrc ? t.propertyDetails.locationDesc : t.propertyDetails.approxNote}
+            </p>
+
+            <hr />
+
+            {/* ── Good to know. Short stays get stay-style info; long-term
+                   listings get lease terms instead. ── */}
+            <h2 className="block-h">{t.propertyDetails.goodToKnow}</h2>
+            <div className="good-to-know">
+              <div>
+                <h5>{isShortStay ? t.propertyDetails.houseRules : t.propertyDetails.leaseTerms}</h5>
+                <ul>
+                  {isShortStay ? (
+                    <>
+                      <li>
+                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        {t.propertyDetails.noSmoking}
+                      </li>
+                      <li>
+                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        {t.propertyDetails.noPets}
+                      </li>
+                      {property.bedrooms > 0 && (
+                        <li>
+                          <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                          {t.propertyDetails.upToGuests} {property.bedrooms * 2}{' '}
+                          {t.propertyDetails.guestsText}
+                        </li>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        {isRent ? t.propertyDetails.minLease : t.propertyDetails.purchase}
+                      </li>
+                      {isRent && (
+                        <>
+                          <li>
+                            <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                            {t.propertyDetails.depositTerms}
+                          </li>
+                          <li>
+                            <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                            {t.propertyDetails.utilitiesTerms}
+                          </li>
+                        </>
+                      )}
+                    </>
+                  )}
+                </ul>
+              </div>
+              <div>
+                <h5>{t.propertyDetails.security}</h5>
+                <ul>
+                  <li>
+                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    {t.propertyDetails.securityGuard}
+                  </li>
+                  <li>
+                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    {t.propertyDetails.smokeAlarm}
+                  </li>
+                  <li>
+                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    {t.propertyDetails.generator}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h5>{t.propertyDetails.nearby}</h5>
+                <ul>
+                  <li>
+                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    {property.city || property.location}
+                  </li>
+                  <li>
+                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    {t.propertyDetails.locationDesc.slice(0, 60)}…
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Sticky enquiry card ── */}
+          <aside>
+            <div className="enquiry">
+              <div className="enquiry__price">
+                {formatPrice(property.price, property.priceUnit)}
+                {period && <small> {period}</small>}
+              </div>
+              <div className="enquiry__meta">
+                <span className="tag">{property.listingType}</span>
+                {property.type && <span className="tag">{property.type}</span>}
+                <span className="ref">
+                  {t.propertyDetails.refCode} {refCode(property.id)}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 bg-[#f2f4f6] rounded-xl px-6">
-                <div className="flex flex-col gap-1">
-                  <span className="material-symbols-outlined text-[#002045] mb-2">bed</span>
-                  <span className="font-bold text-[#002045]">{property.bedrooms} {t.property.beds}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="material-symbols-outlined text-[#002045] mb-2">bathtub</span>
-                  <span className="font-bold text-[#002045]">{property.bathrooms} {t.property.baths}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="material-symbols-outlined text-[#002045] mb-2">square_foot</span>
-                  <span className="font-bold text-[#002045]">{property.area} {t.property.area}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="material-symbols-outlined text-[#002045] mb-2">pool</span>
-                  <span className="font-bold text-[#002045]">{property.amenities.includes('Infinity Pool') || property.amenities.includes('Swimming Pool') ? 'Pool' : 'Garden'}</span>
-                </div>
-              </div>
-            </div>
+              <button
+                onClick={() => handleInquiry('contact')}
+                disabled={isSubmitting}
+                className="btn btn--gold btn--full"
+              >
+                {t.propertyDetails.contactAgent}
+              </button>
 
-            <div className="mb-16">
-              <h2 className="text-2xl font-bold text-[#002045] mb-6" style={{ fontFamily: 'var(--font-headline)' }}>
-                {t.propertyDetails.aboutHome}
-              </h2>
-              <div className="text-[#43474e] leading-relaxed space-y-4 whitespace-pre-line">
-                {property.description}
-              </div>
-            </div>
-
-            <div className="mb-16">
-              <h2 className="text-2xl font-bold text-[#002045] mb-8" style={{ fontFamily: 'var(--font-headline)' }}>
-                {t.propertyDetails.whatThisPlaceOffers}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                {property.amenities.slice(0, 6).map((a: string) => (
-                  <div key={a} className="flex items-center gap-4 text-[#191c1e]">
-                    <span className="material-symbols-outlined text-[#845326]">check_circle</span>
-                    <span className="font-medium">{a}</span>
-                  </div>
-                ))}
-              </div>
-              {property.amenities.length > 6 && (
-                <button className="mt-10 bg-[#f7f9fb] text-[#002045] border border-[#74777f] px-8 py-3 rounded-lg font-bold hover:bg-[#f2f4f6] transition-all">
-                  {t.propertyDetails.showAllAmenities} {property.amenities.length} {t.propertyDetails.amenitiesText}
-                </button>
+              {whatsappHref && (
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn--wa btn--full">
+                  <span className="material-symbols-outlined text-[1.1rem]">chat</span>
+                  {t.propertyDetails.whatsapp}
+                </a>
               )}
+
+              <button
+                onClick={() => handleInquiry('viewing')}
+                disabled={isSubmitting}
+                className="btn btn--ghost btn--full"
+              >
+                {t.propertyDetails.bookViewing}
+              </button>
+
+              <p className="enquiry__note">{t.propertyDetails.inquiriesFree}</p>
             </div>
-
-            {agent && (
-              <div className="mb-16 pt-16 border-t border-[#c4c6cf]/20">
-                <div className="flex items-start gap-6">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 relative">
-                      {agent.avatar ? (
-                        <Image src={agent.avatar} alt={agent.name} fill className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-[#e6e8ea] flex items-center justify-center text-[#002045] font-bold text-lg">
-                          {agent.initials}
-                        </div>
-                      )}
-                    </div>
-                    {agent.isVerified && (
-                      <div className="absolute -bottom-1 -right-1 bg-[#845326] text-white p-1 rounded-full border-2 border-[#f7f9fb]">
-                        <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
-                      {t.propertyDetails.meetHost} {agent.name}
-                    </h2>
-                    <p className="text-[#43474e] mb-4">{agent.title}</p>
-                    <div className="flex gap-4 mb-6">
-                      <div className="flex items-center gap-1 bg-[#eceef0] text-xs font-bold px-2 py-1 rounded">
-                        <span className="material-symbols-outlined text-[14px]">star</span>
-                        {agent.rating} Rating
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleInquiry('contact')}
-                      disabled={isSubmitting}
-                      className="bg-[#002045] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity block text-center disabled:opacity-50"
-                    >
-                      {t.propertyDetails.contactAgent}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="w-full lg:w-[400px]">
-            <div className="sticky top-28 bg-white p-8 rounded-xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] ring-1 ring-[#c4c6cf]/10">
-              <div className="flex justify-between items-end mb-8">
-                <div>
-                  <span className="text-3xl font-extrabold text-[#002045]">{formatPrice(property.price, property.priceUnit)}</span>
-                </div>
-                {property.rating && (
-                  <div className="flex items-center gap-1 text-sm font-bold text-[#845326]">
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span>{property.rating}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="bg-[#f2f4f6] p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-[#e6e8ea] transition-colors">
-                  <div>
-                    <div className="text-[10px] font-extrabold text-[#845326] uppercase tracking-wider mb-1">{t.propertyDetails.duration}</div>
-                    <div className="text-sm font-bold">
-                      {property.listingType === 'Rent' ? t.propertyDetails.longTerm :
-                       property.listingType === 'Short Stay' ? t.propertyDetails.flexibleDates : t.propertyDetails.purchase}
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined">expand_more</span>
-                </div>
-                <div className="bg-[#f2f4f6] p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-[#e6e8ea] transition-colors">
-                  <div>
-                    <div className="text-[10px] font-extrabold text-[#845326] uppercase tracking-wider mb-1">{t.propertyDetails.guests}</div>
-                    <div className="text-sm font-bold">{t.propertyDetails.upToGuests} {property.bedrooms * 2} {t.propertyDetails.guestsText}</div>
-                  </div>
-                  <span className="material-symbols-outlined">expand_more</span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleInquiry('contact')}
-                  disabled={isSubmitting}
-                  className="w-full inline-flex justify-center bg-[#002045] text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50"
-                >
-                  {t.propertyDetails.contactAgent}
-                </button>
-                <button
-                  onClick={() => handleInquiry('viewing')}
-                  disabled={isSubmitting}
-                  className="w-full inline-flex justify-center border-2 border-[#845326] text-[#845326] py-4 rounded-lg font-bold text-lg hover:bg-[#845326]/5 transition-all disabled:opacity-50"
-                >
-                  {t.propertyDetails.bookViewing}
-                </button>
-              </div>
-              <p className="text-center text-xs text-[#43474e] mt-6">{t.propertyDetails.inquiriesFree}</p>
-            </div>
-          </div>
+          </aside>
         </div>
 
-        <section className="mb-20">
-          <h2 className="text-2xl font-bold text-[#002045] mb-8" style={{ fontFamily: 'var(--font-headline)' }}>
-            {t.propertyDetails.whereYoullBe}
-          </h2>
-          <div className="w-full h-[450px] rounded-xl overflow-hidden bg-[#e6e8ea] relative">
-            {mapSrc ? (
-              <iframe
-                title={`Map location for ${property.title}`}
-                src={mapSrc}
-                className="h-full w-full border-0"
-                loading="lazy"
-              />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#eef0f2] text-center px-6">
-                <span className="material-symbols-outlined text-5xl text-[#845326] mb-3">location_off</span>
-                <p className="text-sm font-bold text-[#002045]">Exact coordinates have not been added for this listing.</p>
-                <p className="text-xs text-[#74777f] mt-2 max-w-md">
-                  Ask the listing agent to edit the house post and add latitude and longitude so this map can show the exact location.
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="mt-6">
-            <h3 className="font-bold text-lg mb-2">{property.location}</h3>
-            <p className="text-[#43474e] leading-relaxed">
-              {coords
-                ? `Exact map point: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
-                : t.propertyDetails.locationDesc}
-            </p>
-          </div>
-        </section>
+        {/* ── Similar listings ── */}
+        {similar.length > 0 && (
+          <section className="section">
+            <div className="section-title-row">
+              <h2>{t.propertyDetails.similarHomes2}</h2>
+              <Link href="/properties">{t.home.seeAll} →</Link>
+            </div>
+            <div className="grid-cards">
+              {similar.map((p) => (
+                <PropertyCard key={p.id} property={p as any} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
-        <section className="mb-24 grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#c4c6cf]/20">
-          <div>
-            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.houseRules}</h3>
-            <ul className="space-y-3 text-[#43474e]">
-               <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">check</span>{t.propertyDetails.noSmoking}</li>
-               <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">check</span>{t.propertyDetails.noPets}</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.healthSafety}</h3>
-            <ul className="space-y-3 text-[#43474e]">
-              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">security</span>{t.propertyDetails.securityGuard}</li>
-              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">fire_extinguisher</span>{t.propertyDetails.smokeAlarm}</li>
-              <li className="flex items-center gap-3"><span className="material-symbols-outlined text-lg">emergency</span>{t.propertyDetails.generator}</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-extrabold text-[#002045] mb-4 uppercase tracking-tighter">{t.propertyDetails.cancellationPolicy}</h3>
-            <p className="text-[#43474e] mb-4">{t.propertyDetails.cancellationDesc}</p>
-            <a href="#" className="text-[#002045] font-bold underline underline-offset-4">{t.propertyDetails.learnMore}</a>
-          </div>
-        </section>
-
-        <section className="mb-24">
-          <h2 className="text-2xl font-bold text-[#002045] mb-10" style={{ fontFamily: 'var(--font-headline)' }}>
-            {t.propertyDetails.similarHomes}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {similar.map((p) => (
-              <Link key={p.id} href={`/properties/${p.id}`} className="group cursor-pointer block">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 relative">
-                  <Image
-                    src={p.images[0]}
-                    alt={p.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {p.isNew && (
-                    <div className="absolute top-4 left-4 bg-[#691809] text-[#f17e66] px-3 py-1 rounded-full text-xs font-bold">
-                      {t.property.newListing}
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-[#002045] text-lg" style={{ fontFamily: 'var(--font-headline)' }}>
-                      {p.title}
-                    </h3>
-                    <p className="text-[#43474e]">{p.location}</p>
-                    <p className="mt-2">
-                      <span className="font-extrabold text-[#002045]">{formatPrice(p.price, p.priceUnit)}</span>
-                    </p>
-                  </div>
-                  {p.rating && (
-                    <div className="flex items-center gap-1 text-sm font-bold">
-                      <span className="material-symbols-outlined text-[18px]">star</span>
-                      {p.rating}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </main>
+      {/* ── Sticky mobile price bar ── */}
+      <div className="mobile-bar">
+        <div className="mp">
+          {formatPrice(property.price, property.priceUnit)}
+          {period && <small>{period}</small>}
+        </div>
+        {whatsappHref && (
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn--wa btn--sm">
+            <span className="material-symbols-outlined text-[1.1rem]">chat</span>
+          </a>
+        )}
+        <button onClick={() => handleInquiry('contact')} disabled={isSubmitting} className="btn btn--gold">
+          {t.propertyDetails.enquire}
+        </button>
+      </div>
     </div>
   );
 }

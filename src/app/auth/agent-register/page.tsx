@@ -73,9 +73,9 @@ export default function AgentRegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-[#f7f9fb]">
+    <main className="min-h-screen flex flex-col md:flex-row bg-[#F5F2EC]">
       {/* Left: Branding & Visuals */}
-      <section className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-[#002045] items-end p-20">
+      <section className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-[#13233F] items-end p-20">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuApliVjyyP7V3JSXWkyUmWNm0NvNNaNRvsd05QEZGmJbD2-rgbKrTamqcBP-5jVVtr5DwqtZYW2X1-bJC2cxS6JKPnlu6NYwPMBz0z2EJVfcNFJ6wM38SQa0pdX94TFKtExtWQwnmj69Pzt_KzgUkkboWYLoD51clkFy-MATWkGPE25UA2vIi6XQrNru_7zyZ5-QqAIMg1mt2eEKDPgu7m-A0vpAlYAKceo2QNXQkRD6sHTg5Jf2Kn5a1XBVcOrVkJbtHM4HvcW-Gw" 
@@ -84,22 +84,22 @@ export default function AgentRegisterPage() {
             className="object-cover opacity-50 mix-blend-overlay" 
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#002045] via-[#002045]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#13233F] via-[#13233F]/40 to-transparent" />
         </div>
         
         <div className="relative z-10">
           <Link href="/" className="inline-block mb-10">
-            <h1 className="text-2xl font-semibold text-white tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+            <h1 className="text-2xl font-semibold text-white tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
               House in Mozambique
             </h1>
           </Link>
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#845326]/20 border border-[#845326]/30 text-[#fab983] text-[11px] font-medium tracking-wide">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#A87A22]/20 border border-[#A87A22]/30 text-[#e9c877] text-[11px] font-medium tracking-wide">
               Agent partnership program
             </div>
-            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
               Elevate your <br />
-              <span className="text-[#fab983]">real estate career.</span>
+              <span className="text-[#e9c877]">real estate career.</span>
             </h2>
             <p className="text-[#9fb4d6] text-base lg:text-lg leading-relaxed max-w-md">
               Join Mozambique&apos;s most exclusive digital property gallery. Connect with high-net-worth investors and showcase your portfolio to the world.
@@ -107,12 +107,12 @@ export default function AgentRegisterPage() {
 
             <div className="pt-6 flex items-center gap-8">
               <div className="leading-tight">
-                <div className="text-2xl font-semibold text-white tabular-nums" style={{ fontFamily: 'var(--font-headline)' }}>2k+</div>
+                <div className="text-2xl font-semibold text-white tabular-nums" style={{ fontFamily: 'var(--serif)' }}>2k+</div>
                 <div className="text-[12px] font-medium text-[#9fb4d6] mt-0.5">Investors</div>
               </div>
               <div className="w-px h-10 bg-white/10" />
               <div className="leading-tight">
-                <div className="text-2xl font-semibold text-white tabular-nums" style={{ fontFamily: 'var(--font-headline)' }}>500+</div>
+                <div className="text-2xl font-semibold text-white tabular-nums" style={{ fontFamily: 'var(--serif)' }}>500+</div>
                 <div className="text-[12px] font-medium text-[#9fb4d6] mt-0.5">Exclusive listings</div>
               </div>
             </div>
@@ -128,12 +128,12 @@ export default function AgentRegisterPage() {
             {STEPS.map((s) => (
               <div key={s.id} className="flex flex-col items-center gap-1.5 z-10 relative">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                  step >= s.id ? 'bg-[#002045] text-white' : 'bg-[#eceef1] text-[#9aa0a8]'
+                  step >= s.id ? 'bg-[#13233F] text-white' : 'bg-[#eceef1] text-[#9aa0a8]'
                 }`}>
                   <span className="material-symbols-outlined text-[18px]">{s.icon}</span>
                 </div>
                 <span className={`text-[12px] font-medium ${
-                  step === s.id ? 'text-[#002045]' : 'text-[#9aa0a8]'
+                  step === s.id ? 'text-[#13233F]' : 'text-[#9aa0a8]'
                 }`}>
                   {s.name}
                 </span>
@@ -142,7 +142,7 @@ export default function AgentRegisterPage() {
             {/* Progress Line */}
             <div className="absolute top-[18px] left-0 w-full h-0.5 bg-[#eceef1] -z-0" />
             <div
-              className="absolute top-[18px] left-0 h-0.5 bg-[#002045] transition-all duration-300 -z-0"
+              className="absolute top-[18px] left-0 h-0.5 bg-[#13233F] transition-all duration-300 -z-0"
               style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
             />
           </div>
@@ -151,12 +151,12 @@ export default function AgentRegisterPage() {
         <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 lg:p-16">
           <div className="w-full max-w-md">
             <div className="mb-7">
-              <h3 className="text-2xl font-semibold text-[#002045] mb-1.5 tracking-tight">
+              <h3 className="text-2xl font-semibold text-[#13233F] mb-1.5 tracking-tight">
                 {step === 1 && "Start your journey"}
                 {step === 2 && "Professional profile"}
                 {step === 3 && "Showcase your expertise"}
               </h3>
-              <p className="text-sm text-[#74777f] leading-relaxed">
+              <p className="text-sm text-[#5E6B7A] leading-relaxed">
                 {step === 1 && "Create your account to join our verified partner network."}
                 {step === 2 && "Tell us about your experience and where you operate."}
                 {step === 3 && "Last step to build your presence on the platform."}
@@ -172,7 +172,7 @@ export default function AgentRegisterPage() {
                     <input
                       required
                       type="text"
-                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                       placeholder="e.g. Ricardo Santos"
                       value={formData.fullName}
                       onChange={(e) => setFormData({...formData, fullName: e.target.value})}
@@ -183,7 +183,7 @@ export default function AgentRegisterPage() {
                     <input
                       required
                       type="email"
-                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                       placeholder="ricardo@exclusive.co.mz"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -194,7 +194,7 @@ export default function AgentRegisterPage() {
                     <input
                       required
                       type="password"
-                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -212,7 +212,7 @@ export default function AgentRegisterPage() {
                       <input
                         required
                         type="text"
-                        className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                        className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                         placeholder="e.g. Senior Partner"
                         value={formData.title}
                         onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -223,7 +223,7 @@ export default function AgentRegisterPage() {
                       <input
                         required
                         type="number"
-                        className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] tabular-nums placeholder-[#b4b9c0] outline-none"
+                        className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] tabular-nums placeholder-[#b4b9c0] outline-none"
                         placeholder="e.g. 8"
                         value={formData.yearsExperience}
                         onChange={(e) => setFormData({...formData, yearsExperience: e.target.value})}
@@ -235,7 +235,7 @@ export default function AgentRegisterPage() {
                     <input
                       required
                       type="text"
-                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                      className="w-full h-11 px-3.5 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                       placeholder="e.g. Av. Mao Tse Tung, Polana Cimento, Maputo"
                       value={formData.address}
                       onChange={(e) => setFormData({...formData, address: e.target.value})}
@@ -259,7 +259,7 @@ export default function AgentRegisterPage() {
                           </div>
                         )}
                       </div>
-                      <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#002045] text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-[#0a2f5c] transition-colors">
+                      <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#13233F] text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-[#0a2f5c] transition-colors">
                         <span className="material-symbols-outlined text-[18px]">upload</span>
                         <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                       </label>
@@ -273,7 +273,7 @@ export default function AgentRegisterPage() {
                     <textarea
                       required
                       rows={4}
-                      className="w-full px-3.5 py-3 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] text-[#43474e] placeholder-[#b4b9c0] outline-none resize-none"
+                      className="w-full px-3.5 py-3 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] text-[#5E6B7A] placeholder-[#b4b9c0] outline-none resize-none"
                       placeholder="Describe your expertise, achievements, and unique approach to real estate…"
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
@@ -298,7 +298,7 @@ export default function AgentRegisterPage() {
                     <div className="relative">
                       <input
                         type="text"
-                        className="w-full h-11 pl-3.5 pr-12 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 transition-colors text-[14px] font-medium text-[#002045] placeholder-[#b4b9c0] outline-none"
+                        className="w-full h-11 pl-3.5 pr-12 rounded-lg bg-white border border-[#e3e6ea] focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 transition-colors text-[14px] font-medium text-[#13233F] placeholder-[#b4b9c0] outline-none"
                         placeholder="e.g. Coastal Villas, Commercial Hubs"
                         value={specInput}
                         onChange={(e) => setSpecInput(e.target.value)}
@@ -307,7 +307,7 @@ export default function AgentRegisterPage() {
                       <button
                         type="button"
                         onClick={addSpecialization}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#002045] text-white rounded-md flex items-center justify-center hover:bg-[#0a2f5c] transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#13233F] text-white rounded-md flex items-center justify-center hover:bg-[#0a2f5c] transition-colors"
                       >
                         <span className="material-symbols-outlined text-[18px]">add</span>
                       </button>
@@ -322,7 +322,7 @@ export default function AgentRegisterPage() {
                   <button
                     type="button"
                     onClick={handleBack}
-                    className="flex-1 h-11 rounded-lg border border-[#e3e6ea] text-[#002045] text-[14px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 h-11 rounded-lg border border-[#e3e6ea] text-[#13233F] text-[14px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                     Back
@@ -331,7 +331,7 @@ export default function AgentRegisterPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-[2] h-11 rounded-lg bg-[#002045] text-white text-[14px] font-medium transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-[2] h-11 rounded-lg bg-[#13233F] text-white text-[14px] font-medium transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <>
@@ -350,8 +350,8 @@ export default function AgentRegisterPage() {
 
             <p className="mt-8 text-center text-[12px] text-[#9aa0a8] leading-relaxed">
               By proceeding, you agree to our{' '}
-              <Link href="#" className="underline text-[#5b616b] hover:text-[#002045]">Terms of Service</Link> and{' '}
-              <Link href="#" className="underline text-[#5b616b] hover:text-[#002045]">Agent Guidelines</Link>.
+              <Link href="#" className="underline text-[#5b616b] hover:text-[#13233F]">Terms of Service</Link> and{' '}
+              <Link href="#" className="underline text-[#5b616b] hover:text-[#13233F]">Agent Guidelines</Link>.
             </p>
           </div>
         </div>
@@ -360,8 +360,8 @@ export default function AgentRegisterPage() {
         <footer className="px-8 lg:px-12 py-6 bg-white border-t border-[#eceef1] flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-[12px] font-medium text-[#9aa0a8]">© 2024 House in Mozambique · Agent network</p>
           <div className="flex gap-6">
-            <Link href="/" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Home</Link>
-            <Link href="/support" className="text-[12px] font-medium text-[#74777f] hover:text-[#002045] transition-colors">Support</Link>
+            <Link href="/" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Home</Link>
+            <Link href="/support" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Support</Link>
           </div>
         </footer>
       </section>

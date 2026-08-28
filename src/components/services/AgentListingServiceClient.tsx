@@ -33,18 +33,18 @@ export default function AgentListingServiceClient() {
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-12 lg:grid-cols-[1.25fr_1fr] lg:items-center">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#845326]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#A87A22]">
               {t.services.whatItIs}
             </p>
-            <p className="mt-5 text-xl font-bold leading-relaxed text-[#002045] md:text-2xl">
+            <p className="lead mt-4 max-w-[46ch] text-[var(--ink)]">
               {t.services.agentsBody1}
             </p>
-            <p className="mt-5 text-base font-medium leading-relaxed text-[#43474e]">
+            <p className="mt-4 max-w-[54ch] text-[0.95rem] leading-relaxed text-[#5E6B7A]">
               {t.services.agentsBody2}
             </p>
             <Link
               href="/agents"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl border border-[#002045]/20 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#002045] transition-all hover:bg-[#002045]/5"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl border border-[#13233F]/20 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:bg-[#13233F]/5"
             >
               {t.nav.agents}
               <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
@@ -52,11 +52,11 @@ export default function AgentListingServiceClient() {
           </div>
 
           {/* Anatomy of a directory profile */}
-          <div className="rounded-[2.5rem] bg-white p-8 shadow-[0_20px_60px_rgba(0,32,69,0.07)]">
+          <div className="rounded-[14px] bg-white p-8 shadow-[0_20px_60px_rgba(0,32,69,0.07)]">
             <div className="flex items-center gap-5">
-              <span className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-[1.5rem] bg-[#f2f4f6] text-2xl font-black text-[#002045]">
+              <span className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-[10px] bg-[#EDEAE2] text-2xl font-semibold text-[#13233F]">
                 HM
-                <span className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-xl border-4 border-white bg-[#845326]">
+                <span className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-xl border-4 border-white bg-[#A87A22]">
                   <span
                     className="material-symbols-outlined text-sm leading-none text-white"
                     style={{ fontVariationSettings: "'FILL' 1" }}
@@ -66,10 +66,10 @@ export default function AgentListingServiceClient() {
                 </span>
               </span>
               <div>
-                <p className="text-lg font-black leading-tight text-[#002045]">
+                <p className="text-lg font-semibold leading-tight text-[#13233F]">
                   {t.services.profileExample}
                 </p>
-                <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#845326]">
+                <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#A87A22]">
                   <span
                     className="material-symbols-outlined text-sm leading-none"
                     style={{ fontVariationSettings: "'FILL' 1" }}
@@ -84,10 +84,10 @@ export default function AgentListingServiceClient() {
             <ul className="mt-8 space-y-3">
               {['badge', 'location_on', 'workspace_premium', 'home_work'].map((icon, i) => (
                 <li key={icon} className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg leading-none text-[#c4c6cf]">
+                  <span className="material-symbols-outlined text-lg leading-none text-[#E6E1D6]">
                     {icon}
                   </span>
-                  <span className="h-2.5 rounded-full bg-[#f2f4f6]" style={{ width: `${70 - i * 12}%` }} />
+                  <span className="h-2.5 rounded-full bg-[#EDEAE2]" style={{ width: `${70 - i * 12}%` }} />
                 </li>
               ))}
             </ul>
@@ -96,11 +96,11 @@ export default function AgentListingServiceClient() {
       </section>
 
       {/* ── What you get — tiles on navy ── */}
-      <section className="bg-[#002045] py-20 text-white">
+      <section className="bg-[#13233F] py-20 text-white">
         <div className="mx-auto max-w-6xl px-6">
           <h2
-            className="text-3xl font-black tracking-tight md:text-4xl"
-            style={{ fontFamily: 'var(--font-headline)' }}
+            className="text-3xl font-semibold tracking-tight md:text-4xl"
+            style={{ fontFamily: 'var(--serif)' }}
           >
             {t.services.whatYouGet}
           </h2>
@@ -109,10 +109,10 @@ export default function AgentListingServiceClient() {
             {benefits.map((benefit, i) => (
               <div
                 key={benefit}
-                className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-[#fab983]/40 hover:bg-white/[0.07]"
+                className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-[#e9c877]/40 hover:bg-white/[0.07]"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#fab983]/15">
-                  <span className="material-symbols-outlined text-xl leading-none text-[#fab983]">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e9c877]/15">
+                  <span className="material-symbols-outlined text-xl leading-none text-[#e9c877]">
                     {BENEFIT_ICONS[i]}
                   </span>
                 </span>
@@ -126,8 +126,8 @@ export default function AgentListingServiceClient() {
       {/* ── How it works — numbered chips ── */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2
-          className="text-3xl font-black tracking-tight text-[#002045] md:text-4xl"
-          style={{ fontFamily: 'var(--font-headline)' }}
+          className="text-3xl font-semibold tracking-tight text-[#13233F] md:text-4xl"
+          style={{ fontFamily: 'var(--serif)' }}
         >
           {t.services.howItWorks}
         </h2>
@@ -138,17 +138,17 @@ export default function AgentListingServiceClient() {
               key={step}
               className="flex items-start gap-5 rounded-[1.75rem] bg-white p-7 shadow-sm"
             >
-              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#845326]/10 text-sm font-black text-[#845326]">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#A87A22]/10 text-sm font-semibold text-[#A87A22]">
                 {i + 1}
               </span>
-              <p className="pt-1.5 text-sm font-medium leading-relaxed text-[#43474e]">{step}</p>
+              <p className="pt-1.5 text-sm font-medium leading-relaxed text-[#5E6B7A]">{step}</p>
             </li>
           ))}
         </ol>
 
         <Link
           href="/auth/agent-register"
-          className="mt-12 inline-flex items-center gap-2 rounded-xl bg-[#002045] px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[#fab983] transition-all hover:opacity-90 active:scale-95"
+          className="mt-12 inline-flex items-center gap-2 rounded-xl bg-[#13233F] px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#e9c877] transition-all hover:opacity-90 active:scale-95"
         >
           {t.services.startNow}
           <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>

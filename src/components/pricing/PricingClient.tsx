@@ -53,195 +53,141 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
     }
   }
 
-  const gridCols =
-    localizedPlans.length === 1
-      ? 'md:grid-cols-1 max-w-md mx-auto'
-      : localizedPlans.length === 2
-      ? 'md:grid-cols-2'
-      : localizedPlans.length === 4
-      ? 'md:grid-cols-2 lg:grid-cols-4'
-      : 'md:grid-cols-3';
-
   return (
-    <div className="pt-20 bg-[#f7f9fb]">
-      {/* Hero */}
-      <section className="relative py-24 px-6 overflow-hidden bg-[#f2f4f6]">
-        <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
-          <span className="inline-block py-1 px-4 mb-6 bg-[#845326] text-white rounded-full text-xs font-bold uppercase tracking-widest">
-            {t.pricing.heroBadge}
-          </span>
-          <h1
-            className="text-5xl md:text-7xl font-extrabold text-[#191c1e] tracking-tighter mb-8 max-w-4xl"
-            style={{ fontFamily: 'var(--font-headline)' }}
-          >
-            {t.pricing.heroTitle}
-          </h1>
-          <p className="text-lg md:text-xl text-[#43474e] max-w-2xl leading-relaxed mb-12">
-            {t.pricing.heroSubtitle}
-          </p>
+    <>
+      {/* ── Hero ── */}
+      <section className="page-hero">
+        <div className="page-hero__bg">
+          <Image src={VILLA_IMG} alt="" fill priority className="object-cover" sizes="100vw" />
         </div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#002045]/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -left-48 w-[32rem] h-[32rem] bg-[#845326]/5 rounded-full blur-[100px]" />
+        <div className="wrap">
+          <span className="eyebrow">{t.pricing.heroBadge}</span>
+          <h1 className="display-l">{t.pricing.heroTitle}</h1>
+          <p>{t.pricing.heroSubtitle}</p>
+        </div>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="py-24 px-6 max-w-6xl mx-auto">
-        <div className={`grid grid-cols-1 ${gridCols} gap-6`}>
-          {localizedPlans.map((plan) => (
-            <div
-              key={plan.slug}
-              className={`flex flex-col p-8 rounded-xl relative transition-all duration-300 ${
-                plan.highlighted
-                  ? 'bg-[#002045] text-white shadow-2xl scale-105 z-10 lg:col-span-1'
-                  : 'bg-white hover:shadow-lg'
-              }`}
-            >
-              {plan.badge && (
-                <div className="absolute top-0 right-8 -translate-y-1/2 bg-[#845326] text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                  {plan.badge}
-                </div>
-              )}
-              <div className="mb-6">
-                <h3 className="text-xl font-black mb-2 tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
-                  {plan.name}
-                </h3>
-                <p className={`text-xs ${plan.highlighted ? 'text-[#fab983]/80' : 'text-[#74777f]'}`}>
-                  {plan.description}
-                </p>
-              </div>
-              <div className="mb-8">
-                <span className="text-3xl font-black" style={{ fontFamily: 'var(--font-headline)' }}>
+      {/* ── Plans ── */}
+      <section className="section">
+        <div className="wrap">
+          <div className="tiers">
+            {localizedPlans.map((plan) => (
+              <div key={plan.slug} className={`tier${plan.highlighted ? ' tier--pop' : ''}`}>
+                {plan.badge && <span className="pop-badge">{plan.badge}</span>}
+
+                <h3>{plan.name}</h3>
+                <p className="tsub">{plan.description}</p>
+
+                <div className="tprice">
                   {plan.price}
-                </span>
-                <span className={`text-xs ml-2 ${plan.highlighted ? 'text-[#fab983]/80' : 'text-[#74777f]'}`}>
-                  {plan.unit}
-                </span>
-              </div>
-              <ul className="mb-8 space-y-3 flex-grow">
-                {plan.features.map((f) => (
-                  <li key={f.label} className={`flex items-start gap-3 text-xs leading-relaxed ${!f.included ? 'opacity-40' : ''}`}>
-                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${
-                      f.included
-                        ? plan.highlighted ? 'text-[#fab983]' : 'text-[#845326]'
-                        : 'text-[#74777f]'
-                    }`}>
-                      {f.included ? (f.star ? 'stars' : 'check_circle') : 'do_not_disturb_on'}
-                    </span>
-                    <span>{f.label}</span>
-                  </li>
-                ))}
-              </ul>
-              {plan.ctaMode === 'contact' ? (
-                <a
-                  href="/contact"
-                  className={`w-full py-3 rounded-lg font-bold text-center block transition-all duration-300 text-sm ${
-                    plan.highlighted
-                      ? 'bg-[#845326] text-white hover:opacity-90'
-                      : 'bg-[#f2f4f6] text-[#002045] hover:bg-[#002045] hover:text-white'
-                  }`}
-                >
-                  {plan.cta}
-                </a>
-              ) : (
-                <button
-                  onClick={() => handlePlanSelect(plan.slug)}
-                  className={`w-full py-3 rounded-lg font-bold text-center block transition-all duration-300 text-sm ${
-                    plan.highlighted
-                      ? 'bg-[#845326] text-white hover:opacity-90'
-                      : 'bg-[#f2f4f6] text-[#002045] hover:bg-[#002045] hover:text-white'
-                  }`}
-                >
-                  {plan.cta}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Why List With Us */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-          <div className="w-full md:w-1/2 relative">
-            <div className="aspect-[4/5] bg-[#f2f4f6] rounded-xl overflow-hidden shadow-2xl">
-              <Image src={VILLA_IMG} alt="Luxury Villa" fill className="object-cover" />
-            </div>
-            <div className="absolute -bottom-8 -right-8 w-64 p-6 bg-white/80 backdrop-blur-sm rounded-lg shadow-xl hidden md:block border border-[#c4c6cf]/10">
-              <h4 className="font-bold text-[#002045] mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-                {t.pricing.exclusiveCuration}
-              </h4>
-              <p className="text-xs text-[#43474e] leading-relaxed">
-                {t.pricing.exclusiveCurationDesc}
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full md:w-1/2">
-            <h2
-              className="text-4xl font-extrabold text-[#002045] tracking-tight mb-6"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              {t.pricing.whyListTitle}
-            </h2>
-            <div className="space-y-8">
-              {[
-                { icon: 'visibility', title: t.pricing.highIntentAudience, desc: t.pricing.highIntentAudienceDesc },
-                { icon: 'camera_enhance', title: t.pricing.editorialPresentation, desc: t.pricing.editorialPresentationDesc },
-                { icon: 'analytics', title: t.pricing.inDepthInsights, desc: t.pricing.inDepthInsightsDesc },
-              ].map((item) => (
-                <div key={item.title} className="flex gap-6">
-                  <div className="flex-shrink-0 w-12 h-12 bg-[#845326]/10 rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[#845326]">{item.icon}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1" style={{ fontFamily: 'var(--font-headline)' }}>{item.title}</h4>
-                    <p className="text-[#43474e] text-sm">{item.desc}</p>
-                  </div>
+                  {plan.unit && <small> {plan.unit}</small>}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* FAQ */}
-      <section className="py-24 px-6 bg-[#f2f4f6]">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="text-4xl font-extrabold text-[#002045] mb-4"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              {t.pricing.faqTitle}
-            </h2>
-            <p className="text-[#43474e]">{t.pricing.faqSubtitle}</p>
-          </div>
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div key={i} className="bg-white rounded-xl overflow-hidden transition-all duration-300">
-                <button
-                  className="w-full flex items-center justify-between p-6 text-left group"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  <span className="font-bold text-[#002045]" style={{ fontFamily: 'var(--font-headline)' }}>
-                    {faq.q}
-                  </span>
-                  <span
-                    className={`material-symbols-outlined text-[#43474e] transition-transform ${openFaq === i ? 'rotate-180' : ''}`}
+                <ul>
+                  {plan.features.map((f) => (
+                    <li key={f.label} style={f.included ? undefined : { opacity: 0.45 }}>
+                      <span className="material-symbols-outlined ic text-[1.05rem]">
+                        {f.included ? (f.star ? 'star' : 'check') : 'remove'}
+                      </span>
+                      <span>{f.label}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {plan.ctaMode === 'contact' ? (
+                  <a
+                    href="/contact"
+                    className={`btn btn--full ${plan.highlighted ? 'btn--gold' : 'btn--ghost'}`}
                   >
-                    expand_more
-                  </span>
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-6 text-[#43474e] text-sm leading-relaxed">
-                    {faq.a}
-                  </div>
+                    {plan.cta}
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => handlePlanSelect(plan.slug)}
+                    className={`btn btn--full ${plan.highlighted ? 'btn--gold' : 'btn--ghost'}`}
+                  >
+                    {plan.cta}
+                  </button>
                 )}
               </div>
             ))}
           </div>
         </div>
       </section>
-    </div>
+
+      {/* ── Why list with us ── */}
+      <section className="section pt0">
+        <div className="wrap">
+          <article className="feature">
+            <div className="feature__media">
+              <Image
+                src={VILLA_IMG}
+                alt="Luxury villa listed on House in Mozambique"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1000px) 100vw, 55vw"
+              />
+            </div>
+            <div className="feature__body">
+              <span className="eyebrow">{t.pricing.exclusiveCuration}</span>
+              <h2>{t.pricing.whyListTitle}</h2>
+              <p className="muted">{t.pricing.exclusiveCurationDesc}</p>
+
+              <ul className="mt-6 space-y-5">
+                {[
+                  { icon: 'visibility', title: t.pricing.highIntentAudience, desc: t.pricing.highIntentAudienceDesc },
+                  { icon: 'camera_enhance', title: t.pricing.editorialPresentation, desc: t.pricing.editorialPresentationDesc },
+                  { icon: 'analytics', title: t.pricing.inDepthInsights, desc: t.pricing.inDepthInsightsDesc },
+                ].map((item) => (
+                  <li key={item.title} className="flex gap-4">
+                    <span className="grid h-11 w-11 flex-none place-items-center rounded-[11px] bg-[var(--paper)] text-[var(--gold-deep)]">
+                      <span className="material-symbols-outlined text-[1.2rem]">{item.icon}</span>
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-[var(--ink)]">{item.title}</span>
+                      <span className="muted block text-[0.88rem] leading-relaxed">{item.desc}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="section pt0">
+        <div className="wrap">
+          <div className="section-head mx-auto text-center">
+            <span className="eyebrow">FAQ</span>
+            <h2>{t.pricing.faqTitle}</h2>
+            <p className="lead mx-auto">{t.pricing.faqSubtitle}</p>
+          </div>
+
+          <div className="faq">
+            {faqs.map((faq, i) => (
+              <details key={i} className="faq-item" open={openFaq === i}>
+                <summary
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpenFaq(openFaq === i ? null : i);
+                  }}
+                >
+                  {faq.q}
+                  <span
+                    className={`material-symbols-outlined text-[1.2rem] text-[var(--hm-muted)] transition-transform ${
+                      openFaq === i ? 'rotate-180' : ''
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </summary>
+                <p>{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
