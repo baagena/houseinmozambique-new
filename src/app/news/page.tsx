@@ -71,7 +71,7 @@ export default async function NewsPage() {
           ) : (
             <div className="empty">
               <span className="ico">
-                <span className="material-symbols-outlined text-[2.2rem]">article</span>
+                <span className="material-symbols-outlined text-[1.7rem]">article</span>
               </span>
               <h3>Nothing published yet.</h3>
               <p>Posts appear here once the editorial desk sends them live.</p>

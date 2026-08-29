@@ -92,7 +92,7 @@ export default function ContactPage() {
               {submitted ? (
                 <div className="empty">
                   <span className="ico">
-                    <span className="material-symbols-outlined text-[2.4rem] text-[var(--verified)]">
+                    <span className="material-symbols-outlined text-[1.8rem] text-[var(--verified)]">
                       check_circle
                     </span>
                   </span>
@@ -174,7 +174,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.2rem]">location_on</span>
+                  <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
                 </span>
                 <div>
                   <h4>{t.contact.headquarters}</h4>
@@ -188,7 +188,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.2rem]">call</span>
+                  <span className="material-symbols-outlined text-[1.1rem]">call</span>
                 </span>
                 <div>
                   <h4>{t.contact.directLine}</h4>
@@ -201,7 +201,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.2rem]">mail</span>
+                  <span className="material-symbols-outlined text-[1.1rem]">mail</span>
                 </span>
                 <div>
                   <h4>{t.contact.generalInquiries}</h4>

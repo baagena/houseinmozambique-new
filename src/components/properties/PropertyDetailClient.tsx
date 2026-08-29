@@ -268,7 +268,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                   <div className="acts">
                     {agent.phone && (
                       <a href={`tel:${agent.phone}`} aria-label={t.propertyDetails.callAgent}>
-                        <span className="material-symbols-outlined text-[1.15rem]">call</span>
+                        <span className="material-symbols-outlined text-[1.05rem]">call</span>
                       </a>
                     )}
                     {whatsappHref && (
@@ -278,11 +278,11 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                         rel="noopener noreferrer"
                         aria-label={t.propertyDetails.whatsapp}
                       >
-                        <span className="material-symbols-outlined text-[1.15rem]">chat</span>
+                        <span className="material-symbols-outlined text-[1.05rem]">chat</span>
                       </a>
                     )}
                     <a href={`/agents#${agent.id}`} aria-label={t.propertyDetails.listedBy}>
-                      <span className="material-symbols-outlined text-[1.15rem]">arrow_forward</span>
+                      <span className="material-symbols-outlined text-[1.05rem]">arrow_forward</span>
                     </a>
                   </div>
                 </div>
@@ -307,7 +307,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
               <div className="map-approx">
                 <span className="map-approx__ring" />
                 <span className="map-approx__pin">
-                  <span className="material-symbols-outlined text-[1.7rem]">location_on</span>
+                  <span className="material-symbols-outlined text-[1.45rem]">location_on</span>
                 </span>
                 <span className="map-approx__tag">
                   {t.propertyDetails.approxArea} · {property.city || property.location}

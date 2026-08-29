@@ -82,7 +82,7 @@ export default function AboutPage() {
             {services.map((service) => (
               <div key={service.title} className="item">
                 <span className="ico">
-                  <span className="material-symbols-outlined text-[1.25rem]">{service.icon}</span>
+                  <span className="material-symbols-outlined text-[1.1rem]">{service.icon}</span>
                 </span>
                 <h3 className="ui">{service.title}</h3>
                 <p>{service.desc}</p>

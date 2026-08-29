@@ -257,7 +257,7 @@ function SiteHeaderContent() {
             aria-label="Open menu"
             aria-expanded={mobileOpen}
           >
-            <span className="material-symbols-outlined text-[1.7rem]">menu</span>
+            <span className="material-symbols-outlined text-[1.45rem]">menu</span>
           </button>
         </div>
       </div>
@@ -388,7 +388,7 @@ function SiteHeaderContent() {
             </span>
           </Link>
           <button className="x" onClick={() => setMobileOpen(false)} aria-label="Close menu">
-            <span className="material-symbols-outlined text-[1.8rem]">close</span>
+            <span className="material-symbols-outlined text-[1.5rem]">close</span>
           </button>
         </div>
 

@@ -95,7 +95,7 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
           ) : (
             <div className="empty">
               <span className="ico">
-                <span className="material-symbols-outlined text-[2.2rem]">person_search</span>
+                <span className="material-symbols-outlined text-[1.7rem]">person_search</span>
               </span>
               <h3>{t.propertiesList.noProperties}</h3>
               <p>{t.propertiesList.tryAdjusting}</p>

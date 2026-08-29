@@ -141,7 +141,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                 ].map((item) => (
                   <li key={item.title} className="flex gap-4">
                     <span className="grid h-11 w-11 flex-none place-items-center rounded-[11px] bg-[var(--paper)] text-[var(--gold-deep)]">
-                      <span className="material-symbols-outlined text-[1.2rem]">{item.icon}</span>
+                      <span className="material-symbols-outlined text-[1.1rem]">{item.icon}</span>
                     </span>
                     <span>
                       <span className="block font-semibold text-[var(--ink)]">{item.title}</span>
@@ -175,7 +175,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                 >
                   {faq.q}
                   <span
-                    className={`material-symbols-outlined text-[1.2rem] text-[var(--hm-muted)] transition-transform ${
+                    className={`material-symbols-outlined text-[1.1rem] text-[var(--hm-muted)] transition-transform ${
                       openFaq === i ? 'rotate-180' : ''
                     }`}
                   >

@@ -341,7 +341,7 @@ export default function PropertiesClient({
               ) : (
                 <div className="empty">
                   <span className="ico">
-                    <span className="material-symbols-outlined text-[2.2rem]">search_off</span>
+                    <span className="material-symbols-outlined text-[1.7rem]">search_off</span>
                   </span>
                   <h3>{t.propertiesList.noProperties}</h3>
                   <p>{t.propertiesList.tryAdjusting}</p>

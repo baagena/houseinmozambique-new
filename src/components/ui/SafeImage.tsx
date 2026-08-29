@@ -23,7 +23,7 @@ export default function SafeImage({
         className="absolute inset-0 grid place-items-center bg-[#EDEAE2]"
         role="presentation"
       >
-        <span className="material-symbols-outlined text-[2rem] text-[var(--line)]">image</span>
+        <span className="material-symbols-outlined text-[1.6rem] text-[var(--line)]">image</span>
       </span>
     );
   }

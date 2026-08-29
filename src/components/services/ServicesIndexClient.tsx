@@ -42,7 +42,7 @@ export default function ServicesIndexClient() {
                   />
                   <span className="media-scrim" />
                   <span className="media-chip">
-                    <span className="material-symbols-outlined text-[1.4rem]">{service.icon}</span>
+                    <span className="material-symbols-outlined text-[1.15rem]">{service.icon}</span>
                   </span>
                   <span className="media-index">{String(service.index).padStart(2, '0')}</span>
                 </div>

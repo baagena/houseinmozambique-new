@@ -48,10 +48,8 @@ export default function ServiceLayout({
           </nav>
 
           <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:gap-6 md:gap-7">
-            <span className="grid h-14 w-14 flex-none place-items-center rounded-[16px] border border-white/15 bg-white/10 md:h-16 md:w-16">
-              <span className="material-symbols-outlined text-[1.7rem] text-[#e9c877] md:text-[1.9rem]">
-                {service.icon}
-              </span>
+            <span className="grid h-11 w-11 flex-none place-items-center rounded-[12px] border border-white/15 bg-white/10 md:h-12 md:w-12">
+              <span className="material-symbols-outlined text-[1.2rem] text-[#e9c877]">{service.icon}</span>
             </span>
             <div className="min-w-0">
               <h1>{t.services[service.titleKey]}</h1>
@@ -86,7 +84,7 @@ export default function ServiceLayout({
             {others.map((entry) => (
               <Link key={entry.slug} href={serviceHref(entry.slug)} className="mv group flex gap-5">
                 <span className="grid h-12 w-12 flex-none place-items-center rounded-[12px] bg-[var(--paper)] text-[var(--gold-deep)]">
-                  <span className="material-symbols-outlined text-[1.35rem]">{entry.icon}</span>
+                  <span className="material-symbols-outlined text-[1.15rem]">{entry.icon}</span>
                 </span>
                 <span>
                   <span className="h-ui block text-[var(--ink)]">{t.services[entry.titleKey]}</span>
