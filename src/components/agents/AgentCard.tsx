@@ -12,12 +12,22 @@ interface AgentCardProps {
  */
 export default function AgentCard({ agent, className = '' }: AgentCardProps) {
   const listings = agent._count?.properties ?? agent.listingCount;
+  const shareAgent = async () => {
+    const url = `${window.location.origin}/agents#${agent.id}`;
+    if (navigator.share) {
+      await navigator.share({ title: agent.name, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+  };
 
   return (
     <article className={`adv ${className}`} id={agent.id}>
       <span className="adv__logo">
         {agent.avatar ? (
-          <SafeImage src={agent.avatar} alt="" fill className="object-cover" sizes="62px" />
+          <a href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`} target="_blank" rel="noreferrer" title="Download agent photo">
+            <SafeImage src={agent.avatar} alt={agent.name} fill className="object-cover" sizes="62px" />
+          </a>
         ) : (
           agent.initials
         )}
@@ -52,6 +62,10 @@ export default function AgentCard({ agent, className = '' }: AgentCardProps) {
         )}
 
         {agent.bio && <p className="muted mt-3 line-clamp-2 text-[0.84rem]">{agent.bio}</p>}
+        <button type="button" onClick={shareAgent} className="meta mt-3 hover:text-(--gold-deep)" title="Share agent profile">
+          <span className="material-symbols-outlined text-[0.95rem]">share</span>
+          <span>Share profile</span>
+        </button>
       </div>
     </article>
   );

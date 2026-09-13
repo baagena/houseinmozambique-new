@@ -111,6 +111,17 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
           <div>
             <h4 className="text-sm font-black text-[#002045] mb-1">Profile Imagery</h4>
             <p className="text-[10px] text-[#74777f] font-bold uppercase tracking-widest">Recommended: 800x800px High-Res Portrait</p>
+            {agent.avatar && (
+              <a
+                href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#002045] underline"
+              >
+                <span className="material-symbols-outlined text-base">download</span>
+                Download photo
+              </a>
+            )}
           </div>
         </div>
 

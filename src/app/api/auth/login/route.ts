@@ -4,7 +4,9 @@ import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const email = String(body.email || '').trim().toLowerCase();
+    const { password } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -29,6 +31,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
+      );
+    }
+
+    if (agent.role !== 'ADMIN' && !agent.emailVerifiedAt) {
+      return NextResponse.json(
+        { error: 'Please verify your email before signing in.', requiresVerification: true },
+        { status: 403 }
       );
     }
 

@@ -52,6 +52,26 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
         </div>
       </div>
 
+      {agent.avatar && (
+        <div className="flex items-center gap-5 rounded-3xl border border-[#f2f4f6] bg-white p-6 shadow-sm">
+          <div className="relative h-20 w-20 overflow-hidden rounded-2xl">
+            <Image src={agent.avatar} alt={agent.name} fill className="object-cover" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-[#002045]">{agent.name}&apos;s profile photo</p>
+            <a
+              href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[#845326] hover:underline"
+            >
+              <span className="material-symbols-outlined text-base">download</span>
+              Download photo
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-[2rem] border border-[#f2f4f6] shadow-sm overflow-hidden">
         <div className="px-8 py-6 border-b border-[#f2f4f6]">
           <h2 className="text-xl font-black text-[#002045]">Agent Portfolio</h2>

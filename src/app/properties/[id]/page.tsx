@@ -5,6 +5,7 @@ import PropertyDetailClient from '@/components/properties/PropertyDetailClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildMetadata, realEstateListingJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 import { formatPrice } from '@/lib/utils';
+import { prisma } from '@/lib/db';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -46,6 +47,8 @@ export default async function PropertyDetailPage({ params }: Props) {
   const property = await getPropertyById(id);
 
   if (!property) notFound();
+
+  await prisma.property.update({ where: { id }, data: { views: { increment: 1 } } });
 
   const allProperties = await getProperties();
   const similar = allProperties.filter((p) => p.id !== property.id && p.listingType === property.listingType).slice(0, 3);

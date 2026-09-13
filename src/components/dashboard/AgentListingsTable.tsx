@@ -18,6 +18,9 @@ type AgentListing = {
   priceUnit: string;
   status: string;
   images: string[];
+  views?: number;
+  contactClicks?: number;
+  viewingClicks?: number;
 };
 
 interface AgentListingsTableProps {
@@ -81,13 +84,15 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
               <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Property Asset</th>
               <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Pricing</th>
               <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest text-center">Publication Status</th>
+              <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Views</th>
+              <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">Interest</th>
               <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest text-right">Portfolio Control</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#f2f4f6]">
             {properties.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-sm text-[#9aa0a8]">
+                <td colSpan={6} className="px-6 py-10 text-center text-sm text-[#9aa0a8]">
                   You have no listings yet.
                 </td>
               </tr>
@@ -127,6 +132,14 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                         {status.label}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-black text-[#002045]">{property.views ?? 0}</p>
+                    <p className="text-[9px] text-[#74777f] font-bold uppercase tracking-widest">Views</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-black text-[#002045]">{(property.contactClicks ?? 0) + (property.viewingClicks ?? 0)}</p>
+                    <p className="text-[9px] text-[#74777f] font-bold uppercase tracking-widest">Contact / viewing</p>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">

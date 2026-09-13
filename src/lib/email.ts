@@ -4,6 +4,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 const NOTIFICATION_FROM_EMAIL = process.env.NOTIFICATION_FROM_EMAIL || RESEND_FROM_EMAIL;
 const VERIFY_FROM_EMAIL = process.env.VERIFY_FROM_EMAIL || RESEND_FROM_EMAIL;
+const AUTH_FROM_EMAIL = process.env.AUTH_FROM_EMAIL || VERIFY_FROM_EMAIL;
 export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || process.env.ADMIN_EMAIL || 'admin@houseinmozambique.com';
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || CONTACT_EMAIL;
 export const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houseinmozambique.com';
@@ -17,7 +18,7 @@ console.info('Resend config loaded:', {
   hasApiKey: Boolean(RESEND_API_KEY),
   resendFromEmail: RESEND_FROM_EMAIL,
   notificationFromEmail: NOTIFICATION_FROM_EMAIL,
-  verifyFromEmail: VERIFY_FROM_EMAIL,
+  authFromEmail: AUTH_FROM_EMAIL,
 });
 
 interface EmailOptions {
@@ -225,20 +226,58 @@ Review URL: ${SITE_URL}/dashboard/admin/approvals
   });
 }
 
+export async function sendPropertySubmittedEmail(property: {
+  title: string;
+  type: string;
+  listingType: string;
+  city: string;
+}, recipient: { name: string; email: string }) {
+  return sendEmail({
+    to: recipient.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    subject: `Listing received: ${property.title}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Your listing was received</h1><p>Hello ${escapeEmailHtml(recipient.name)},</p><p>We successfully received <strong>${escapeEmailHtml(property.title)}</strong>. It is now waiting for approval by our team.</p><p style="color:#74777f">We will email you again when the listing is approved or rejected.</p></div>`,
+    text: `Your listing was received\n\nHello ${recipient.name},\n\nWe successfully received "${property.title}" in ${property.city}. It is now waiting for approval by our team.\n\nWe will email you again when its status changes.`,
+  });
+}
+
+export async function sendPropertyApprovedEmail(property: { title: string; id: string }, recipient: { name: string; email: string }) {
+  return sendEmail({
+    to: recipient.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    subject: `Your listing is live: ${property.title}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Your listing is now live</h1><p>Hello ${escapeEmailHtml(recipient.name)},</p><p><strong>${escapeEmailHtml(property.title)}</strong> has been approved and is now visible on House in Mozambique.</p><p><a href="${SITE_URL}/properties/${property.id}">View your live listing</a></p></div>`,
+    text: `Your listing is now live\n\nYour listing "${property.title}" has been approved.\n\nView it here: ${SITE_URL}/properties/${property.id}`,
+  });
+}
+
+export async function sendPropertyRejectedEmail(property: { title: string }, recipient: { name: string; email: string }) {
+  return sendEmail({
+    to: recipient.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    subject: `Listing update: ${property.title}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Listing update</h1><p>Hello ${escapeEmailHtml(recipient.name)},</p><p>Our team reviewed <strong>${escapeEmailHtml(property.title)}</strong> and it was not approved for publication. Please review the listing details and contact the team if you need help.</p></div>`,
+    text: `Listing update\n\nYour listing "${property.title}" was not approved for publication. Please review the details and contact our team if you need help.`,
+  });
+}
+
 export async function sendAgentVerificationEmail(agent: {
   name: string;
   email: string;
+  token?: string;
 }) {
+  const verificationUrl = agent.token ? `${SITE_URL}/auth/verify?token=${encodeURIComponent(agent.token)}` : SITE_URL;
   return sendEmail({
     to: agent.email,
-    from: VERIFY_FROM_EMAIL,
+    from: AUTH_FROM_EMAIL,
     subject: 'Verify your House in Mozambique account',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
         <h1 style="color: #002045;">Verify Your Agent Registration</h1>
         <p style="color: #43474e;">Hello ${agent.name},</p>
         <p style="color: #43474e;">Thanks for registering as an agent on House in Mozambique.</p>
-        <p style="color: #43474e;">This message comes from our verification sender so that we can confirm your account is valid and secure.</p>
+        <p style="color: #43474e;">Please confirm your email address so your account is secure.</p>
+        <p><a href="${verificationUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;">Confirm email address</a></p>
         <p style="color: #43474e;">One of our team members will review your profile and approve your account shortly.</p>
         <p style="color: #74777f;">If you did not sign up, please ignore this email.</p>
       </div>
@@ -249,12 +288,25 @@ Hello ${agent.name},
 
 Thanks for registering as an agent on House in Mozambique.
 
+Confirm your email address: ${verificationUrl}
+
 This message is sent from our verification sender so we can confirm your account is valid.
 
 Our team will review your profile and approve your account shortly.
 
 If you did not sign up, please ignore this email.
 `,
+  });
+}
+
+export async function sendPasswordResetEmail(data: { name: string; email: string; token: string }) {
+  const resetUrl = `${SITE_URL}/auth/reset?token=${encodeURIComponent(data.token)}`;
+  return sendEmail({
+    to: data.email,
+    from: AUTH_FROM_EMAIL,
+    subject: 'Reset your House in Mozambique password',
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Reset your password</h1><p>Hello ${data.name},</p><p>Use the link below within one hour to choose a new password.</p><p><a href="${resetUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">Create a new password</a></p><p style="color:#74777f">If you did not request this, you can ignore this email.</p></div>`,
+    text: `Reset your password\n\nCreate a new password: ${resetUrl}`,
   });
 }
 

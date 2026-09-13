@@ -69,7 +69,7 @@ function compressImage(file: File): Promise<string> {
   });
 }
 
-const propertyTypes = ['House', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
+const propertyTypes = ['House', 'Commercial', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
 const amenities = [
   'WiFi',
   'Pool',
@@ -216,6 +216,7 @@ function PostPropertyContent() {
   }, [city, contactMethods, listingType, neighborhood, photos.length, price, propertyType, t]);
 
   const priceUnit = listingType === 'Rent' ? 'monthly' : listingType === 'Short Stay' ? 'nightly' : 'sale';
+  const needsRooms = propertyType !== 'Land' && propertyType !== 'Commercial';
 
   const buildDescription = () => {
     const lines = [description.trim()];
@@ -243,10 +244,12 @@ function PostPropertyContent() {
       { label: 'description', value: description },
       { label: 'city', value: city },
       { label: 'price', value: price },
-      { label: 'bedrooms', value: bedrooms },
-      { label: 'bathrooms', value: bathrooms },
       { label: 'area', value: area },
     ];
+
+    if (needsRooms) {
+      requiredFields.push({ label: 'bedrooms', value: bedrooms }, { label: 'bathrooms', value: bathrooms });
+    }
 
     const missing = requiredFields.find((field) => !field.value.trim());
     if (missing) {
@@ -255,10 +258,11 @@ function PostPropertyContent() {
 
     const numericFields = [
       { label: 'price', value: Number(price) },
-      { label: 'bedrooms', value: Number(bedrooms) },
-      { label: 'bathrooms', value: Number(bathrooms) },
       { label: 'area', value: Number(area) },
     ];
+    if (needsRooms) {
+      numericFields.push({ label: 'bedrooms', value: Number(bedrooms) }, { label: 'bathrooms', value: Number(bathrooms) });
+    }
     const invalidNumber = numericFields.find((field) => Number.isNaN(field.value) || field.value < 0);
     if (invalidNumber) {
       return `Please enter a valid ${invalidNumber.label}.`;
@@ -332,8 +336,8 @@ function PostPropertyContent() {
         priceUnit,
         propertyType,
         listingType,
-        bedrooms,
-        bathrooms,
+        bedrooms: needsRooms ? bedrooms : '0',
+        bathrooms: needsRooms ? bathrooms : '0',
         area,
         amenities: selectedAmenities,
       };
@@ -518,8 +522,8 @@ function PostPropertyContent() {
               </label>
               <FieldSelect label={t.postProperty.intentionLabel} value={listingType} onChange={setListingType} options={['Buy', 'Rent', 'Short Stay', 'Auction']} />
               <FieldSelect label={t.postProperty.classificationLabel} value={propertyType} onChange={setPropertyType} options={propertyTypes} />
-              <FieldInput label={t.postProperty.bedsLabel} type="number" value={bedrooms} onChange={setBedrooms} placeholder="3" />
-              <FieldInput label={t.postProperty.bathsLabel} type="number" value={bathrooms} onChange={setBathrooms} placeholder="2" />
+              {needsRooms && <FieldInput label={t.postProperty.bedsLabel} type="number" value={bedrooms} onChange={setBedrooms} placeholder="3" />}
+              {needsRooms && <FieldInput label={t.postProperty.bathsLabel} type="number" value={bathrooms} onChange={setBathrooms} placeholder="2" />}
               <FieldInput label={t.postProperty.areaLabel} type="number" value={area} onChange={setArea} placeholder="320" />
               <FieldInput label={t.postProperty.valuationLabel} type="number" value={price} onChange={setPrice} placeholder="450000" />
               <label className="md:col-span-2">

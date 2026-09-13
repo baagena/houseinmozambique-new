@@ -26,6 +26,9 @@ export default async function AdminPropertiesPage() {
     badge: p.badge ?? '',
     status: p.status,
     hostName: p.host ? p.host.name : 'System Generated',
+    views: p.views,
+    contactClicks: p.contactClicks,
+    viewingClicks: p.viewingClicks,
   }));
 
   return <AdminPropertiesClient initialProperties={properties} />;

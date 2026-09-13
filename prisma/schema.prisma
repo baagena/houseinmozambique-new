@@ -26,6 +26,11 @@ model Agent {
   specializations String[]
   email           String     @unique
   password        String
+  emailVerifiedAt DateTime?
+  emailVerifyToken String?   @unique
+  emailVerifyExpiresAt DateTime?
+  passwordResetToken String? @unique
+  passwordResetExpiresAt DateTime?
   role            String     @default("AGENT") // AGENT, ADMIN, CUSTOMER
   properties      Property[]
   inquiries       Inquiry[]
@@ -63,6 +68,9 @@ model Property {
   area            Float
   rating          Float?   @default(0)
   reviewCount     Int?     @default(0)
+  views           Int      @default(0)
+  contactClicks   Int      @default(0)
+  viewingClicks   Int      @default(0)
   isFeatured      Boolean  @default(false)
   isSuperhost     Boolean  @default(false)
   isRareFind      Boolean  @default(false)

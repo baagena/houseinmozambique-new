@@ -55,6 +55,9 @@ function AuthForm() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [forgotEmail, setForgotEmail] = useState('');
   
   // Two self-service partitions: professional agents and private owners. Owners
   // skip the professional profile steps but get the same listing controls.
@@ -74,14 +77,17 @@ function AuthForm() {
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   const redirect = searchParams.get('redirect') || '/';
   const plan = searchParams.get('plan');
+  const verified = searchParams.get('verified') === '1';
 
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setVerificationMessage('');
 
     try {
       const endpoint = tab === 'signin' ? '/api/auth/login' : '/api/auth/register';
@@ -96,6 +102,13 @@ function AuthForm() {
 
       if (!response.ok) {
         throw new Error(data.error || 'Authentication failed');
+      }
+
+      if (tab === 'signup' && data.requiresVerification) {
+        setVerificationMessage(data.message);
+        setTab('signin');
+        setStep(1);
+        return;
       }
 
       const user = data.user;
@@ -125,6 +138,52 @@ function AuthForm() {
       }
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendVerification = async () => {
+    if (!formData.email) {
+      setError('Enter your email address first.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not resend the verification email.');
+      setVerificationMessage(data.message);
+    } catch (resendError: any) {
+      setError(resendError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const requestPasswordReset = async () => {
+    const email = forgotEmail.trim().toLowerCase();
+    if (!email) {
+      setError('Enter the email address for your account.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    setResetMessage('');
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not request a password reset.');
+      setResetMessage(data.message);
+    } catch (resetError: any) {
+      setError(resetError.message);
     } finally {
       setIsLoading(false);
     }
@@ -349,11 +408,26 @@ function AuthForm() {
               </div>
             )}
 
+            {verified && (
+              <div className="mb-6 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-[13px] font-medium text-emerald-700">
+                Email verified. You can sign in now.
+              </div>
+            )}
+
+            {verificationMessage && (
+              <div className="mb-6 rounded-lg border border-[#e9c877]/40 bg-[#fff9e8] p-4 text-[13px] text-[#705313]">
+                <p>{verificationMessage}</p>
+                <button type="button" onClick={resendVerification} disabled={isLoading} className="mt-2 font-semibold underline disabled:opacity-50">
+                  Resend verification email
+                </button>
+              </div>
+            )}
+
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               {tab === 'signin' ? (
                 /* Login Form */
                 <>
-                  <div className="space-y-4">
+                  {!showForgotPassword && <div className="space-y-4">
                     <div className="space-y-1.5">
                        <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.emailLabel}</label>
                        <input
@@ -368,7 +442,7 @@ function AuthForm() {
                     <div className="space-y-1.5">
                        <div className="flex justify-between items-center">
                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.passwordLabel}</label>
-                         <button type="button" className="text-[13px] font-medium text-[#A87A22] hover:underline">{t.auth.forgotPassword}</button>
+                         <button type="button" onClick={() => { setShowForgotPassword(true); setResetMessage(''); setError(null); }} className="text-[13px] font-medium text-[#A87A22] hover:underline">{t.auth.forgotPassword}</button>
                        </div>
                        <input
                         type="password"
@@ -379,15 +453,38 @@ function AuthForm() {
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                       />
                     </div>
-                  </div>
-                  <button
+                  </div>}
+                  {showForgotPassword && (
+                    <div className="space-y-4 rounded-lg border border-[#e3e6ea] bg-[#fafbfc] p-5">
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#13233F]">Reset your password</h3>
+                        <p className="mt-1 text-[12px] text-[#5E6B7A]">Enter your account email and we will send a secure reset link.</p>
+                      </div>
+                      <label className="block text-[12px] font-semibold text-[#5E6B7A]" htmlFor="forgot-password-email">
+                        Email address for password reset
+                      </label>
+                      <input
+                        id="forgot-password-email"
+                        type="email"
+                        required
+                        value={forgotEmail}
+                        onChange={(event) => setForgotEmail(event.target.value)}
+                        placeholder="you@example.com"
+                        className="mt-2 h-11 w-full rounded-lg border border-[#e3e6ea] bg-white px-3.5 text-[14px] text-[#13233F] outline-none focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
+                      />
+                      <button type="button" onClick={requestPasswordReset} disabled={isLoading} className="w-full rounded-lg bg-[#13233F] px-4 py-3 text-[13px] font-semibold text-white disabled:opacity-50">{isLoading ? 'Sending…' : 'Send reset link'}</button>
+                      {resetMessage && <p className="mt-2 text-[12px] text-emerald-600">{resetMessage}</p>}
+                      <button type="button" onClick={() => { setShowForgotPassword(false); setResetMessage(''); setError(null); }} className="w-full text-center text-[13px] font-medium text-[#A87A22] hover:underline">Back to sign in</button>
+                    </div>
+                  )}
+                  {!showForgotPassword && <button
                     onClick={handleAuth}
                     disabled={isLoading}
                     className="w-full h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? 'Signing in…' : t.auth.signInBtn}
                     {!isLoading && <span className="material-symbols-outlined text-[18px]">login</span>}
-                  </button>
+                  </button>}
                 </>
               ) : (
                 /* Multi-step Registration */
@@ -435,7 +532,6 @@ function AuthForm() {
                           ))}
                         </div>
                       </div>
-
                       <div className="space-y-1.5">
                          <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.fullNameLabel}</label>
                          <input
@@ -575,30 +671,6 @@ function AuthForm() {
                 </>
               )}
 
-              {/* Social Integration */}
-              <div className="relative py-2 flex items-center">
-                <div className="flex-grow border-t border-[#eceef1]" />
-                <span className="flex-shrink mx-3 text-[12px] font-medium text-[#9aa0a8]">or continue with</span>
-                <div className="flex-grow border-t border-[#eceef1]" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" className="flex items-center justify-center gap-2.5 h-11 border border-[#e3e6ea] rounded-lg hover:bg-[#f5f6f8] transition-colors">
-                   <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  <span className="text-[13px] font-medium text-[#13233F]">Google</span>
-                </button>
-                <button type="button" className="flex items-center justify-center gap-2.5 h-11 border border-[#e3e6ea] rounded-lg hover:bg-[#f5f6f8] transition-colors">
-                   <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" fill="#0077B5"/>
-                  </svg>
-                  <span className="text-[13px] font-medium text-[#13233F]">LinkedIn</span>
-                </button>
-              </div>
 
               {IS_DEV && (
                 <div className="mt-2 rounded-lg border border-[#eceef1] bg-[#fafbfc] p-4">

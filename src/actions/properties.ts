@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import { sendPropertySubmissionNotification } from '@/lib/email';
+import { sendPropertyApprovedEmail, sendPropertyRejectedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
 
 /**
  * Uploads a single image to Cloudinary.
@@ -181,6 +181,10 @@ export async function createProperty(formData: any, imageUrls: string[]) {
     // Staff postings are already vetted, so they skip the approval queue.
     const isAdmin = agent.role === 'ADMIN';
 
+    if (!isAdmin && !agent.emailVerifiedAt) {
+      throw new Error('Please verify your email address before posting a listing. Check your inbox for the verification link.');
+    }
+
     // 2. Insert into Prisma
     const property = await prisma.property.create({
       data: {
@@ -194,8 +198,8 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         priceUnit: formData.priceUnit,
         type: formData.propertyType,
         listingType: formData.listingType,
-        bedrooms: parseInt(formData.bedrooms.toString()),
-        bathrooms: parseInt(formData.bathrooms.toString()),
+        bedrooms: Math.max(0, parseInt(formData.bedrooms?.toString() || '0', 10)),
+        bathrooms: Math.max(0, parseInt(formData.bathrooms?.toString() || '0', 10)),
         area: parseFloat(formData.area.toString()) || 0,
         amenities: formData.amenities,
         images: imageUrls,
@@ -217,7 +221,14 @@ export async function createProperty(formData: any, imageUrls: string[]) {
     revalidatePath('/dashboard/admin/properties');
 
     try {
-      await sendPropertySubmissionNotification(property, { name: agent.name, email: agent.email });
+      if (isAdmin) {
+        await sendPropertyApprovedEmail(property, { name: agent.name, email: agent.email });
+      } else {
+        await Promise.all([
+          sendPropertySubmissionNotification(property, { name: agent.name, email: agent.email }),
+          sendPropertySubmittedEmail(property, { name: agent.name, email: agent.email }),
+        ]);
+      }
     } catch (error: any) {
       console.error('Property notification email failed:', error);
     }
@@ -264,8 +275,8 @@ export async function updateProperty(id: string, formData: any, imageUrls: strin
         priceUnit: formData.priceUnit,
         type: formData.propertyType,
         listingType: formData.listingType,
-        bedrooms: parseInt(formData.bedrooms.toString()),
-        bathrooms: parseInt(formData.bathrooms.toString()),
+        bedrooms: Math.max(0, parseInt(formData.bedrooms?.toString() || '0', 10)),
+        bathrooms: Math.max(0, parseInt(formData.bathrooms?.toString() || '0', 10)),
         area: parseFloat(formData.area.toString()) || 0,
         amenities: formData.amenities,
         images: imageUrls,

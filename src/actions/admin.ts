@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -31,6 +32,9 @@ export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'RE
       return { success: false, error: auth.error };
     }
 
+    const existing = await prisma.property.findUnique({ where: { id }, include: { host: true } });
+    if (!existing) return { success: false, error: 'Property not found.' };
+
     const property = await prisma.property.update({
       where: { id },
       data: {
@@ -40,6 +44,15 @@ export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'RE
         ...(status === 'PUBLISHED' && { approvedAt: new Date() }),
       },
     });
+
+    if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
+      try {
+        const notify = status === 'PUBLISHED' ? sendPropertyApprovedEmail : sendPropertyRejectedEmail;
+        await notify(property, { name: existing.host.name, email: existing.host.email });
+      } catch (error) {
+        console.error('Property status notification email failed:', error);
+      }
+    }
 
     revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');

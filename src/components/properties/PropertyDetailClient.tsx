@@ -47,6 +47,9 @@ interface PropertyDetail extends SimilarProperty {
   isRareFind?: boolean;
   isPremium?: boolean;
   host?: PropertyAgent | null;
+  views?: number;
+  contactClicks?: number;
+  viewingClicks?: number;
 }
 
 function getCoordinates(description: string | null | undefined) {
@@ -80,6 +83,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [shareLabel, setShareLabel] = useState('Share listing');
 
   const isShortStay = property.listingType === 'Short Stay';
   const isRent = property.listingType === 'Rent';
@@ -98,6 +102,11 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
 
   const handleInquiry = async (type: 'contact' | 'viewing') => {
     setIsSubmitting(true);
+    void fetch(`/api/property/${property.id}/engagement`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: type }),
+    }).catch(() => undefined);
     try {
       const subject =
         type === 'viewing'
@@ -169,7 +178,26 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
         <div className="pdp">
           {/* ── Main column ── */}
           <div>
-            <h1 className="display-l">{title}</h1>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <h1 className="display-l">{title}</h1>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm inline-flex items-center gap-2"
+                onClick={async () => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    await navigator.share({ title, url });
+                  } else {
+                    await navigator.clipboard.writeText(url);
+                    setShareLabel('Link copied');
+                    window.setTimeout(() => setShareLabel('Share listing'), 1800);
+                  }
+                }}
+              >
+                <span className="material-symbols-outlined text-[1rem]">share</span>
+                {shareLabel}
+              </button>
+            </div>
             <p className="pdp__loc">
               <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
               {property.location}
@@ -181,6 +209,10 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
             {/* Land and commercial listings have no beds/baths — omit them rather
                 than printing a zero. */}
             <div className="spec-strip">
+              <div className="spec">
+                <div className="k">Views</div>
+                <div className="v">{property.views ?? 0}</div>
+              </div>
               {property.bedrooms > 0 && (
                 <div className="spec">
                   <div className="k">{t.property.beds}</div>

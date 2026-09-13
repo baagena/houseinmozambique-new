@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
 
 export async function POST(request: Request, { params }: Params) {
   try {
@@ -19,10 +20,22 @@ export async function POST(request: Request, { params }: Params) {
     const { status } = body;
     if (!status) return NextResponse.json({ error: 'Missing status' }, { status: 400 });
 
+    const existing = await prisma.property.findUnique({ where: { id }, include: { host: true } });
+    if (!existing) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+
     const property = await prisma.property.update({
       where: { id },
       data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
     });
+
+    if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
+      try {
+        const notify = status === 'PUBLISHED' ? sendPropertyApprovedEmail : sendPropertyRejectedEmail;
+        await notify(property, { name: existing.host.name, email: existing.host.email });
+      } catch (error) {
+        console.error('Property status notification email failed:', error);
+      }
+    }
 
     return NextResponse.json({ success: true, property });
   } catch (err: any) {
@@ -61,10 +74,22 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
     }
 
+    const existing = await prisma.property.findUnique({ where: { id }, include: { host: true } });
+    if (!existing) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+
     const updated = await prisma.property.update({
       where: { id },
       data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
     });
+
+    if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
+      try {
+        const notify = status === 'PUBLISHED' ? sendPropertyApprovedEmail : sendPropertyRejectedEmail;
+        await notify(updated, { name: existing.host.name, email: existing.host.email });
+      } catch (error) {
+        console.error('Property status notification email failed:', error);
+      }
+    }
 
     revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');

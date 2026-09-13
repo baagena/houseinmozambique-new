@@ -25,6 +25,9 @@ export interface AdminProperty {
   badge: string;
   status: string;
   hostName: string;
+  views: number;
+  contactClicks: number;
+  viewingClicks: number;
 }
 
 export default function AdminPropertiesClient({ initialProperties }: { initialProperties: AdminProperty[] }) {
@@ -108,6 +111,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
               <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Property</th>
               <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Host / agent</th>
               <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Status</th>
+              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Views / clicks</th>
               <th className="px-5 py-2.5 text-right text-[11px] font-medium text-[#9aa0a8]">Controls</th>
             </tr>
           </thead>
@@ -139,6 +143,9 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                     </span>
                   </div>
                 </td>
+                <td className="px-5 py-3 text-[12px] text-[#5b616b]">
+                  <span className="font-semibold text-[#002045]">{p.views}</span> views · <span className="font-semibold text-[#002045]">{p.contactClicks + p.viewingClicks}</span> interest
+                </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center justify-end gap-3 text-[13px] font-medium">
                     <button
@@ -154,7 +161,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
             ))}
             {properties.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
+                <td colSpan={5} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
                   No properties yet.
                 </td>
               </tr>

@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { sendAgentVerificationEmail } from '@/lib/email';
+import { randomBytes } from 'node:crypto';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, name, title, location, yearsExperience, bio, specializations } = body;
+    const { password, name, title, location, yearsExperience, bio, specializations } = body;
+    const email = String(body.email || '').trim().toLowerCase();
     // Two self-service partitions share this endpoint: professional agents and
     // private owners listing their own property. Both manage only their own listings.
     const role = body.accountType === "OWNER" || body.role === "OWNER" ? "OWNER" : "AGENT";
@@ -55,6 +57,8 @@ export async function POST(request: Request) {
         bio: bio || "",
         specializations: role === "OWNER" ? [] : (specializations || []),
         role,
+        emailVerifyToken: randomBytes(32).toString('hex'),
+        emailVerifyExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
 
@@ -64,25 +68,22 @@ export async function POST(request: Request) {
       await sendAgentVerificationEmail({
         name: newAgent.name,
         email: newAgent.email,
+        token: newAgent.emailVerifyToken || undefined,
       });
     } catch (emailError) {
       console.error('Agent verification email failed:', emailError);
+      await prisma.agent.delete({ where: { id: newAgent.id } });
+      return NextResponse.json(
+        { error: 'We could not send the verification email. Please check the email service configuration and try again.' },
+        { status: 503 }
+      );
     }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       user: agentWithoutPassword,
-      message: 'Agent registered successfully. A verification email has been sent.',
+      requiresVerification: true,
+      message: 'Account created. Check your email and click the verification link before signing in.',
     });
-
-    response.cookies.set('userId', newAgent.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

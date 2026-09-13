@@ -195,7 +195,15 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                   <div className="flex items-center gap-3">
                     <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[#eceef1]">
                       {agent.avatar ? (
-                        <Image src={agent.avatar} alt={agent.name} fill className="object-cover" />
+                        <a
+                          href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Download agent photo"
+                          className="block h-full w-full"
+                        >
+                          <Image src={agent.avatar} alt={agent.name} fill className="object-cover" />
+                        </a>
                       ) : (
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f6f8] text-[11px] font-semibold text-[#1a365d]">
                           {agent.initials}
@@ -205,6 +213,17 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     <div className="leading-tight">
                       <p className="text-[13px] font-medium text-[#002045]">{agent.name}</p>
                       <p className="text-[12px] text-[#9aa0a8]">{agent.email}</p>
+                      {agent.avatar && (
+                        <a
+                          href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-[#002045] hover:underline"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">download</span>
+                          Download photo
+                        </a>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -291,12 +310,12 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
               <Field label="Title" value={draft.title ?? ''} onChange={(v) => set('title', v)} />
               <Field label="Location" value={draft.location ?? ''} onChange={(v) => set('location', v)} />
               <Field label="Phone" value={draft.phone ?? ''} onChange={(v) => set('phone', v)} />
-              <Field label="Years Experience" type="number" value={String(draft.yearsExperience ?? 0)} onChange={(v) => set('yearsExperience', Number(v))} />
+              <Field label="Years Experience" type="number" value={String(Number.isFinite(draft.yearsExperience) ? draft.yearsExperience : 0)} onChange={(v) => set('yearsExperience', Number.isFinite(Number(v)) ? Number(v) : 0)} />
               <Field label="Avatar URL" value={draft.avatar ?? ''} onChange={(v) => set('avatar', v)} />
               {mode === 'edit' && (
                 <>
-                  <Field label="Rating (0–5)" type="number" value={String(draft.rating ?? 0)} onChange={(v) => set('rating', Number(v))} />
-                  <Field label="Review Count" type="number" value={String(draft.reviewCount ?? 0)} onChange={(v) => set('reviewCount', Number(v))} />
+                  <Field label="Rating (0–5)" type="number" value={String(Number.isFinite(draft.rating) ? draft.rating : 0)} onChange={(v) => set('rating', Number.isFinite(Number(v)) ? Number(v) : 0)} />
+                  <Field label="Review Count" type="number" value={String(Number.isFinite(draft.reviewCount) ? draft.reviewCount : 0)} onChange={(v) => set('reviewCount', Number.isFinite(Number(v)) ? Number(v) : 0)} />
                 </>
               )}
             </div>
