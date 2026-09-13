@@ -4,8 +4,27 @@
  * leak the agent's password hash + email if returned directly as JSON from a mobile
  * API route. Strip those fields before sending a property (or list of properties) out.
  */
-export function sanitizeHost<T extends { password?: string; email?: string }>(host: T) {
-  const { password, email, ...safeHost } = host;
+export function sanitizeHost<
+  T extends {
+    password?: string;
+    email?: string;
+    emailVerifiedAt?: unknown;
+    emailVerifyToken?: string | null;
+    emailVerifyExpiresAt?: unknown;
+    passwordResetToken?: string | null;
+    passwordResetExpiresAt?: unknown;
+  },
+>(host: T) {
+  const {
+    password,
+    email,
+    emailVerifiedAt,
+    emailVerifyToken,
+    emailVerifyExpiresAt,
+    passwordResetToken,
+    passwordResetExpiresAt,
+    ...safeHost
+  } = host;
   return safeHost;
 }
 

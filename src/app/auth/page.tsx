@@ -105,7 +105,7 @@ function AuthForm() {
       }
 
       if (tab === 'signup' && data.requiresVerification) {
-        setVerificationMessage(data.message);
+        setVerificationMessage(t.auth.accountCreatedVerification);
         setTab('signin');
         setStep(1);
         return;
@@ -145,7 +145,7 @@ function AuthForm() {
 
   const resendVerification = async () => {
     if (!formData.email) {
-      setError('Enter your email address first.');
+      setError(t.auth.enterEmailFirst);
       return;
     }
     setIsLoading(true);
@@ -157,8 +157,8 @@ function AuthForm() {
         body: JSON.stringify({ email: formData.email }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Could not resend the verification email.');
-      setVerificationMessage(data.message);
+      if (!response.ok) throw new Error(data.error || t.auth.cannotResendVerification);
+      setVerificationMessage(t.auth.verificationSent);
     } catch (resendError: any) {
       setError(resendError.message);
     } finally {
@@ -169,7 +169,7 @@ function AuthForm() {
   const requestPasswordReset = async () => {
     const email = forgotEmail.trim().toLowerCase();
     if (!email) {
-      setError('Enter the email address for your account.');
+      setError(t.auth.enterAccountEmail);
       return;
     }
     setIsLoading(true);
@@ -180,7 +180,7 @@ function AuthForm() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Could not request a password reset.');
+      if (!response.ok) throw new Error(data.error || t.auth.cannotRequestReset);
       setResetMessage(data.message);
     } catch (resetError: any) {
       setError(resetError.message);
@@ -270,7 +270,7 @@ function AuthForm() {
                 <span className="text-[11px] font-medium text-white/90 tracking-wide">{t.auth.accessBadge}</span>
               </div>
 
-              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
+              <h2 className="text-4xl lg:text-5xl font-semibold !text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
                 {t.auth.signInHeroTitle}
               </h2>
 
@@ -410,7 +410,7 @@ function AuthForm() {
 
             {verified && (
               <div className="mb-6 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-[13px] font-medium text-emerald-700">
-                Email verified. You can sign in now.
+                {t.auth.emailVerified}
               </div>
             )}
 
@@ -418,7 +418,7 @@ function AuthForm() {
               <div className="mb-6 rounded-lg border border-[#e9c877]/40 bg-[#fff9e8] p-4 text-[13px] text-[#705313]">
                 <p>{verificationMessage}</p>
                 <button type="button" onClick={resendVerification} disabled={isLoading} className="mt-2 font-semibold underline disabled:opacity-50">
-                  Resend verification email
+                  {t.auth.resendVerification}
                 </button>
               </div>
             )}
@@ -457,11 +457,11 @@ function AuthForm() {
                   {showForgotPassword && (
                     <div className="space-y-4 rounded-lg border border-[#e3e6ea] bg-[#fafbfc] p-5">
                       <div>
-                        <h3 className="text-lg font-semibold text-[#13233F]">Reset your password</h3>
-                        <p className="mt-1 text-[12px] text-[#5E6B7A]">Enter your account email and we will send a secure reset link.</p>
+                        <h3 className="text-lg font-semibold text-[#13233F]">{t.auth.resetPasswordTitle}</h3>
+                        <p className="mt-1 text-[12px] text-[#5E6B7A]">{t.auth.resetPasswordDesc}</p>
                       </div>
                       <label className="block text-[12px] font-semibold text-[#5E6B7A]" htmlFor="forgot-password-email">
-                        Email address for password reset
+                        {t.auth.resetEmailLabel}
                       </label>
                       <input
                         id="forgot-password-email"
@@ -472,9 +472,9 @@ function AuthForm() {
                         placeholder="you@example.com"
                         className="mt-2 h-11 w-full rounded-lg border border-[#e3e6ea] bg-white px-3.5 text-[14px] text-[#13233F] outline-none focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                       />
-                      <button type="button" onClick={requestPasswordReset} disabled={isLoading} className="w-full rounded-lg bg-[#13233F] px-4 py-3 text-[13px] font-semibold text-white disabled:opacity-50">{isLoading ? 'Sending…' : 'Send reset link'}</button>
+                      <button type="button" onClick={requestPasswordReset} disabled={isLoading} className="w-full rounded-lg bg-[#13233F] px-4 py-3 text-[13px] font-semibold text-white disabled:opacity-50">{isLoading ? t.auth.sending : t.auth.sendResetLink}</button>
                       {resetMessage && <p className="mt-2 text-[12px] text-emerald-600">{resetMessage}</p>}
-                      <button type="button" onClick={() => { setShowForgotPassword(false); setResetMessage(''); setError(null); }} className="w-full text-center text-[13px] font-medium text-[#A87A22] hover:underline">Back to sign in</button>
+                      <button type="button" onClick={() => { setShowForgotPassword(false); setResetMessage(''); setError(null); }} className="w-full text-center text-[13px] font-medium text-[#A87A22] hover:underline">{t.auth.backToSignIn}</button>
                     </div>
                   )}
                   {!showForgotPassword && <button
@@ -482,7 +482,7 @@ function AuthForm() {
                     disabled={isLoading}
                     className="w-full h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {isLoading ? 'Signing in…' : t.auth.signInBtn}
+                    {isLoading ? t.auth.signingIn : t.auth.signInBtn}
                     {!isLoading && <span className="material-symbols-outlined text-[18px]">login</span>}
                   </button>}
                 </>
@@ -674,7 +674,7 @@ function AuthForm() {
 
               {IS_DEV && (
                 <div className="mt-2 rounded-lg border border-[#eceef1] bg-[#fafbfc] p-4">
-                  <p className="mb-3 text-[11px] font-medium text-[#9aa0a8]">Development role bypass</p>
+                  <p className="mb-3 text-[11px] font-medium text-[#9aa0a8]">{t.auth.devBypass}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -682,7 +682,7 @@ function AuthForm() {
                       className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">person</span>
-                      Agent login
+                      {t.auth.agentLogin}
                     </button>
                     <button
                       type="button"
@@ -690,7 +690,7 @@ function AuthForm() {
                       className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                      Admin login
+                      {t.auth.adminLogin}
                     </button>
                   </div>
                 </div>

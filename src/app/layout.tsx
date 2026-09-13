@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Montserrat, Newsreader, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import SiteChrome from '@/components/layout/SiteChrome';
 import ChatWidget from '@/components/layout/ChatWidget';
@@ -15,39 +14,6 @@ import {
   organizationJsonLd,
   websiteJsonLd,
 } from '@/lib/seo';
-
-const dmsans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dmsans',
-  display: 'swap',
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  variable: '--font-montserrat',
-  display: 'swap',
-});
-
-/* ── Redesign type system: editorial serif + Inter UI + mono for data ── */
-const newsreader = Newsreader({
-  subsets: ['latin'],
-  variable: '--font-newsreader',
-  weight: ['400', '500', '600'],
-  display: 'swap',
-});
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  variable: '--font-plexmono',
-  weight: ['400', '500', '600'],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -105,7 +71,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${dmsans.variable} ${newsreader.variable} ${inter.variable} ${plexMono.variable}`}
+      className="antialiased"
     >
       <head>
         <link

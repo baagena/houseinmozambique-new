@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import PropertiesClient from '@/components/properties/PropertiesClient';
 import { Suspense } from 'react';
 import { buildMetadata } from '@/lib/seo';
+import { sanitizeProperties } from '@/lib/mobile-serialize';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Properties for Sale, Rent & Short Stay in Mozambique',
@@ -53,7 +54,7 @@ export default async function PropertiesPage({ searchParams }: Props) {
       }
     >
       <PropertiesClient
-        initialProperties={allProperties as any}
+        initialProperties={sanitizeProperties(allProperties) as any}
         initialType={params.type}
         initialLocation={params.location}
         ads={ads as any}

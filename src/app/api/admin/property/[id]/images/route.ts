@@ -59,7 +59,7 @@ export async function GET(request: Request, { params }: Params) {
   if (!downloaded) return NextResponse.json({ error: 'None of the property images could be downloaded.' }, { status: 502 });
 
   const archive = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
-  return new NextResponse(archive, {
+  return new NextResponse(new Uint8Array(archive), {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${propertyName}-images.zip"`,

@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import HomeClient, { type CategoryCount, type CityCount } from '@/components/home/HomeClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { faqJsonLd, HOME_FAQS } from '@/lib/seo';
+import { sanitizeHost, sanitizeProperties } from '@/lib/mobile-serialize';
 
 /**
  * Cities shown in the "Explore Mozambique" grid. The counts are read from the
@@ -84,14 +85,14 @@ export default async function HomePage() {
     <>
       <JsonLd data={faqJsonLd(HOME_FAQS)} />
       <HomeClient
-        featured={featured as any}
-        featuredAgents={featuredAgents as any}
-        latest={latest as any}
+        featured={sanitizeProperties(featured) as any}
+        featuredAgents={featuredAgents.map(sanitizeHost) as any}
+        latest={sanitizeProperties(latest) as any}
         cities={cities}
         categories={categories}
-        rentProps={rentProps as any}
-        buyProps={buyProps as any}
-        shortStayProps={shortStayProps as any}
+        rentProps={sanitizeProperties(rentProps) as any}
+        buyProps={sanitizeProperties(buyProps) as any}
+        shortStayProps={sanitizeProperties(shortStayProps) as any}
         ads={ads as any}
       />
     </>

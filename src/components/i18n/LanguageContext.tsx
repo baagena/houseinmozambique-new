@@ -43,7 +43,7 @@ export function LanguageProvider({
   children: React.ReactNode;
   overrides?: ContentOverrides;
 }) {
-  const [lang, setLangState] = useState<Language>('en');
+  const [lang, setLangState] = useState<Language>('pt');
 
   useEffect(() => {
     const savedLang = localStorage.getItem('app_lang') as Language;

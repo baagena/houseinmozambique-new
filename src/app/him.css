@@ -202,9 +202,9 @@ a.btn--ghost-l, button.btn--ghost-l, .btn--ghost-l { border: 1px solid rgba(255,
   transition: background .15s, border-color .15s, color .15s;
 }
 .chip:hover { border-color: var(--ink); }
-.chip.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip.is-active { background: var(--gold); color: var(--ink-deep); border-color: var(--gold); }
 .chip b { font-family: var(--mono); font-size: .7rem; font-weight: 500; background: var(--paper); color: var(--gold-deep); padding: 2px 8px; border-radius: 10px; }
-.chip.is-active b { background: rgba(255,255,255,.15); color: #e9c877; }
+.chip.is-active b { background: var(--ink-deep); color: #fff; }
 
 /* ── Listing card ────────────────────────────────────────── */
 .grid-cards { display: grid; gap: 22px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -303,7 +303,7 @@ a.btn--ghost-l, button.btn--ghost-l, .btn--ghost-l { border: 1px solid rgba(255,
               linear-gradient(90deg, rgba(14,26,48,.55), transparent 55%);
 }
 .hero__inner { position: relative; z-index: 1; padding-block: 48px 44px; width: 100%; }
-.hero h1 { color: #fff; max-width: 15ch; }
+.hero h1 { color: #fff; max-width: 18ch; }
 .hero .eyebrow { color: #e9c877; }
 .hero p { max-width: 52ch; color: rgba(255,255,255,.85); margin-top: 14px; font-size: 1.08rem; }
 .hero .search { margin-top: 26px; max-width: 940px; }
@@ -693,7 +693,7 @@ a.feature:hover .feature__media img { transform: scale(1.05); }
   .page-hero p { font-size: .96rem; }
   .hero { min-height: 0; padding-block: 24px 0; }
   .hero__inner { padding-block: 96px 32px; }
-  .hero h1 { max-width: 100%; font-size: clamp(2rem, 9vw, 2.7rem); }
+  .hero h1 { max-width: 18ch; font-size: clamp(2rem, 9vw, 2.7rem); }
   .hero p { font-size: .98rem; }
   .hero-cta { margin-top: 22px; }
   .hero-cta .btn { flex: 1 1 100%; }
