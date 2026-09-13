@@ -45,7 +45,10 @@ async function sendEmail(options: EmailOptions) {
   };
 
   console.info('Resend request:', { to: msg.to, from: msg.from, subject: msg.subject });
-  const response = await resend.emails.send(msg as any);
+  const response = await resend.emails.send(msg);
+  if (response.error) {
+    throw new Error(`Resend rejected the email: ${response.error.message}`);
+  }
   console.info('Resend response received for:', { to: msg.to, subject: msg.subject });
   return response;
 }
@@ -307,6 +310,16 @@ export async function sendPasswordResetEmail(data: { name: string; email: string
     subject: 'Reset your House in Mozambique password',
     html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Reset your password</h1><p>Hello ${data.name},</p><p>Use the link below within one hour to choose a new password.</p><p><a href="${resetUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">Create a new password</a></p><p style="color:#74777f">If you did not request this, you can ignore this email.</p></div>`,
     text: `Reset your password\n\nCreate a new password: ${resetUrl}`,
+  });
+}
+
+export async function sendAgentWelcomeEmail(data: { name: string; email: string }) {
+  return sendEmail({
+    to: data.email,
+    from: AUTH_FROM_EMAIL,
+    subject: 'Your House in Mozambique agent account is ready',
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Welcome to House in Mozambique</h1><p>Hello ${escapeEmailHtml(data.name)},</p><p>An administrator created your agent account. You can sign in using the email address this message was sent to and the password provided to you by the administrator.</p><p><a href="${SITE_URL}/auth" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">Sign in to your account</a></p><p style="color:#74777f">If you were not expecting this account, please contact our team.</p></div>`,
+    text: `Welcome to House in Mozambique\n\nHello ${data.name},\n\nAn administrator created your agent account. Sign in at ${SITE_URL}/auth using the email address this message was sent to and the password provided by the administrator.\n\nIf you were not expecting this account, please contact our team.`,
   });
 }
 

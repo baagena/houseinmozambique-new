@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { sendAgentWelcomeEmail } from '@/lib/email';
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -88,6 +89,12 @@ export async function POST(request: Request) {
 
     revalidatePath('/dashboard/admin/agents');
     revalidatePath('/agents');
+
+    try {
+      await sendAgentWelcomeEmail({ name: agent.name, email: agent.email });
+    } catch (emailError) {
+      console.error('Agent welcome email failed:', emailError);
+    }
 
     return NextResponse.json({ success: true, agent }, { status: 201 });
   } catch (error) {

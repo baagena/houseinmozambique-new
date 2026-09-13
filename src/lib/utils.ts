@@ -72,3 +72,10 @@ export function formatListingTitle(title: string): string {
     })
     .join('');
 }
+
+/** Convert a listing title to sentence case for the spacious property detail header. */
+export function formatListingSentence(title: string): string {
+  if (!title) return '';
+  const sentence = title.toLocaleLowerCase();
+  return sentence.replace(/\p{L}/u, (character) => character.toLocaleUpperCase());
+}

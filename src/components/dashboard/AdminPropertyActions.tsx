@@ -1,8 +1,10 @@
 'use client';
 
 import { deleteProperty as serverDeleteProperty } from '@/actions/admin';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
 
 interface Props {
   propertyId: string;
@@ -61,11 +63,19 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
 
   if (currentStatus === 'PENDING') {
     return (
-      <div className="flex flex-wrap justify-end gap-2">
+      <DashboardActionMenu>
+        <Link
+          href={`/properties/${propertyId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#315f8d] uppercase hover:bg-[#edf5fb]"
+        >
+          View property
+        </Link>
         {onView && (
           <button
             onClick={onView}
-            className="text-[10px] font-black text-[#002045] uppercase tracking-widest hover:underline cursor-pointer"
+            className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb]"
           >
             View
           </button>
@@ -73,7 +83,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         {onEdit && (
           <button
             onClick={onEdit}
-            className="text-[10px] font-black text-[#002045] uppercase tracking-widest hover:underline cursor-pointer"
+            className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb]"
           >
             Edit
           </button>
@@ -81,55 +91,87 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         <button
           onClick={() => handleStatusUpdate('REJECTED')}
           disabled={isPending}
-          className="text-[10px] font-black text-red-500 uppercase hover:underline disabled:opacity-50 cursor-pointer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-500 uppercase hover:bg-red-50 disabled:opacity-50"
         >
           Reject
         </button>
         <button
           onClick={() => handleStatusUpdate('PUBLISHED')}
           disabled={isPending}
-          className="text-[10px] font-black text-[#845326] bg-[#845326]/10 px-3 py-1.5 rounded-lg uppercase tracking-wider hover:bg-[#845326]/20 transition-all disabled:opacity-50 cursor-pointer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#845326] uppercase hover:bg-[#faf5ed] disabled:opacity-50"
         >
           {isPending ? 'Processing...' : 'Publish'}
         </button>
         <button
           onClick={handleDelete}
           disabled={isPending}
-          className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:text-red-700 disabled:opacity-50 cursor-pointer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-500 uppercase hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
         >
           Delete Permanent
         </button>
-      </div>
+      </DashboardActionMenu>
     );
   }
 
   if (currentStatus === 'PUBLISHED') {
     return (
-      <div className="flex justify-end gap-3">
+      <DashboardActionMenu>
+        <Link
+          href={`/properties/${propertyId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#315f8d] uppercase hover:bg-[#edf5fb]"
+        >
+          View property
+        </Link>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb]"
+          >
+            Edit property
+          </button>
+        )}
         <button
           onClick={() => handleStatusUpdate('REJECTED')}
           disabled={isPending}
-          className="text-[10px] font-black text-[#74777f] uppercase hover:text-red-500 transition-colors disabled:opacity-50 cursor-pointer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#74777f] uppercase hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
         >
           Suspend
         </button>
-        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+        <span className="flex items-center gap-1 rounded-md px-3 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
           <span className="material-symbols-outlined text-sm">verified</span>
           Live
         </span>
-      </div>
+      </DashboardActionMenu>
     );
   }
 
   return (
-    <div className="flex justify-end">
+    <DashboardActionMenu>
+      <Link
+        href={`/properties/${propertyId}`}
+        target="_blank"
+        rel="noreferrer"
+        className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#315f8d] uppercase hover:bg-[#edf5fb]"
+      >
+        View property
+      </Link>
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb]"
+        >
+          Edit property
+        </button>
+      )}
        <button
           onClick={() => handleStatusUpdate('PUBLISHED')}
           disabled={isPending}
-          className="text-[10px] font-black text-[#002045] uppercase hover:underline disabled:opacity-50 cursor-pointer"
+          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb] disabled:opacity-50"
         >
           Restore
         </button>
-    </div>
+    </DashboardActionMenu>
   );
 }

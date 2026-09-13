@@ -24,6 +24,7 @@ export default async function AdminPropertiesPage() {
     images: p.images ?? [],
     tags: p.tags ?? [],
     badge: p.badge ?? '',
+    isFeatured: p.isFeatured,
     status: p.status,
     hostName: p.host ? p.host.name : 'System Generated',
     views: p.views,

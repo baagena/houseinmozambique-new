@@ -23,6 +23,7 @@ export interface AdminProperty {
   images: string[];
   tags: string[];
   badge: string;
+  isFeatured: boolean;
   status: string;
   hostName: string;
   views: number;
@@ -71,6 +72,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
           images: editing.images,
           tags: editing.tags,
           badge: editing.badge,
+          isFeatured: editing.isFeatured,
         }),
       });
       const data = await res.json();
@@ -129,8 +131,14 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                       />
                     </div>
                     <div className="leading-tight">
-                      <p className="text-[13px] font-medium text-[#002045]">{p.title}</p>
-                      <p className="text-[12px] text-[#9aa0a8]">{p.city}</p>
+                      <p className="max-w-[390px] truncate text-[13px] font-medium text-[#002045]" title={p.title}>{p.title}</p>
+                      <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="text-[#845326]">{p.type || 'Property'}</span>
+                        <span className="text-[#c4c6cf]">·</span>
+                        <span className="text-[#9aa0a8]">{p.listingType || 'Listing'}</span>
+                        <span className="text-[#c4c6cf]">·</span>
+                        <span className="text-[#9aa0a8]">{p.city}</span>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -143,18 +151,19 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                     </span>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-[12px] text-[#5b616b]">
-                  <span className="font-semibold text-[#002045]">{p.views}</span> views · <span className="font-semibold text-[#002045]">{p.contactClicks + p.viewingClicks}</span> interest
+                <td className="px-5 py-3">
+                  <div className="flex flex-col gap-1.5 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5 text-[#315f8d]">
+                      <strong className="text-[12px] text-[#002045]">{p.views}</strong> views
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[#845326]">
+                      <strong className="text-[12px] text-[#002045]">{p.contactClicks + p.viewingClicks}</strong> interest
+                    </span>
+                  </div>
                 </td>
                 <td className="px-5 py-3">
-                  <div className="flex items-center justify-end gap-3 text-[13px] font-medium">
-                    <button
-                      onClick={() => open(p)}
-                      className="text-[#002045] hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <AdminPropertyActions propertyId={p.id} currentStatus={p.status} />
+                  <div className="flex items-center justify-end text-[13px] font-medium">
+                    <AdminPropertyActions propertyId={p.id} currentStatus={p.status} onEdit={() => open(p)} />
                   </div>
                 </td>
               </tr>
@@ -224,6 +233,19 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                 <TextField label="Badge" value={editing.badge} onChange={(v) => set('badge', v)} />
                 <TextField label="Tags (comma separated)" value={editing.tags.join(', ')} onChange={(v) => set('tags', v.split(',').map((s) => s.trim()).filter(Boolean))} />
               </div>
+
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#e3e6ea] bg-[#fafbfc] px-3 py-2.5 text-[13px] font-medium text-[#002045]">
+                <input type="checkbox" checked={editing.isFeatured} onChange={(event) => set('isFeatured', event.target.checked)} className="h-4 w-4 accent-[#002045]" />
+                Feature this property on the homepage
+              </label>
+
+              <a
+                href={`/api/admin/property/${editing.id}/images`}
+                className="inline-flex items-center gap-2 text-[13px] font-medium text-[#002045] hover:underline"
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                Download all property images
+              </a>
             </div>
 
             <div className="mt-7 flex justify-end gap-2.5">

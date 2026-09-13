@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
 
 export interface AdminAgent {
   id: string;
@@ -245,34 +246,36 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                   </div>
                 </td>
                 <td className="px-5 py-3">
-                  <div className="flex items-center justify-end gap-3 text-[13px] font-medium opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                  <div className="flex items-center justify-end text-[13px] font-medium opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                    <DashboardActionMenu>
                     <button
                       onClick={() => openEdit(agent)}
                       disabled={busyId === agent.id}
-                      className="text-[#002045] hover:underline disabled:opacity-50"
+                      className="rounded-md px-3 py-2 text-left text-[#002045] hover:bg-[#f7f9fb] disabled:opacity-50"
                     >
                       Edit
                     </button>
                     <Link
                       href={`/dashboard/admin/agents/${agent.id}`}
-                      className="text-[#74777f] hover:text-[#002045]"
+                      className="rounded-md px-3 py-2 text-left text-[#74777f] hover:bg-[#f7f9fb] hover:text-[#002045]"
                     >
                       Analytics
                     </Link>
                     <button
                       onClick={() => revoke(agent.id)}
                       disabled={busyId === agent.id}
-                      className="text-[#845326] hover:underline disabled:opacity-50"
+                      className="rounded-md px-3 py-2 text-left text-[#845326] hover:bg-[#faf5ed] disabled:opacity-50"
                     >
                       Revoke
                     </button>
                     <button
                       onClick={() => remove(agent)}
                       disabled={busyId === agent.id}
-                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                      className="rounded-md px-3 py-2 text-left text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
                     >
                       Delete
                     </button>
+                    </DashboardActionMenu>
                   </div>
                 </td>
               </tr>

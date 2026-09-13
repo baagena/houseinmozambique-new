@@ -74,6 +74,7 @@ export async function PATCH(request: Request, { params }: Params) {
         images: Array.isArray(body.images) ? body.images : [],
         tags: Array.isArray(body.tags) ? body.tags : [],
         badge: body.badge || null,
+        ...(body.isFeatured !== undefined ? { isFeatured: Boolean(body.isFeatured) } : {}),
       },
       include: {
         host: {

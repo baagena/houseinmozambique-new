@@ -57,19 +57,20 @@ export default async function HomePage() {
       href: '/properties?propertyType=Apartment',
     },
     { label: 'Land', count: countBy((p) => p.type === 'Land'), href: '/properties?propertyType=Land' },
-  ].filter((c) => c.count > 0);
+  ];
 
   const cityCounts = new Map<string, number>();
   for (const p of allProperties) {
     if (!p.city) continue;
     cityCounts.set(p.city, (cityCounts.get(p.city) || 0) + 1);
   }
-  const cities: CityCount[] = [...cityCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([name, count]) => ({
+  const cityNames = new Set([...Object.keys(CITY_IMAGES), ...cityCounts.keys()]);
+  const cities: CityCount[] = [...cityNames]
+    .sort((a, b) => (cityCounts.get(b) || 0) - (cityCounts.get(a) || 0) || a.localeCompare(b))
+    .slice(0, 8)
+    .map((name) => ({
       name,
-      count,
+      count: cityCounts.get(name) || 0,
       image: CITY_IMAGES[name] || FALLBACK_CITY_IMAGE,
       href: `/properties?location=${encodeURIComponent(name)}`,
     }));

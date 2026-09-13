@@ -44,10 +44,28 @@ export default function PropertyCard({
 }: PropertyCardProps) {
   const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [isShared, setIsShared] = useState(false);
 
-  const cover = property.images?.[0];
+  const images = property.images?.filter(Boolean) ?? [];
+  const cover = images[imageIndex] || images[0];
   const title = formatListingTitle(property.title);
   const period = pricePeriod(property.priceUnit, t);
+
+  async function shareProperty() {
+    const url = `${window.location.origin}/properties/${property.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: `${title} on House in Mozambique`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      setIsShared(true);
+      window.setTimeout(() => setIsShared(false), 1800);
+    } catch {
+      // Sharing can be cancelled by the browser without requiring user feedback.
+    }
+  }
 
   const specs = [
     property.bedrooms > 0 ? `${property.bedrooms} ${t.property.beds}` : null,
@@ -98,6 +116,52 @@ export default function PropertyCard({
         <span className={`badge${sponsored ? ' badge--ad' : ''}`}>
           {sponsored ? 'Sponsored' : typeLabel(property.listingType, t)}
         </span>
+
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="card__arrow card__arrow--prev"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setImageIndex((current) => (current - 1 + images.length) % images.length);
+              }}
+              aria-label="Show previous property image"
+              title="Previous image"
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              className="card__arrow card__arrow--next"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setImageIndex((current) => (current + 1) % images.length);
+              }}
+              aria-label="Show next property image"
+              title="Next image"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+            <span className="card__counter" aria-live="polite">{imageIndex + 1} / {images.length}</span>
+          </>
+        )}
+
+        <button
+          type="button"
+          className={`card__share${isShared ? ' is-shared' : ''}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void shareProperty();
+          }}
+          aria-label={isShared ? 'Property link copied' : 'Share this property'}
+          title={isShared ? 'Link copied' : 'Share property'}
+        >
+          <span className="material-symbols-outlined">{isShared ? 'check' : 'share'}</span>
+        </button>
 
         <button
           type="button"

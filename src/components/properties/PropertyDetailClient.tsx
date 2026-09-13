@@ -4,7 +4,7 @@ import SafeImage from '@/components/ui/SafeImage';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { formatPrice, formatListingTitle } from '@/lib/utils';
+import { formatPrice, formatListingSentence } from '@/lib/utils';
 import PropertyCard from '@/components/properties/PropertyCard';
 
 interface PropertyDetailClientProps {
@@ -83,13 +83,14 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [shareLabel, setShareLabel] = useState('Share listing');
 
   const isShortStay = property.listingType === 'Short Stay';
   const isRent = property.listingType === 'Rent';
   const period = isShortStay ? t.property.perNight : isRent ? t.property.perMonth : '';
 
-  const title = formatListingTitle(property.title);
+  const title = formatListingSentence(property.title);
   const images = property.images?.length ? property.images : [''];
   const galleryImages = images.slice(0, 5);
   const amenities = showAllAmenities ? property.amenities : property.amenities.slice(0, 8);
@@ -167,19 +168,44 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                 sizes={i === 0 ? '(max-width: 680px) 100vw, 50vw' : '25vw'}
               />
               {i === galleryImages.length - 1 && images.length > 5 && (
-                <span className="gallery__more">
+                <button type="button" className="gallery__more" onClick={() => setShowAllPhotos(true)}>
                   {t.propertyDetails.viewAllPhotos} · {images.length}
-                </span>
+                </button>
               )}
             </div>
           ))}
         </div>
 
+        {showAllPhotos && (
+          <div className="photo-lightbox" role="dialog" aria-modal="true" aria-label="All property photos">
+            <button
+              type="button"
+              className="photo-lightbox__close"
+              onClick={() => setShowAllPhotos(false)}
+              aria-label="Close photo gallery"
+              title="Close gallery"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <div className="photo-lightbox__head">
+              <span>{title}</span>
+              <span className="photo-lightbox__count">{images.length} photos</span>
+            </div>
+            <div className="photo-lightbox__grid">
+              {images.map((src, i) => (
+                <div key={`${src}-${i}`} className="photo-lightbox__image">
+                  <SafeImage src={src} alt={`${title} — ${i + 1}`} fill sizes="(max-width: 680px) 100vw, 50vw" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="pdp">
           {/* ── Main column ── */}
           <div>
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <h1 className="display-l">{title}</h1>
+              <h1 className="display-l pdp__title">{title}</h1>
               <button
                 type="button"
                 className="btn btn--ghost btn--sm inline-flex items-center gap-2"
@@ -248,7 +274,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
             <hr />
 
             <h2 className="block-h">{t.propertyDetails.aboutHome}</h2>
-            <div className="about whitespace-pre-line text-[var(--hm-text)] leading-relaxed">
+            <div className="about about--preview whitespace-pre-line text-[var(--hm-text)] leading-relaxed">
               {stripCoordinates(property.description)}
             </div>
 

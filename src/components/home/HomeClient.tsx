@@ -5,8 +5,9 @@ import SafeImage from '@/components/ui/SafeImage';
 import PropertyCard from '@/components/properties/PropertyCard';
 import HomeHero from '@/components/home/HomeHero';
 import AdBanner from '@/components/ads/AdBanner';
-import { formatPrice, formatListingTitle } from '@/lib/utils';
+import { formatPrice, formatListingSentence } from '@/lib/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { useState } from 'react';
 
 interface Ad {
   id: string;
@@ -79,6 +80,28 @@ export default function HomeClient({
 }: HomeClientProps) {
   const { t } = useLanguage();
   const hero = featured[0];
+  const [showAllCities, setShowAllCities] = useState(false);
+  const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
+  const [featuredShared, setFeaturedShared] = useState(false);
+
+  const featuredImages = hero?.images?.filter(Boolean) ?? [];
+  const featuredImage = featuredImages[featuredImageIndex] || featuredImages[0];
+
+  async function shareFeatured() {
+    if (!hero) return;
+    const url = `${window.location.origin}/properties/${hero.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: formatListingSentence(hero.title), url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      setFeaturedShared(true);
+      window.setTimeout(() => setFeaturedShared(false), 1800);
+    } catch {
+      // Sharing can be cancelled by the browser without requiring user feedback.
+    }
+  }
 
   const quickLists = [
     { title: t.nav.forRent, items: rentProps, href: '/properties?type=Rent' },
@@ -114,19 +137,51 @@ export default function HomeClient({
             <article className="feature">
               <div className="feature__media">
                 <SafeImage
-                  src={hero.images?.[0]}
-                  alt={formatListingTitle(hero.title)}
+                  src={featuredImage}
+                  alt={formatListingSentence(hero.title)}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1000px) 100vw, 55vw"
                 />
+                {featuredImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="feature__arrow feature__arrow--prev"
+                      onClick={() => setFeaturedImageIndex((current) => (current - 1 + featuredImages.length) % featuredImages.length)}
+                      aria-label="Show previous featured property image"
+                      title="Previous image"
+                    >
+                      <span className="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="feature__arrow feature__arrow--next"
+                      onClick={() => setFeaturedImageIndex((current) => (current + 1) % featuredImages.length)}
+                      aria-label="Show next featured property image"
+                      title="Next image"
+                    >
+                      <span className="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    <span className="feature__counter">{featuredImageIndex + 1} / {featuredImages.length}</span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className={`feature__share${featuredShared ? ' is-shared' : ''}`}
+                  onClick={() => void shareFeatured()}
+                  aria-label={featuredShared ? 'Featured property link copied' : 'Share featured property'}
+                  title={featuredShared ? 'Link copied' : 'Share property'}
+                >
+                  <span className="material-symbols-outlined">{featuredShared ? 'check' : 'share'}</span>
+                </button>
               </div>
               <div className="feature__body">
                 <span className="eyebrow">
                   {hero.listingType} · {hero.location}
                 </span>
-                <h2>{formatListingTitle(hero.title)}</h2>
-                <p className="muted line-clamp-4">{hero.description}</p>
+                <h2 className="feature__title">{formatListingSentence(hero.title)}</h2>
+                <p className="feature__description">{hero.description}</p>
                 <div className="feature__specs">
                   {[
                     hero.bedrooms > 0 ? `${hero.bedrooms} ${t.property.beds}` : null,
@@ -252,8 +307,8 @@ export default function HomeClient({
               <h2>{t.home.exploreTitle}</h2>
             </div>
             <div className="cities">
-              {cities.map((city) => (
-                <Link key={city.name} href={city.href} className="city">
+              {(showAllCities ? cities : cities.slice(0, 6)).map((city) => (
+                <Link key={city.name} href={city.href} className={`city${city.count === 0 ? ' city--empty' : ''}`}>
                   <SafeImage
                     src={city.image}
                     alt={city.name}
@@ -270,6 +325,12 @@ export default function HomeClient({
                 </Link>
               ))}
             </div>
+            {cities.length > 6 && (
+              <button type="button" className="city-more" onClick={() => setShowAllCities((visible) => !visible)}>
+                <span>{showAllCities ? 'Show fewer cities' : `View more cities (${cities.length - 6})`}</span>
+                <span className="material-symbols-outlined">{showAllCities ? 'expand_less' : 'expand_more'}</span>
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -302,7 +363,11 @@ export default function HomeClient({
                     ))}
                   </div>
                 ) : (
-                  <p className="mono text-[0.8rem] text-[var(--hm-muted)]">—</p>
+                  <div className="quick-empty">
+                    <span className="material-symbols-outlined">home_work</span>
+                    <strong>0 properties</strong>
+                    <span>Nothing listed here yet.</span>
+                  </div>
                 )}
               </div>
             ))}
