@@ -58,8 +58,9 @@ export const translations = {
     },
     home: {
       heroBadge: 'Real estate across Mozambique · Maputo to Bazaruto',
-      heroTitle: 'Find your place in Mozambique.',
-      heroSubtitle: 'Homes for sale, rent and short stays — from verified local agents, in one trusted place.',
+      heroTitle: 'Rentals. Homes. Offices. Land.',
+      // heroTitle: 'Find your place in Mozambique.',
+      // heroSubtitle: 'Homes for sale, rent and short stays — from verified local agents, in one trusted place.',
       findProperty: 'Search',
       searchPlaceholder: 'District, sector or neighbourhood',
       locationLabel: 'Location',
