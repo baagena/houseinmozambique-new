@@ -12,6 +12,17 @@ type Settings = {
   weeklyReport: boolean;
 };
 
+async function readResponse(response: Response) {
+  const text = await response.text();
+  if (!text) throw new Error(`The server returned an empty response (${response.status}).`);
+
+  try {
+    return JSON.parse(text) as { settings?: Settings; error?: string };
+  } catch {
+    throw new Error(`The server returned an invalid response (${response.status}).`);
+  }
+}
+
 export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<Settings>({
@@ -29,8 +40,9 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     fetch('/api/admin/settings', { credentials: 'include' })
       .then(async (response) => {
-        const data = await response.json();
+        const data = await readResponse(response);
         if (!response.ok) throw new Error(data.error || 'Could not load settings.');
+        if (!data.settings) throw new Error('The server did not return settings.');
         setFormData(data.settings);
       })
       .catch((loadError: Error) => setError(loadError.message))
@@ -49,8 +61,9 @@ export default function AdminSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      const data = await response.json();
+      const data = await readResponse(response);
       if (!response.ok) throw new Error(data.error || 'Could not save settings.');
+      if (!data.settings) throw new Error('The server did not return saved settings.');
       setFormData(data.settings);
       setMessage('Settings updated successfully.');
     } catch (saveError) {

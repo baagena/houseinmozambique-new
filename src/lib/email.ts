@@ -306,7 +306,7 @@ export async function sendAgentVerificationEmail(agent: {
   email: string;
   token?: string;
 }) {
-  const verificationUrl = agent.token ? `${SITE_URL}/auth/verify?token=${encodeURIComponent(agent.token)}` : SITE_URL;
+  const verificationUrl = agent.token ? `${SITE_URL}/api/auth/verify?token=${encodeURIComponent(agent.token)}` : SITE_URL;
   return sendEmail({
     to: agent.email,
     from: AUTH_FROM_EMAIL,
