@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { sendAgentVerificationEmail } from '@/lib/email';
+import { sendAgentVerificationEmail, sendNewAgentNotificationEmail } from '@/lib/email';
 import { signAgentToken, AGENT_SELF_SELECT } from '@/lib/mobile-auth';
+import { randomBytes } from 'node:crypto';
 
 export async function POST(request: Request) {
   try {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    const verificationToken = randomBytes(32).toString('hex');
 
     const newAgent = await prisma.agent.create({
       data: {
@@ -51,13 +53,20 @@ export async function POST(request: Request) {
         bio: bio || '',
         specializations: specializations || [],
         role,
+        emailVerifyToken: verificationToken,
+        emailVerifyExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
       select: AGENT_SELF_SELECT,
     });
 
     if (role === 'AGENT' || role === 'OWNER') {
       try {
-        await sendAgentVerificationEmail({ name: newAgent.name, email: newAgent.email });
+        await sendAgentVerificationEmail({
+          name: newAgent.name,
+          email: newAgent.email,
+          token: verificationToken,
+        });
+        await sendNewAgentNotificationEmail({ name: newAgent.name, email: newAgent.email, role });
       } catch (emailError) {
         console.error('Agent verification email failed:', emailError);
       }

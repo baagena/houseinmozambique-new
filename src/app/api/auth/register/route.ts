@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { sendAgentVerificationEmail } from '@/lib/email';
+import { sendAgentVerificationEmail, sendNewAgentNotificationEmail } from '@/lib/email';
 import { randomBytes } from 'node:crypto';
 
 export async function POST(request: Request) {
@@ -71,12 +71,17 @@ export async function POST(request: Request) {
         token: newAgent.emailVerifyToken || undefined,
       });
     } catch (emailError) {
+
+    await sendNewAgentNotificationEmail({ name: newAgent.name, email: newAgent.email, role }).catch((error) => {
+      console.error('New agent admin notification failed:', error);
+    });
       console.error('Agent verification email failed:', emailError);
       await prisma.agent.delete({ where: { id: newAgent.id } });
-      return NextResponse.json(
-        { error: 'We could not send the verification email. Please check the email service configuration and try again.' },
-        { status: 503 }
-      );
+      const message =
+        process.env.NODE_ENV === 'development' && emailError instanceof Error
+          ? emailError.message
+          : 'We could not send the verification email. Please check the email service configuration and try again.';
+      return NextResponse.json({ error: message }, { status: 503 });
     }
 
     return NextResponse.json({

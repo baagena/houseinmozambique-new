@@ -22,10 +22,11 @@ export async function POST(request: Request) {
       where: { id: agent.id },
       data: { passwordResetToken: null, passwordResetExpiresAt: null },
     });
-    return NextResponse.json(
-      { error: 'The reset email could not be sent. Please try again later.' },
-      { status: 503 }
-    );
+    const message =
+      process.env.NODE_ENV === 'development' && error instanceof Error
+        ? error.message
+        : 'The reset email could not be sent. Please try again later.';
+    return NextResponse.json({ error: message }, { status: 503 });
   }
   return NextResponse.json({ message: generic });
 }

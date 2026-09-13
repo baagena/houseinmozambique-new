@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { prisma } from '@/lib/db';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
@@ -14,12 +15,12 @@ if (RESEND_API_KEY) {
   resend = new Resend(RESEND_API_KEY);
 }
 
-console.info('Resend config loaded:', {
+console.info(`Resend config loaded: ${JSON.stringify({
   hasApiKey: Boolean(RESEND_API_KEY),
   resendFromEmail: RESEND_FROM_EMAIL,
   notificationFromEmail: NOTIFICATION_FROM_EMAIL,
   authFromEmail: AUTH_FROM_EMAIL,
-});
+})}`);
 
 interface EmailOptions {
   to: string;
@@ -30,13 +31,44 @@ interface EmailOptions {
   reply_to?: string | string[];
 }
 
+interface ResendSendResult {
+  id?: string;
+  data?: { id?: string };
+  error?: { message?: string } | string | null;
+  message?: string;
+  name?: string;
+  statusCode?: number;
+}
+
+function getResendEmailId(response: ResendSendResult) {
+  return response.id || response.data?.id;
+}
+
+function getResendErrorMessage(response: ResendSendResult) {
+  if (typeof response.error === 'string' && response.error.trim()) {
+    return response.error;
+  }
+  if (response.error && typeof response.error === 'object' && response.error.message) {
+    return response.error.message;
+  }
+  if (!getResendEmailId(response) && response.message) {
+    return response.message;
+  }
+  return null;
+}
+
 async function sendEmail(options: EmailOptions) {
   if (!resend) {
     throw new Error('Resend email provider not configured. Set RESEND_API_KEY in your environment.');
   }
 
+  const configuredAdminEmail = await prisma.appSetting.findUnique({
+    where: { key: 'adminEmail' },
+    select: { value: true },
+  }).then((setting) => setting?.value.trim() || ADMIN_EMAIL).catch(() => ADMIN_EMAIL);
+
   const msg = {
-    to: options.to,
+    to: options.to === ADMIN_EMAIL || options.to === CONTACT_EMAIL ? configuredAdminEmail : options.to,
     from: options.from || RESEND_FROM_EMAIL,
     subject: options.subject,
     html: options.html,
@@ -44,12 +76,17 @@ async function sendEmail(options: EmailOptions) {
     reply_to: options.reply_to,
   };
 
-  console.info('Resend request:', { to: msg.to, from: msg.from, subject: msg.subject });
-  const response = await resend.emails.send(msg);
-  if (response.error) {
-    throw new Error(`Resend rejected the email: ${response.error.message}`);
+  console.info(`Resend request: ${JSON.stringify({ to: msg.to, from: msg.from, subject: msg.subject })}`);
+  const response = (await resend.emails.send(msg)) as ResendSendResult;
+  const emailId = getResendEmailId(response);
+  const errorMessage = getResendErrorMessage(response);
+
+  if (errorMessage || !emailId) {
+    console.error(`Resend rejected the email: ${JSON.stringify(response)}`);
+    throw new Error(`Resend rejected the email: ${errorMessage || 'no email id returned'}`);
   }
-  console.info('Resend response received for:', { to: msg.to, subject: msg.subject });
+
+  console.info(`Resend response received for: ${JSON.stringify({ id: emailId, to: msg.to, subject: msg.subject })}`);
   return response;
 }
 
@@ -299,6 +336,19 @@ Our team will review your profile and approve your account shortly.
 
 If you did not sign up, please ignore this email.
 `,
+  });
+}
+
+export async function sendNewAgentNotificationEmail(agent: {
+  name: string;
+  email: string;
+  role: string;
+}) {
+  return sendAdminNotificationEmail({
+    to: ADMIN_EMAIL,
+    subject: `New agent registration: ${agent.name}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">New agent registration</h1><p><strong>${escapeEmailHtml(agent.name)}</strong> registered on House in Mozambique.</p><p>Email: <a href="mailto:${encodeURIComponent(agent.email)}">${escapeEmailHtml(agent.email)}</a></p><p>Role: ${escapeEmailHtml(agent.role)}</p><p>Please review the account in the admin dashboard.</p></div>`,
+    text: `New agent registration\n\nName: ${agent.name}\nEmail: ${agent.email}\nRole: ${agent.role}\n\nPlease review the account in the admin dashboard.`,
   });
 }
 

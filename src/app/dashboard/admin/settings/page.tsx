@@ -1,25 +1,63 @@
 'use client';
 
 import { useState } from 'react';
+import { useEffect } from 'react';
+
+type Settings = {
+  adminName: string;
+  adminEmail: string;
+  platformTagline: string;
+  globalNotifications: boolean;
+  agentApprovalAlerts: boolean;
+  weeklyReport: boolean;
+};
 
 export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Settings>({
     adminName: 'Dev Admin',
-    email: 'admin@houseinmozambique.com',
+    adminEmail: 'admin@houseinmozambique.com',
     platformTagline: 'The Modern Estate Curator',
     globalNotifications: true,
     agentApprovalAlerts: true,
     weeklyReport: false,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetch('/api/admin/settings', { credentials: 'include' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not load settings.');
+        setFormData(data.settings);
+      })
+      .catch((loadError: Error) => setError(loadError.message))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
+    setMessage(null);
+    setError(null);
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not save settings.');
+      setFormData(data.settings);
+      setMessage('Settings updated successfully.');
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save settings.');
+    } finally {
       setIsSaving(false);
-      alert('Settings updated successfully!');
-    }, 1500);
+    }
   };
 
   return (
@@ -33,6 +71,9 @@ export default function AdminSettingsPage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-5">
+        {isLoading && <p className="text-sm text-[#74777f]">Loading settings...</p>}
+        {message && <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</p>}
+        {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
         {/* Profile Card */}
         <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
           <div className="px-5 h-12 flex items-center border-b border-[#eceef1]">
@@ -53,8 +94,8 @@ export default function AdminSettingsPage() {
                 <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Restricted email</label>
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={formData.adminEmail}
+                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
                   className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
                 />
               </div>
