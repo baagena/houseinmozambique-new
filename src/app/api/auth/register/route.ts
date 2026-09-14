@@ -71,10 +71,6 @@ export async function POST(request: Request) {
         token: newAgent.emailVerifyToken || undefined,
       });
     } catch (emailError) {
-
-    await sendNewAgentNotificationEmail({ name: newAgent.name, email: newAgent.email, role }).catch((error) => {
-      console.error('New agent admin notification failed:', error);
-    });
       console.error('Agent verification email failed:', emailError);
       await prisma.agent.delete({ where: { id: newAgent.id } });
       const message =
@@ -83,6 +79,10 @@ export async function POST(request: Request) {
           : 'We could not send the verification email. Please check the email service configuration and try again.';
       return NextResponse.json({ error: message }, { status: 503 });
     }
+
+    await sendNewAgentNotificationEmail({ name: newAgent.name, email: newAgent.email, role }).catch((error) => {
+      console.error('New agent admin notification failed:', error);
+    });
 
     return NextResponse.json({
       user: agentWithoutPassword,

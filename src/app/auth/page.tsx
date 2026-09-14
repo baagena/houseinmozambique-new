@@ -193,7 +193,7 @@ function AuthForm() {
     setIsLoading(true);
     setError(null);
     try {
-      const devEmail = role === 'admin' ? 'admin@houseinmoz.com' : 'agent-1@houseinmoz.com';
+      const devEmail = role === 'admin' ? 'princebagena@gmail.com' : 'agent-1@houseinmoz.com';
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         credentials: 'include',

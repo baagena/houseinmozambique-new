@@ -14,8 +14,10 @@ const prisma = new PrismaClient({ adapter });
 // The platform has a single privilege tier above agents: role === 'ADMIN'
 // unlocks every dashboard guard (src/lib/admin-guard.ts and friends), so this
 // account can make any change the admin dashboard exposes.
-const EMAIL = process.env.DEV_ADMIN_EMAIL || 'dev@houseinmoz.com';
-const PASSWORD = process.env.DEV_ADMIN_PASSWORD || 'Password@@';
+const EMAIL = process.env.DEV_ADMIN_EMAIL || 'princebagena@gmail.com';
+// Must match the password the Dev Quick Login button posts in src/app/auth/page.tsx,
+// otherwise re-running this script silently breaks that button with a 401.
+const PASSWORD = process.env.DEV_ADMIN_PASSWORD || 'password123';
 
 async function main() {
   const password = await bcrypt.hash(PASSWORD, 10);
