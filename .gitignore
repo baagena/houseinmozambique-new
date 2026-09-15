@@ -41,3 +41,6 @@ next-env.d.ts
 
 # local review/reference bundles
 *.zip
+
+# database backups contain password hashes and customer data — never commit
+backups/
