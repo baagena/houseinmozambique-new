@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:backup": "node scripts/backup-db.mjs",
-    "db:restore": "node scripts/restore-db.mjs"
+    "db:restore": "node scripts/restore-db.mjs",
+    "check:contrast": "node scripts/validate-contrast.mjs"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

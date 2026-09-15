@@ -1,0 +1,246 @@
+/* =============================================================================
+   House in Mozambique — dashboard design tokens
+
+   Every value here is MEASURED, not chosen by eye:
+     · body text     >= 4.5:1  (WCAG 2.1 AA, 1.4.3)
+     · UI boundaries >= 3.0:1  (1.4.11 — form borders, chart marks, states)
+
+   Scoped to .him-dash on purpose. The public site keeps its existing Material
+   palette in globals.css; re-skinning it is a separate job with its own risk.
+   Restricting the new system to the dashboard means this cannot regress the
+   marketing pages.
+
+   The dark palette is SELECTED, not inverted — the light status hues measure
+   2.8-3.3:1 on a dark card, i.e. unreadable, so each has its own dark step.
+   Do not "just flip" these values.
+   ========================================================================== */
+
+.him-dash {
+  /* --- surfaces --- */
+  --d-ink: #0a2540;
+  --d-ink-2: #13355c;
+  --d-paper: #f5f6f9;
+  --d-card: #ffffff;
+  --d-border: #e4e7ec;
+  --d-border-soft: #edeff3;
+  --d-border-ctl: #7d8695; /* form boundaries — 3.67:1 on card */
+
+  /* --- ink --- */
+  --d-text-1: #132339; /* body      — 15.82:1 */
+  --d-text-2: #5b6472; /* secondary —  5.98:1 */
+  --d-text-3: #667080; /* captions  —  5.01:1 */
+
+  /* --- brand --- */
+  --d-gold: #e8a53d; /* FILLS ONLY — always dark text on top */
+  --d-gold-line: #b9791f; /* outlines, selected — 3.61:1 */
+  --d-gold-ink: #7a5313;
+  --d-bronze: #8a5a2b; /* links — 5.87:1 */
+  --d-nav-label: #8098bb; /* sidebar eyebrows — 5.27:1 on ink */
+
+  /* --- status: never colour-alone, always icon + label --- */
+  --d-good: #157a4a;
+  --d-good-bg: #e7f5ee;
+  --d-warn: #8f550e;
+  --d-warn-bg: #fdf1de;
+  --d-crit: #b23b34;
+  --d-crit-bg: #fbeae8;
+
+  /* --- chart series: FIXED ORDER, never cycled --- */
+  --d-slot-1: #2a78d6;
+  --d-slot-2: #c9631f;
+  --d-slot-3: #1a9a76;
+  --d-slot-4: #a87c00;
+  --d-slot-5: #c25e8c;
+
+  /* --- type. Nothing carrying meaning below 12px.
+         --d-fs-label is for UPPERCASE letter-spaced eyebrows only. --- */
+  --d-fs-label: 11.5px;
+  --d-fs-sm: 12.5px;
+  --d-fs-base: 13.5px;
+  --d-fs-md: 15px;
+  --d-fs-lg: 18px;
+  --d-fs-xl: 23px;
+
+  --d-font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --d-font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --d-font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --d-shadow: 0 1px 2px rgba(10, 37, 64, 0.04), 0 8px 24px -12px rgba(10, 37, 64, 0.12);
+  --d-radius-card: 14px;
+  --d-radius-sm: 8px;
+
+  color-scheme: light;
+  background: var(--d-paper);
+  color: var(--d-text-1);
+  font-family: var(--d-font-body);
+  font-size: var(--d-fs-base);
+  line-height: 1.5;
+}
+
+/* Dark is declared twice on purpose:
+   1. the media query covers the OS setting, guarded so an explicit light
+      choice still wins on a dark OS;
+   2. the [data-theme="dark"] scope covers the in-app toggle.
+   Theme state is three-way — light / dark / system. "System" stamps nothing. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .him-dash {
+    --d-paper: #0b1420;
+    --d-card: #111b29;
+    --d-border: #233246;
+    --d-border-soft: #1b2734;
+    --d-border-ctl: #5d7189; /* 3.45:1 */
+    --d-text-1: #eef2f7;
+    --d-text-2: #a7b2c2;
+    --d-text-3: #8b98a8; /* 5.90:1 */
+    --d-ink: #0e2f52;
+    --d-ink-2: #173a63;
+    --d-bronze: #d09a5c; /* the light step fails at 2.95 */
+    --d-gold-line: #e8a53d; /* 8.15:1 */
+    --d-good: #45b881;
+    --d-good-bg: #0f2b1f;
+    --d-warn: #dba24a;
+    --d-warn-bg: #2e2410;
+    --d-crit: #e8857b;
+    --d-crit-bg: #301514;
+    --d-slot-1: #5596e8;
+    --d-slot-2: #e2834a;
+    --d-slot-3: #33b590;
+    --d-slot-4: #d9aa2e;
+    --d-slot-5: #d97faa;
+    --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] .him-dash {
+  --d-paper: #0b1420;
+  --d-card: #111b29;
+  --d-border: #233246;
+  --d-border-soft: #1b2734;
+  --d-border-ctl: #5d7189;
+  --d-text-1: #eef2f7;
+  --d-text-2: #a7b2c2;
+  --d-text-3: #8b98a8;
+  --d-ink: #0e2f52;
+  --d-ink-2: #173a63;
+  --d-bronze: #d09a5c;
+  --d-gold-line: #e8a53d;
+  --d-good: #45b881;
+  --d-good-bg: #0f2b1f;
+  --d-warn: #dba24a;
+  --d-warn-bg: #2e2410;
+  --d-crit: #e8857b;
+  --d-crit-bg: #301514;
+  --d-slot-1: #5596e8;
+  --d-slot-2: #e2834a;
+  --d-slot-3: #33b590;
+  --d-slot-4: #d9aa2e;
+  --d-slot-5: #d97faa;
+  --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+/* Visible keyboard focus on everything interactive inside the console. */
+.him-dash :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--d-gold-line);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .him-dash *,
+  .him-dash *::before,
+  .him-dash *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Any column of figures. */
+.him-dash .tabular,
+.him-dash .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Uppercase letter-spaced eyebrow — never for sentences. */
+.him-dash .eyebrow {
+  font-size: var(--d-fs-label);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--d-text-3);
+}
+
+.him-dash .display {
+  font-family: var(--d-font-display);
+  letter-spacing: -0.01em;
+}
+
+/* =============================================================================
+   Legacy-class bridge
+   -----------------------------------------------------------------------------
+   The dashboard was built with the palette hardcoded into Tailwind arbitrary
+   values — 312 uses of text-[#002045], 116 of bg-white, and so on across 22
+   components. Rewriting every call site would be a large, high-risk diff for a
+   purely visual change.
+
+   Instead these rules re-point the classes that are ALREADY there at the tokens
+   above, scoped to .him-dash so nothing outside the console is affected. The
+   whole dashboard picks up the measured palette and working dark mode at once.
+
+   Specificity: `.him-dash .bg-white` (0,2,0) beats Tailwind's `.bg-white`
+   (0,1,0), so these win without !important.
+
+   This is a BRIDGE, not the destination. New dashboard code should use
+   var(--d-*) directly, as StatTile, Pill and ThemeSwitch do.
+   ========================================================================== */
+
+/* --- surfaces --- */
+.him-dash .bg-white { background-color: var(--d-card); }
+.him-dash .bg-\[\#f7f9fb\] { background-color: var(--d-paper); }
+.him-dash .bg-\[\#f2f4f6\],
+.him-dash .bg-\[\#f5f6f8\],
+.him-dash .bg-\[\#fafbfc\],
+.him-dash .bg-\[\#f1f3f5\] { background-color: var(--d-border-soft); }
+.him-dash .hover\:bg-\[\#f5f6f8\]:hover,
+.him-dash .hover\:bg-\[\#f2f4f6\]:hover,
+.him-dash .hover\:bg-\[\#fafbfc\]:hover { background-color: var(--d-border-soft); }
+
+/* Brand navy as a FILL stays a fill; as ink it becomes body text. */
+.him-dash .bg-\[\#002045\] { background-color: var(--d-ink); }
+.him-dash .bg-\[\#0a2f5c\] { background-color: var(--d-ink-2); }
+.him-dash .hover\:bg-\[\#002045\]:hover { background-color: var(--d-ink); }
+
+/* --- borders --- */
+.him-dash .border-\[\#eceef1\],
+.him-dash .border-\[\#e3e6ea\],
+.him-dash .border-\[\#e0e0e0\],
+.him-dash .border-\[\#d7dbe0\] { border-color: var(--d-border); }
+.him-dash .hover\:border-\[\#dde0e4\]:hover,
+.him-dash .hover\:border-\[\#e3e6ea\]:hover { border-color: var(--d-border-ctl); }
+.him-dash .divide-\[\#eceef1\] > * + * { border-color: var(--d-border); }
+
+/* --- ink --- */
+.him-dash .text-\[\#002045\] { color: var(--d-text-1); }
+.him-dash .text-\[\#74777f\],
+.him-dash .text-\[\#5b616b\],
+.him-dash .text-\[\#374151\],
+.him-dash .text-\[\#43474e\],
+.him-dash .text-\[\#4b5363\] { color: var(--d-text-2); }
+.him-dash .text-\[\#9aa0a8\],
+.him-dash .text-\[\#b4b9c0\],
+.him-dash .text-\[\#c4c6cf\] { color: var(--d-text-3); }
+.him-dash .hover\:text-\[\#002045\]:hover { color: var(--d-text-1); }
+
+/* Links and accents. */
+.him-dash .text-\[\#845326\] { color: var(--d-bronze); }
+.him-dash .text-\[\#fab983\] { color: var(--d-gold); }
+.him-dash .bg-\[\#fab983\] { background-color: var(--d-gold); }
+.him-dash .text-\[\#315f8d\] { color: var(--d-slot-1); }
+
+/* Placeholders were a hardcoded grey. */
+.him-dash .placeholder-\[\#b4b9c0\]::placeholder { color: var(--d-text-3); }
+
+/* A white card on the brand navy must keep contrast in dark mode: the nav's
+   active row sets its own colour, so exclude it from the ink remap above. */
+.him-dash nav a[aria-current='page'] { color: #ffffff; }

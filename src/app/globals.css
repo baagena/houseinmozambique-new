@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./him.css";
+@import "./dashboard-tokens.css";
 
 :root {
   --font-dmsans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;

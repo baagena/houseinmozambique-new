@@ -64,56 +64,101 @@ export default function DashboardSidebar({ role, userName, accountRole }: Dashbo
     .toUpperCase() || (role === 'admin' ? 'AD' : 'AG');
 
   return (
-    <aside className="w-60 h-full flex flex-col bg-white border-r border-[#eceef1] relative z-20 overflow-y-auto custom-scrollbar">
+    <aside
+      className="w-60 h-full flex flex-col relative z-20 overflow-y-auto custom-scrollbar"
+      style={{ background: 'var(--d-card)', borderRight: '1px solid var(--d-border)' }}
+    >
       {/* Branding */}
       <div className="px-5 pt-5 pb-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-[#f5f6f8] border border-[#eceef1]">
+          <div
+            className="relative w-8 h-8 overflow-hidden"
+            style={{
+              borderRadius: 'var(--d-radius-sm)',
+              background: 'var(--d-border-soft)',
+              border: '1px solid var(--d-border)',
+            }}
+          >
             <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" />
           </div>
           <div className="leading-tight">
-            <p className="text-[13px] font-semibold text-[#002045] tracking-tight">House in Mozambique</p>
-            <p className="text-[11px] font-medium text-[#9aa0a8] capitalize">{workspaceLabel} workspace</p>
+            <p
+              className="display"
+              style={{ fontSize: 'var(--d-fs-base)', fontWeight: 600, color: 'var(--d-text-1)', margin: 0 }}
+            >
+              House in Mozambique
+            </p>
+            <p className="eyebrow" style={{ margin: 0 }}>{workspaceLabel} workspace</p>
           </div>
         </Link>
       </div>
 
       {/* Nav Links */}
       <nav className="flex-1 px-3 space-y-0.5">
-        <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-wider text-[#b4b9c0]">Menu</p>
+        <p className="eyebrow px-3 pb-2 pt-1">Menu</p>
         {links.map((link) => {
           const isActive = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group ${isActive ? 'bg-[#002045] text-white' : 'text-[#5b616b] hover:bg-[#f5f6f8] hover:text-[#002045]'}`}
+              aria-current={isActive ? 'page' : undefined}
+              className="flex items-center gap-3 px-3 py-2 transition-colors duration-150"
+              style={{
+                borderRadius: 'var(--d-radius-sm)',
+                background: isActive ? 'var(--d-ink)' : 'transparent',
+                color: isActive ? '#ffffff' : 'var(--d-text-2)',
+              }}
             >
-              <span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-[#fab983]' : 'text-[#9aa0a8] group-hover:text-[#002045]'}`}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20, color: isActive ? 'var(--d-gold)' : 'var(--d-text-3)' }}
+                aria-hidden="true"
+              >
                 {link.icon}
               </span>
-              <span className="text-[13px] font-medium tracking-tight">{link.label}</span>
+              <span style={{ fontSize: 'var(--d-fs-base)', fontWeight: 500 }}>{link.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Footer / Profile */}
-      <div className="px-3 py-3 mt-auto border-t border-[#eceef1]">
-        <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
-          <div className="w-8 h-8 rounded-lg bg-[#002045] flex items-center justify-center text-white font-semibold text-[11px]">
+      <div className="px-3 py-3 mt-auto" style={{ borderTop: '1px solid var(--d-border)' }}>
+        <div className="flex items-center gap-2.5 px-2 py-2" style={{ borderRadius: 'var(--d-radius-sm)' }}>
+          <div
+            className="w-8 h-8 flex items-center justify-center font-semibold"
+            style={{
+              borderRadius: 'var(--d-radius-sm)',
+              background: 'var(--d-ink)',
+              color: 'var(--d-gold)',
+              fontSize: 'var(--d-fs-label)',
+            }}
+          >
             {initials}
           </div>
           <div className="flex-1 overflow-hidden leading-tight">
-            <p className="text-[12px] font-semibold text-[#002045] truncate">{userName}</p>
-            <p className="text-[11px] font-medium text-[#9aa0a8] truncate">{roleCaption}</p>
+            <p
+              className="truncate"
+              style={{ fontSize: 'var(--d-fs-sm)', fontWeight: 600, color: 'var(--d-text-1)', margin: 0 }}
+            >
+              {userName}
+            </p>
+            <p
+              className="truncate"
+              style={{ fontSize: 'var(--d-fs-label)', color: 'var(--d-text-3)', margin: 0 }}
+            >
+              {roleCaption}
+            </p>
           </div>
           <button
             onClick={handleLogout}
             title="Sign out"
-            className="p-1.5 rounded-md text-[#9aa0a8] hover:text-red-500 hover:bg-red-50 transition-colors"
+            className="p-1.5 transition-colors"
+            style={{ borderRadius: 6, color: 'var(--d-text-3)' }}
           >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">logout</span>
+            <span className="sr-only">Sign out</span>
           </button>
         </div>
       </div>
