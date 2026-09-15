@@ -1,18 +1,15 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAgentById } from '@/lib/data';
 import { prisma } from '@/lib/db';
 import AgentLeadsClient from '@/components/dashboard/AgentLeadsClient';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AgentLeadsPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) {
-    redirect('/auth');
-  }
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const agent = await getAgentById(agentId);
   

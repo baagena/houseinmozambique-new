@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 export async function GET(
   request: Request,
@@ -36,15 +37,16 @@ export async function GET(
       return NextResponse.json({ error: 'Missing property id in route', debug: isDev ? { params: resolvedParams, url: String(request.url) } : undefined }, { status: 400 });
     }
 
-    const userId = cookieStore.get('userId')?.value;
+    const session = await getSession();
 
-    if (!userId) {
-      console.info('/api/property/[id] GET — missing cookie userId', { paramsId: resolvedParams.id });
+    if (!session) {
+      console.info('/api/property/[id] GET — no valid session', { paramsId: resolvedParams.id });
       return NextResponse.json(
-        { error: 'Not authenticated', debug: isDev ? { userId: userId ?? null } : undefined },
+        { error: 'Not authenticated' },
         { status: 401 }
       );
     }
+    const userId = session.id;
 
     const property = await prisma.property.findUnique({
       where: { id },

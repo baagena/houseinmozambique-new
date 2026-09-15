@@ -1,16 +1,14 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getPlatformStats, getChartData } from '@/lib/data';
 import AdminDashboardClient from '@/components/dashboard/AdminDashboardClient';
+import { getSession } from '@/lib/session';
+import { AGENT_ADMIN_LIST } from '@/lib/dto';
 
 export default async function AdminDashboard() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) {
-    redirect('/auth');
-  }
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const admin = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -26,6 +24,7 @@ export default async function AdminDashboard() {
   const latestAgents = await prisma.agent.findMany({
     take: 3,
     orderBy: { createdAt: 'desc' },
+    select: AGENT_ADMIN_LIST,
   });
 
   const recentInquiries = await prisma.inquiry.findMany({

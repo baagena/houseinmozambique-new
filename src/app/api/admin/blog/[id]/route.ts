@@ -1,32 +1,13 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 import { estimateReadTime, slugify } from '@/lib/blog-utils';
 
 interface Params {
   params: Promise<{ id: string }>;
 }
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated', status: 401 as const };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
-    return { error: 'Forbidden - admins only', status: 403 as const };
-  }
-
-  return { userId };
-}
 
 async function uniqueSlug(title: string, requestedSlug: string | undefined, currentId: string) {
   const base = slugify(requestedSlug || title);
@@ -54,8 +35,8 @@ function revalidateBlogPaths(oldSlug?: string | null, newSlug?: string | null) {
 export async function PATCH(request: Request, { params }: Params) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -109,8 +90,8 @@ export async function PATCH(request: Request, { params }: Params) {
 export async function DELETE(_request: Request, { params }: Params) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const { id } = await params;

@@ -1,39 +1,50 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { processPayment, convertCurrency } from '@/lib/payment';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: Request) {
   try {
+    // Identity comes from the signed session only. The previous version took
+    // `userId` straight from the request body, falling back to a hand-rolled
+    // regex over the raw Cookie header — either of which let a caller bill a
+    // payment to somebody else's account.
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    const resolvedUserId = session.id;
+
     const body = await req.json();
-    console.debug('/api/payments incoming body:', JSON.stringify(body));
     const {
       amount,
       currency,
       method,
       planType,
-      userId,
       customerName,
       customerEmail,
       customerPhone,
       paymentReference,
     } = body;
 
-    // Attempt to derive userId from cookies if not provided in body
-    let resolvedUserId = userId;
-    if (!resolvedUserId) {
-      try {
-        const cookieHeader = req.headers.get('cookie') || '';
-        // If the backend sets a userId cookie, try to parse it from the cookie string
-        const match = cookieHeader.match(/userId=([^;\s]+)/);
-        if (match) resolvedUserId = decodeURIComponent(match[1]);
-      } catch (err) {
-        console.warn('Could not parse cookies for userId fallback', err);
-      }
+    if (!amount || !method || !planType) {
+      return NextResponse.json(
+        { error: 'Missing required fields: amount, method, or planType' },
+        { status: 400 }
+      );
     }
 
-    if (!amount || !method || !planType || !resolvedUserId) {
+    // The amount is still client-supplied, which is not good enough on its own.
+    // It cannot be derived server-side yet: PricingPlan stores prices as
+    // free-form display strings ("3,000 - 5,000", "Grátis") with no numeric
+    // column, so there is nothing authoritative to compare against. Until the
+    // pending schema migration adds a numeric price, at least reject values
+    // that are not sane positive numbers, and record the payment as PENDING so
+    // a human verifies it before anything is granted.
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0 || numericAmount > 10_000_000) {
       return NextResponse.json(
-        { error: 'Missing required fields: amount, method, planType, or userId' },
+        { error: 'Invalid payment amount' },
         { status: 400 }
       );
     }
@@ -47,9 +58,9 @@ export async function POST(req: Request) {
     }
 
     // Convert amount to MZN if needed
-    let amountInMZN = amount;
+    let amountInMZN = numericAmount;
     if (currency && currency !== 'MZN') {
-      amountInMZN = await convertCurrency(amount, currency, 'MZN');
+      amountInMZN = await convertCurrency(numericAmount, currency, 'MZN');
     }
 
     // Generate order reference
@@ -57,8 +68,8 @@ export async function POST(req: Request) {
 
     // Create payment record in database
     // Create payment record in database
-    const customerNameSafe = customerName || 'Unknown Payer';
-    const customerEmailSafe = customerEmail || 'billing@houseinmoz.com';
+    const customerNameSafe = customerName || session.name || 'Unknown Payer';
+    const customerEmailSafe = customerEmail || session.email;
 
     let payment = null;
     try {
@@ -111,7 +122,7 @@ export async function POST(req: Request) {
       customerEmail,
       customerPhone,
       metadata: {
-        userId,
+        userId: resolvedUserId,
         planType,
         paymentId: payment?.id,
       },

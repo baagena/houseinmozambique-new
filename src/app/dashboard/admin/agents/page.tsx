@@ -1,10 +1,18 @@
-import { getAgents } from '@/lib/data';
+import { getAgentsForAdmin } from '@/lib/data';
 import AdminAgentsClient, { type AdminAgent } from '@/components/dashboard/AdminAgentsClient';
+import { requireAdmin } from '@/lib/session';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminAgentsPage() {
-  const allAgents = await getAgents();
+  // Layouts and pages render concurrently in RSC, so the guard in
+  // dashboard/admin/layout.tsx does not stop this page's queries from running.
+  // The check has to happen here, before any data is fetched.
+  const admin = await requireAdmin();
+  if (!admin) redirect('/auth');
+
+  const allAgents = await getAgentsForAdmin();
 
   const agents: AdminAgent[] = allAgents.map((agent) => ({
     id: agent.id,

@@ -1,28 +1,16 @@
 'use server';
 
 import { prisma } from '@/lib/db';
+import { requireAdmin as requireAdminSession } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
 
 async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated.' };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
+  const admin = await requireAdminSession();
+  if (!admin) {
     return { error: 'Forbidden — admins only.' };
   }
-
-  return { userId };
+  return { userId: admin.id };
 }
 
 export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'REJECTED' | 'PENDING') {

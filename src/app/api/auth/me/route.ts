@@ -1,18 +1,20 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('userId')?.value;
+    const session = await getSession();
 
-    if (!userId) {
+    if (!session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
+    // getSession() returns only identity fields; the dashboard chrome needs a
+    // little more, so read the display fields explicitly. Still an allow-list —
+    // never a bare findUnique whose result reaches a client component.
     const agent = await prisma.agent.findUnique({
-      where: { id: userId },
+      where: { id: session.id },
       select: {
         id: true,
         name: true,

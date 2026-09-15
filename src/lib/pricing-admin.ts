@@ -1,16 +1,12 @@
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 import type { PlanFeature } from '@/lib/pricing';
 
-/** Only a super admin may read or write pricing. */
+/** Only a super admin may read or write pricing. Thin alias over the shared guard. */
 export async function requirePricingAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-  if (!userId) return null;
-  const agent = await prisma.agent.findUnique({ where: { id: userId }, select: { role: true } });
-  return agent?.role === 'ADMIN' ? agent : null;
+  return await requireAdmin();
 }
 
 /** Accept whatever the form sends and store a clean feature array. */

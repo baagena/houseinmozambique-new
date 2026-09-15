@@ -1,8 +1,8 @@
 'use server';
 
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
 
 /**
@@ -30,15 +30,14 @@ export async function uploadSingleImage(base64: string, folder: string = 'housei
  * Resolves the hosting agent from the authenticated session cookie.
  */
 async function requireAgent() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
+  const session = await getSession();
 
-  if (!userId) {
+  if (!session) {
     return { error: 'Not authenticated.' };
   }
 
   const agent = await prisma.agent.findUnique({
-    where: { id: userId },
+    where: { id: session.id },
   });
 
   if (!agent) {
@@ -162,12 +161,11 @@ export async function createProperty(formData: any, imageUrls: string[]) {
   try {
     console.log('Finalizing property publication with', imageUrls.length, 'assets');
 
-    // 1. Resolve Agent from session cookie
-    const cookieStore = await cookies();
-    const agentId = cookieStore.get('userId')?.value;
+    // 1. Resolve Agent from the signed session
+    const session = await getSession();
 
-    let agent = agentId
-      ? await prisma.agent.findUnique({ where: { id: agentId } })
+    let agent = session
+      ? await prisma.agent.findUnique({ where: { id: session.id } })
       : null;
 
     if (!agent) {

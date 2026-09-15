@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -13,21 +13,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 export async function PATCH(request: Request, { params }: Params) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('userId')?.value;
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const admin = await prisma.agent.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-
-    if (!admin || admin.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
-    }
+    const admin = await requireAdmin();
+    if (!admin) return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
 
     const { id } = await params;
     const { status } = await request.json();

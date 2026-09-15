@@ -1,28 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 import { defaultFlatContent } from '@/lib/content';
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated', status: 401 as const };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
-    return { error: 'Forbidden - admins only', status: 403 as const };
-  }
-
-  return { userId };
-}
 
 function isValidLang(lang: unknown): lang is 'en' | 'pt' {
   return lang === 'en' || lang === 'pt';
@@ -32,8 +13,8 @@ function isValidLang(lang: unknown): lang is 'en' | 'pt' {
 export async function GET() {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const rows = await prisma.siteContent.findMany({
@@ -58,8 +39,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const body = await request.json();

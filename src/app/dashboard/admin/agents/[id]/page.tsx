@@ -1,13 +1,20 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { getAgentById } from '@/lib/data';
+import { requireAdmin } from '@/lib/session';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export default async function AdminAgentAnalyticsPage({ params }: Props) {
+  // Layouts and pages render concurrently in RSC, so the guard in
+  // dashboard/admin/layout.tsx does not stop this page's queries from running.
+  // The check has to happen here, before any data is fetched.
+  const admin = await requireAdmin();
+  if (!admin) redirect('/auth');
+
   const { id } = await params;
   const agent = await getAgentById(id);
 

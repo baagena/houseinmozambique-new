@@ -1,14 +1,14 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import SubscribersClient from '@/components/dashboard/SubscribersClient';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSubscribersPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const admin = await prisma.agent.findUnique({
     where: { id: agentId },

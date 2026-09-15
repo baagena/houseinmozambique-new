@@ -1,13 +1,12 @@
 import { getAgentById } from '@/lib/data';
-import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import AgentListingsTable from '@/components/dashboard/AgentListingsTable';
+import { getSession } from '@/lib/session';
 
 export default async function AgentListingsPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const agent = await getAgentById(agentId);
   

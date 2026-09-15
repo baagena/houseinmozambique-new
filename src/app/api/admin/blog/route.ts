@@ -1,28 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 import { estimateReadTime, slugify } from '@/lib/blog-utils';
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated', status: 401 as const };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { id: true, role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
-    return { error: 'Forbidden - admins only', status: 403 as const };
-  }
-
-  return { userId: admin.id };
-}
 
 async function uniqueSlug(title: string, requestedSlug?: string) {
   const base = slugify(requestedSlug || title);
@@ -40,8 +21,8 @@ async function uniqueSlug(title: string, requestedSlug?: string) {
 export async function POST(request: Request) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -66,7 +47,7 @@ export async function POST(request: Request) {
         status,
         isFeatured: Boolean(body.isFeatured),
         readTime: estimateReadTime(content),
-        authorId: auth.userId,
+        authorId: auth.id,
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
       },
     });

@@ -1,13 +1,13 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import AdminApprovalsClient from '@/components/dashboard/AdminApprovalsClient';
+import { getSession } from '@/lib/session';
+import { AGENT_PUBLIC } from '@/lib/dto';
 
 export default async function AdminApprovalsPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const admin = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -72,12 +72,12 @@ export default async function AdminApprovalsPage() {
     },
     orderBy: { createdAt: 'desc' },
     take: 20,
+    select: AGENT_PUBLIC,
   });
 
   const newAgents = newAgentsRaw.map((agent) => ({
     ...agent,
     createdAt: agent.createdAt.toISOString(),
-    updatedAt: agent.updatedAt.toISOString(),
   }));
 
   return (

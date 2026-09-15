@@ -1,16 +1,13 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAgentById } from '@/lib/data';
 import { prisma } from '@/lib/db';
 import AgentDashboardClient from '@/components/dashboard/AgentDashboardClient';
+import { getSession } from '@/lib/session';
 
 export default async function AgentDashboard() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) {
-    redirect('/auth');
-  }
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const agent = await getAgentById(agentId);
   

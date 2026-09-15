@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
-import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/session';
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-  if (!userId) return null;
-  const agent = await prisma.agent.findUnique({ where: { id: userId }, select: { role: true } });
-  return agent?.role === 'ADMIN' ? agent : null;
-}
 
 export async function GET() {
   const admin = await requireAdmin();

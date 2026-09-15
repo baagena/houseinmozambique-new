@@ -1,16 +1,15 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import InquiriesList from './InquiriesList';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminActivitiesPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const admin = await prisma.agent.findUnique({ where: { id: agentId } });
   if (!admin || admin.role !== 'ADMIN') redirect('/dashboard/agent');

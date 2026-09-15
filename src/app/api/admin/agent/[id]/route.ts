@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -12,25 +12,6 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated', status: 401 as const };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { id: true, role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
-    return { error: 'Forbidden - admins only', status: 403 as const };
-  }
-
-  return { userId: admin.id };
-}
 
 function toStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
@@ -42,8 +23,8 @@ function toStringArray(value: unknown): string[] | undefined {
 export async function PATCH(request: Request, { params }: Params) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -118,13 +99,13 @@ export async function PATCH(request: Request, { params }: Params) {
 export async function DELETE(_request: Request, { params }: Params) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const { id } = await params;
 
-    if (id === auth.userId) {
+    if (id === auth.id) {
       return NextResponse.json({ error: 'You cannot delete your own admin account.' }, { status: 400 });
     }
 

@@ -1,4 +1,5 @@
 import { prisma } from './db';
+import { AGENT_PUBLIC, AGENT_ADMIN_LIST } from './dto';
 
 export async function getProperties(filters: {
   listingType?: string;
@@ -91,10 +92,26 @@ export async function getPropertyById(id: string) {
 // The public directory lists professional agents only — private owners get the
 // same listing tools but are not advertised as agents.
 export async function getAgents() {
+  // `include` returns every scalar column alongside the relation, which put the
+  // password hash and the reset/verify tokens into the PUBLIC /agents page.
+  // Select explicitly instead.
   return await prisma.agent.findMany({
     where: { role: 'AGENT' },
     orderBy: { rating: 'desc' },
-    include: { _count: { select: { properties: true } } },
+    select: { ...AGENT_PUBLIC, _count: { select: { properties: true } } },
+  });
+}
+
+/**
+ * Admin-only variant of getAgents(). Includes the account email, which the
+ * public directory must never receive — keep the two separate rather than
+ * widening getAgents().
+ */
+export async function getAgentsForAdmin() {
+  return await prisma.agent.findMany({
+    where: { role: 'AGENT' },
+    orderBy: { rating: 'desc' },
+    select: { ...AGENT_ADMIN_LIST, _count: { select: { properties: true } } },
   });
 }
 
@@ -102,17 +119,19 @@ export async function getFeaturedAgents() {
   return await prisma.agent.findMany({
     where: { isFeatured: true, role: 'AGENT' },
     take: 10,
+    select: AGENT_PUBLIC,
   });
 }
 
 export async function getAgentById(id: string) {
   return await prisma.agent.findUnique({
     where: { id },
-    include: { 
+    select: {
+      ...AGENT_PUBLIC,
       properties: true,
       inquiries: {
-        orderBy: { createdAt: 'desc' }
-      }
+        orderBy: { createdAt: 'desc' },
+      },
     },
   });
 }

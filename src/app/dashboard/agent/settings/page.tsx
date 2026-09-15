@@ -1,13 +1,12 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import SettingsForm from '@/components/dashboard/SettingsForm';
+import { getSession } from '@/lib/session';
 
 export default async function AgentSettingsPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },

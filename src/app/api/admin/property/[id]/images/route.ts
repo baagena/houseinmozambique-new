@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -23,12 +23,8 @@ function extensionFrom(contentType: string | null, source: string) {
 }
 
 export async function GET(request: Request, { params }: Params) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const admin = await prisma.agent.findUnique({ where: { id: userId }, select: { role: true } });
-  if (!admin || admin.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
+    const admin = await requireAdmin();
+    if (!admin) return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
 
   const { id } = await params;
   const property = await prisma.property.findUnique({

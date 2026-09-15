@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { setSessionCookie } from '@/lib/session';
 
 export async function POST(request: Request) {
   try {
@@ -49,13 +50,7 @@ export async function POST(request: Request) {
       message: 'Logged in successfully'
     });
 
-    response.cookies.set('userId', agent.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/',
-    });
+    setSessionCookie(response, agent.id);
 
     return response;
   } catch (error) {

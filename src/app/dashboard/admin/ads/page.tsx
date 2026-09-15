@@ -1,12 +1,12 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import AdminAdsClient from '@/components/dashboard/AdminAdsClient';
+import { getSession } from '@/lib/session';
 
 export default async function AdminAdsPage() {
-  const cookieStore = await cookies();
-  const agentId = cookieStore.get('userId')?.value;
-  if (!agentId) redirect('/auth');
+  const session = await getSession();
+  if (!session) redirect('/auth');
+  const agentId = session.id;
 
   const admin = await prisma.agent.findUnique({
     where: { id: agentId },

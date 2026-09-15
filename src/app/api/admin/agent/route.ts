@@ -1,33 +1,14 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/session';
 import { sendAgentWelcomeEmail } from '@/lib/email';
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
-
-  if (!userId) {
-    return { error: 'Not authenticated', status: 401 as const };
-  }
-
-  const admin = await prisma.agent.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
-
-  if (!admin || admin.role !== 'ADMIN') {
-    return { error: 'Forbidden - admins only', status: 403 as const };
-  }
-
-  return { ok: true as const };
-}
 
 function toStringArray(value: unknown): string[] {
   if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
@@ -39,8 +20,8 @@ function toStringArray(value: unknown): string[] {
 export async function POST(request: Request) {
   try {
     const auth = await requireAdmin();
-    if ('error' in auth) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth) {
+      return NextResponse.json({ error: 'Forbidden - admins only' }, { status: 403 });
     }
 
     const body = await request.json();
