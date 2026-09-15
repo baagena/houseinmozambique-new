@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { fontVariables } from './fonts';
 import SiteChrome from '@/components/layout/SiteChrome';
 import ChatWidget from '@/components/layout/ChatWidget';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
@@ -71,14 +72,8 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className="antialiased"
+      className={`antialiased ${fontVariables}`}
     >
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
-        />
-      </head>
       <body>
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <LanguageProvider overrides={contentOverrides}>

@@ -7,7 +7,7 @@
   --font-montserrat: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-newsreader: Georgia, "Times New Roman", serif;
   --font-inter: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-plexmono: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  --font-plexmono: var(--font-plex-mono), "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 }
 
 @theme {
@@ -78,11 +78,6 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
-}
-
-/* Material Symbols */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* Glassmorphism */

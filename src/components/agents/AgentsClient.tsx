@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import AgentCard from '@/components/agents/AgentCard';
 import SafeImage from '@/components/ui/SafeImage';
+import Icon from '@/components/ui/Icon';
 
 interface AgentsClientProps {
   featured: any[];
@@ -95,7 +96,7 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
           ) : (
             <div className="empty">
               <span className="ico">
-                <span className="material-symbols-outlined text-[1.7rem]">person_search</span>
+                <Icon name="person_search" size={27} />
               </span>
               <h3>{t.propertiesList.noProperties}</h3>
               <p>{t.propertiesList.tryAdjusting}</p>

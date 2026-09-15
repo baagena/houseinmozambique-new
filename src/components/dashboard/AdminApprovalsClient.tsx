@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import AdminPropertyActions from './AdminPropertyActions';
+import Icon from '@/components/ui/Icon';
 
 interface AdminPayment {
   id: string;
@@ -222,7 +223,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
             onClick={() => setActiveTab('properties')}
             className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors gap-2 flex items-center whitespace-nowrap ${activeTab === 'properties' ? 'bg-white text-[#002045] shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
           >
-            <span className="material-symbols-outlined text-[18px]">domain</span>
+            <Icon name="domain" size={18} />
             New listings
             <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${activeTab === 'properties' ? 'bg-[#f1f3f5] text-[#5b616b]' : 'bg-white text-[#9aa0a8]'}`}>
               {properties.length}
@@ -232,7 +233,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
             onClick={() => setActiveTab('agents')}
             className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors gap-2 flex items-center whitespace-nowrap ${activeTab === 'agents' ? 'bg-white text-[#002045] shadow-sm' : 'text-[#74777f] hover:text-[#002045]'}`}
           >
-            <span className="material-symbols-outlined text-[18px]">person_check</span>
+            <Icon name="person_check" size={18} />
             New agents
             <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${activeTab === 'agents' ? 'bg-[#f1f3f5] text-[#5b616b]' : 'bg-white text-[#9aa0a8]'}`}>
               {newAgents.length}
@@ -245,7 +246,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
         <div className="grid grid-cols-1 gap-3">
           {properties.length === 0 ? (
             <div className="py-16 text-center bg-white rounded-xl border border-[#eceef1]">
-              <span className="material-symbols-outlined text-5xl text-[#e3e6ea] mb-2">check_circle</span>
+              <Icon name="check_circle" size={48} className="text-[#e3e6ea] mb-2" />
               <p className="text-sm text-[#9aa0a8]">No pending listings. All clear.</p>
             </div>
           ) : properties.map((listing) => {
@@ -262,7 +263,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                     <Image src={listing.images[0]} alt={listing.title} fill className="object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-[#c4c6cf]">
-                      <span className="material-symbols-outlined text-3xl">image</span>
+                      <Icon name="image" size={30} />
                     </div>
                   )}
                 </div>
@@ -307,7 +308,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
         <div className="grid grid-cols-1 gap-3">
           {newAgents.length === 0 ? (
             <div className="py-16 text-center bg-white rounded-xl border border-[#eceef1]">
-              <span className="material-symbols-outlined text-5xl text-[#e3e6ea] mb-2">group</span>
+              <Icon name="group" size={48} className="text-[#e3e6ea] mb-2" />
               <p className="text-sm text-[#9aa0a8]">No new agent registrations this month.</p>
             </div>
           ) : newAgents.map((agent) => (
@@ -342,7 +343,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
               }}
               className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045] cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <Icon name="close" />
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-8">
@@ -353,7 +354,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                   </div>
                 ) : (
                   <div className="flex h-80 items-center justify-center text-[#c4c6cf]">
-                    <span className="material-symbols-outlined text-6xl">image</span>
+                    <Icon name="image" size={60} />
                   </div>
                 )}
 

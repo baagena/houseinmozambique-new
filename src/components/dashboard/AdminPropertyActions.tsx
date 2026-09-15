@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
+import Icon from '@/components/ui/Icon';
 
 interface Props {
   propertyId: string;
@@ -140,7 +141,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
           Suspend
         </button>
         <span className="flex items-center gap-1 rounded-md px-3 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
-          <span className="material-symbols-outlined text-sm">verified</span>
+          <Icon name="verified" size={14} />
           Live
         </span>
       </DashboardActionMenu>

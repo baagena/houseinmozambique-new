@@ -8,6 +8,7 @@ import AdBanner from '@/components/ads/AdBanner';
 import { formatPrice, formatListingSentence } from '@/lib/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 interface Ad {
   id: string;
@@ -152,7 +153,7 @@ export default function HomeClient({
                       aria-label="Show previous featured property image"
                       title="Previous image"
                     >
-                      <span className="material-symbols-outlined">chevron_left</span>
+                      <Icon name="chevron_left" />
                     </button>
                     <button
                       type="button"
@@ -161,7 +162,7 @@ export default function HomeClient({
                       aria-label="Show next featured property image"
                       title="Next image"
                     >
-                      <span className="material-symbols-outlined">chevron_right</span>
+                      <Icon name="chevron_right" />
                     </button>
                     <span className="feature__counter">{featuredImageIndex + 1} / {featuredImages.length}</span>
                   </>
@@ -173,7 +174,7 @@ export default function HomeClient({
                   aria-label={featuredShared ? 'Featured property link copied' : 'Share featured property'}
                   title={featuredShared ? 'Link copied' : 'Share property'}
                 >
-                  <span className="material-symbols-outlined">{featuredShared ? 'check' : 'share'}</span>
+                  <Icon name={featuredShared ? 'check' : 'share'} />
                 </button>
               </div>
               <div className="feature__body">
@@ -204,7 +205,7 @@ export default function HomeClient({
                 </div>
                 <Link href={`/properties/${hero.id}`} className="btn btn--dark self-start">
                   {t.home.viewEstate}
-                  <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
+                  <Icon name="arrow_forward" size={18} />
                 </Link>
               </div>
             </article>
@@ -258,17 +259,17 @@ export default function HomeClient({
                     <span className="name">
                       <span className="truncate">{agent.name}</span>
                       {agent.isVerified && (
-                        <span className="material-symbols-outlined vtick text-[1rem]">verified</span>
+                        <Icon name="verified" size={16} className="vtick" />
                       )}
                     </span>
                     <span className="role block">{agent.title}</span>
                     <span className="meta">
-                      <span className="material-symbols-outlined text-[0.95rem]">location_on</span>
+                      <Icon name="location_on" size={15} />
                       <span className="truncate">{agent.location}</span>
                     </span>
                     {agent.yearsExperience ? (
                       <span className="meta">
-                        <span className="material-symbols-outlined text-[0.95rem]">workspace_premium</span>
+                        <Icon name="workspace_premium" size={15} />
                         <span>{agent.yearsExperience} yrs</span>
                       </span>
                     ) : null}
@@ -328,7 +329,7 @@ export default function HomeClient({
             {cities.length > 6 && (
               <button type="button" className="city-more" onClick={() => setShowAllCities((visible) => !visible)}>
                 <span>{showAllCities ? 'Show fewer cities' : `View more cities (${cities.length - 6})`}</span>
-                <span className="material-symbols-outlined">{showAllCities ? 'expand_less' : 'expand_more'}</span>
+                <Icon name={showAllCities ? 'expand_less' : 'expand_more'} />
               </button>
             )}
           </div>
@@ -364,7 +365,7 @@ export default function HomeClient({
                   </div>
                 ) : (
                   <div className="quick-empty">
-                    <span className="material-symbols-outlined">home_work</span>
+                    <Icon name="home_work" />
                     <strong>0 properties</strong>
                     <span>Nothing listed here yet.</span>
                   </div>

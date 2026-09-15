@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { getAgentById } from '@/lib/data';
 import { requireAdmin } from '@/lib/session';
+import Icon from '@/components/ui/Icon';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -72,7 +73,7 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[#845326] hover:underline"
             >
-              <span className="material-symbols-outlined text-base">download</span>
+              <Icon name="download" size={16} />
               Download photo
             </a>
           </div>

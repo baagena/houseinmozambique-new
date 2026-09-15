@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { formatPrice, formatListingSentence } from '@/lib/utils';
 import PropertyCard from '@/components/properties/PropertyCard';
+import Icon from '@/components/ui/Icon';
 
 interface PropertyDetailClientProps {
   property: PropertyDetail;
@@ -185,7 +186,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
               aria-label="Close photo gallery"
               title="Close gallery"
             >
-              <span className="material-symbols-outlined">close</span>
+              <Icon name="close" />
             </button>
             <div className="photo-lightbox__head">
               <span>{title}</span>
@@ -220,12 +221,12 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                   }
                 }}
               >
-                <span className="material-symbols-outlined text-[1rem]">share</span>
+                <Icon name="share" size={16} />
                 {shareLabel}
               </button>
             </div>
             <p className="pdp__loc">
-              <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
+              <Icon name="location_on" size={18} />
               {property.location}
               <span className="ref ml-2">
                 {t.propertyDetails.refCode} {refCode(property.id)}
@@ -285,7 +286,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                 <ul className="highlights">
                   {amenities.map((a) => (
                     <li key={a}>
-                      <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                      <Icon name="check" size={17} className="ico" />
                       {a}
                     </li>
                   ))}
@@ -315,7 +316,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                     <div className="name">
                       <span className="truncate">{agent.name}</span>
                       {agent.isVerified && (
-                        <span className="material-symbols-outlined vtick text-[1rem]">verified</span>
+                        <Icon name="verified" size={16} className="vtick" />
                       )}
                     </div>
                     <div className="role">{agent.title}</div>
@@ -326,7 +327,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                   <div className="acts">
                     {agent.phone && (
                       <a href={`tel:${agent.phone}`} aria-label={t.propertyDetails.callAgent}>
-                        <span className="material-symbols-outlined text-[1.05rem]">call</span>
+                        <Icon name="call" size={17} />
                       </a>
                     )}
                     {whatsappHref && (
@@ -336,11 +337,11 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                         rel="noopener noreferrer"
                         aria-label={t.propertyDetails.whatsapp}
                       >
-                        <span className="material-symbols-outlined text-[1.05rem]">chat</span>
+                        <Icon name="chat" size={17} />
                       </a>
                     )}
                     <a href={`/agents#${agent.id}`} aria-label={t.propertyDetails.listedBy}>
-                      <span className="material-symbols-outlined text-[1.05rem]">arrow_forward</span>
+                      <Icon name="arrow_forward" size={17} />
                     </a>
                   </div>
                 </div>
@@ -365,7 +366,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
               <div className="map-approx">
                 <span className="map-approx__ring" />
                 <span className="map-approx__pin">
-                  <span className="material-symbols-outlined text-[1.45rem]">location_on</span>
+                  <Icon name="location_on" size={23} />
                 </span>
                 <span className="map-approx__tag">
                   {t.propertyDetails.approxArea} · {property.city || property.location}
@@ -388,16 +389,16 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                   {isShortStay ? (
                     <>
                       <li>
-                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        <Icon name="check" size={17} className="ico" />
                         {t.propertyDetails.noSmoking}
                       </li>
                       <li>
-                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        <Icon name="check" size={17} className="ico" />
                         {t.propertyDetails.noPets}
                       </li>
                       {property.bedrooms > 0 && (
                         <li>
-                          <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                          <Icon name="check" size={17} className="ico" />
                           {t.propertyDetails.upToGuests} {property.bedrooms * 2}{' '}
                           {t.propertyDetails.guestsText}
                         </li>
@@ -406,17 +407,17 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                   ) : (
                     <>
                       <li>
-                        <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                        <Icon name="check" size={17} className="ico" />
                         {isRent ? t.propertyDetails.minLease : t.propertyDetails.purchase}
                       </li>
                       {isRent && (
                         <>
                           <li>
-                            <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                            <Icon name="check" size={17} className="ico" />
                             {t.propertyDetails.depositTerms}
                           </li>
                           <li>
-                            <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                            <Icon name="check" size={17} className="ico" />
                             {t.propertyDetails.utilitiesTerms}
                           </li>
                         </>
@@ -429,15 +430,15 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                 <h5>{t.propertyDetails.security}</h5>
                 <ul>
                   <li>
-                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    <Icon name="check" size={17} className="ico" />
                     {t.propertyDetails.securityGuard}
                   </li>
                   <li>
-                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    <Icon name="check" size={17} className="ico" />
                     {t.propertyDetails.smokeAlarm}
                   </li>
                   <li>
-                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    <Icon name="check" size={17} className="ico" />
                     {t.propertyDetails.generator}
                   </li>
                 </ul>
@@ -446,11 +447,11 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                 <h5>{t.propertyDetails.nearby}</h5>
                 <ul>
                   <li>
-                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    <Icon name="check" size={17} className="ico" />
                     {property.city || property.location}
                   </li>
                   <li>
-                    <span className="material-symbols-outlined ico text-[1.05rem]">check</span>
+                    <Icon name="check" size={17} className="ico" />
                     {t.propertyDetails.locationDesc.slice(0, 60)}…
                   </li>
                 </ul>
@@ -483,7 +484,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
 
               {whatsappHref && (
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn--wa btn--full">
-                  <span className="material-symbols-outlined text-[1.1rem]">chat</span>
+                  <Icon name="chat" size={18} />
                   {t.propertyDetails.whatsapp}
                 </a>
               )}
@@ -525,7 +526,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
         </div>
         {whatsappHref && (
           <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn--wa btn--sm">
-            <span className="material-symbols-outlined text-[1.1rem]">chat</span>
+            <Icon name="chat" size={18} />
           </a>
         )}
         <button onClick={() => handleInquiry('contact')} disabled={isSubmitting} className="btn btn--gold">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 interface SettingsFormProps {
   email: string;
@@ -58,13 +59,13 @@ export default function SettingsForm({ email, phone: initialPhone }: SettingsFor
 
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold rounded-2xl flex items-center gap-3">
-          <span className="material-symbols-outlined text-lg">check_circle</span>
+          <Icon name="check_circle" size={18} />
           Settings saved successfully!
         </div>
       )}
       {error && (
         <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl flex items-center gap-3">
-          <span className="material-symbols-outlined text-lg">error</span>
+          <Icon name="error" size={18} />
           {error}
         </div>
       )}
@@ -108,7 +109,7 @@ export default function SettingsForm({ email, phone: initialPhone }: SettingsFor
                   <option>Portuguese</option>
                   <option>French</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 text-[#c4c6cf] pointer-events-none">expand_more</span>
+                <Icon name="expand_more" className="absolute right-6 top-1/2 -translate-y-1/2 text-[#c4c6cf] pointer-events-none" />
               </div>
            </div>
         </div>
@@ -150,7 +151,7 @@ export default function SettingsForm({ email, phone: initialPhone }: SettingsFor
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-lg">verified_user</span>
+                  <Icon name="verified_user" size={18} />
                   Update Preferences
                 </>
               )}

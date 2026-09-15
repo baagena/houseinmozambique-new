@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SERVICES, serviceHref } from '@/components/services/catalog';
+import Icon from '@/components/ui/Icon';
 
 const heroImage =
   'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1800';
@@ -42,7 +43,7 @@ export default function ServicesIndexClient() {
                   />
                   <span className="media-scrim" />
                   <span className="media-chip">
-                    <span className="material-symbols-outlined text-[1.15rem]">{service.icon}</span>
+                    <Icon name={service.icon} size={18} />
                   </span>
                   <span className="media-index">{String(service.index).padStart(2, '0')}</span>
                 </div>
@@ -55,9 +56,7 @@ export default function ServicesIndexClient() {
                   <p className="muted">{t.services[service.taglineKey]}</p>
                   <span className="mono mt-6 inline-flex items-center gap-1.5 text-[0.72rem] uppercase tracking-[0.1em] text-[var(--gold-deep)]">
                     {t.services.exploreService}
-                    <span className="material-symbols-outlined text-[1rem] transition-transform group-hover:translate-x-1">
-                      arrow_forward
-                    </span>
+                    <Icon name="arrow_forward" size={16} className="transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
               </Link>

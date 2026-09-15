@@ -6,6 +6,7 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { logout } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 type NavKey = 'home' | 'properties' | 'agents' | 'services' | 'about' | 'news' | 'contact';
 
@@ -57,7 +58,7 @@ function TopbarAd({ ad }: { ad: TopAd | null }) {
         <span className="ad__label">Advertisement</span>
         <span className="flex h-full items-center gap-3 px-4">
           <span className="grid h-9 w-9 flex-none place-items-center rounded-lg bg-[var(--gold)] text-[var(--ink-deep)]">
-            <span className="material-symbols-outlined text-[20px]">campaign</span>
+            <Icon name="campaign" />
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[0.82rem] font-semibold text-[var(--ink)]">
@@ -257,7 +258,7 @@ function SiteHeaderContent() {
             aria-label="Open menu"
             aria-expanded={mobileOpen}
           >
-            <span className="material-symbols-outlined text-[1.45rem]">menu</span>
+            <Icon name="menu" size={23} />
           </button>
         </div>
       </div>
@@ -277,13 +278,7 @@ function SiteHeaderContent() {
                       data-active={isActive('/properties') ? 'true' : undefined}
                     >
                       {t.nav.properties}
-                      <span
-                        className={`material-symbols-outlined text-[1rem] transition-transform ${
-                          categoriesOpen ? 'rotate-180' : ''
-                        }`}
-                      >
-                        expand_more
-                      </span>
+                      <Icon name="expand_more" size={16} className={`transition-transform ${ categoriesOpen ? 'rotate-180' : '' }`} />
                     </button>
 
                     {categoriesOpen && (
@@ -299,7 +294,7 @@ function SiteHeaderContent() {
                                 : undefined
                             }
                           >
-                            <span className="material-symbols-outlined ic text-[1.1rem]">{cat.icon}</span>
+                            <Icon name={cat.icon} size={18} className="ic" />
                             <span>
                               <span className="t">{t.nav[cat.key]}</span>
                               <span className="d">{t.nav[cat.descKey]}</span>
@@ -360,11 +355,11 @@ function SiteHeaderContent() {
                 {accountOpen && (
                   <div className="navmenu navmenu--right">
                     <Link href={dashboardHref} onClick={() => setAccountOpen(false)}>
-                      <span className="material-symbols-outlined ic text-[1.1rem]">dashboard</span>
+                      <Icon name="dashboard" size={18} className="ic" />
                       <span className="t">Dashboard</span>
                     </Link>
                     <button onClick={handleSignOut}>
-                      <span className="material-symbols-outlined ic text-[1.1rem]">logout</span>
+                      <Icon name="logout" size={18} className="ic" />
                       <span className="t">{t.auth.signOut}</span>
                     </button>
                   </div>
@@ -388,7 +383,7 @@ function SiteHeaderContent() {
             </span>
           </Link>
           <button className="x" onClick={() => setMobileOpen(false)} aria-label="Close menu">
-            <span className="material-symbols-outlined text-[1.5rem]">close</span>
+            <Icon name="close" size={24} />
           </button>
         </div>
 
@@ -402,13 +397,7 @@ function SiteHeaderContent() {
                   aria-expanded={mobilePropsOpen}
                 >
                   {t.nav.properties}
-                  <span
-                    className={`material-symbols-outlined transition-transform ${
-                      mobilePropsOpen ? 'rotate-180' : ''
-                    }`}
-                  >
-                    expand_more
-                  </span>
+                  <Icon name="expand_more" className={`transition-transform ${ mobilePropsOpen ? 'rotate-180' : '' }`} />
                 </button>
                 {mobilePropsOpen && (
                   <div className="msub">

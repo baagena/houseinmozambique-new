@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { formatPostDate, slugify } from '@/lib/blog-utils';
 import { uploadSingleImage } from '@/actions/properties';
+import Icon from '@/components/ui/Icon';
 
 type AdminBlogPost = {
   id: string;
@@ -242,7 +243,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] hover:bg-[#f5f6f8]">
-                    <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                    <Icon name="upload_file" size={18} />
                     {isUploadingCover ? 'Uploading…' : 'Upload image'}
                     <input type="file" accept="image/*" onChange={handleCoverImageUpload} disabled={isUploadingCover} className="sr-only" />
                   </label>
@@ -315,7 +316,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
             disabled={isSaving}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#002045] px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c] disabled:opacity-50"
           >
-            <span className="material-symbols-outlined text-[18px]">save</span>
+            <Icon name="save" size={18} />
             {isSaving ? 'Saving…' : form.id ? 'Save article' : 'Create article'}
           </button>
         </section>
@@ -327,7 +328,7 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
           <div className="divide-y divide-[#f2f4f6]">
             {posts.length === 0 ? (
               <div className="px-8 py-16 text-center">
-                <span className="material-symbols-outlined text-5xl text-[#e3e6ea]">article</span>
+                <Icon name="article" size={48} className="text-[#e3e6ea]" />
                 <p className="mt-2 text-sm text-[#9aa0a8]">No blog posts yet.</p>
               </div>
             ) : posts.map((post) => (

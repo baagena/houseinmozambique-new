@@ -1,4 +1,5 @@
 import SafeImage from '@/components/ui/SafeImage';
+import Icon from '@/components/ui/Icon';
 
 interface AgentCardProps {
   agent: any;
@@ -37,33 +38,31 @@ export default function AgentCard({ agent, className = '' }: AgentCardProps) {
         <div className="name">
           <span className="truncate">{agent.name}</span>
           {agent.isVerified && (
-            <span className="material-symbols-outlined vtick text-[1rem]" title="Verified">
-              verified
-            </span>
+            <Icon name="verified" size={16} className="vtick" title="Verified" />
           )}
         </div>
         <div className="role">{agent.title}</div>
 
         {agent.phone && (
           <a href={`tel:${agent.phone}`} className="meta hover:text-[var(--gold-deep)]">
-            <span className="material-symbols-outlined text-[0.95rem]">call</span>
+            <Icon name="call" size={15} />
             <span className="truncate">{agent.phone}</span>
           </a>
         )}
         <div className="meta">
-          <span className="material-symbols-outlined text-[0.95rem]">location_on</span>
+          <Icon name="location_on" size={15} />
           <span className="truncate">{agent.location}</span>
         </div>
         {typeof listings === 'number' && (
           <div className="meta">
-            <span className="material-symbols-outlined text-[0.95rem]">apartment</span>
+            <Icon name="apartment" size={15} />
             <span className="mono">{listings} listings</span>
           </div>
         )}
 
         {agent.bio && <p className="muted mt-3 line-clamp-2 text-[0.84rem]">{agent.bio}</p>}
         <button type="button" onClick={shareAgent} className="meta mt-3 hover:text-(--gold-deep)" title="Share agent profile">
-          <span className="material-symbols-outlined text-[0.95rem]">share</span>
+          <Icon name="share" size={15} />
           <span>Share profile</span>
         </button>
       </div>

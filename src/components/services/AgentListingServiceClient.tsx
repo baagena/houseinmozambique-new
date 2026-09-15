@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import ServiceLayout from '@/components/services/ServiceLayout';
+import Icon from '@/components/ui/Icon';
 
 const BENEFIT_ICONS = ['badge', 'verified', 'space_dashboard', 'forward_to_inbox', 'trending_up'];
 
@@ -47,7 +48,7 @@ export default function AgentListingServiceClient() {
               className="mt-8 inline-flex items-center gap-2 rounded-xl border border-[#13233F]/20 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:bg-[#13233F]/5"
             >
               {t.nav.agents}
-              <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
+              <Icon name="arrow_forward" size={18} className="leading-none" />
             </Link>
           </div>
 
@@ -57,12 +58,7 @@ export default function AgentListingServiceClient() {
               <span className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-[10px] bg-[#EDEAE2] text-2xl font-semibold text-[#13233F]">
                 HM
                 <span className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-xl border-4 border-white bg-[#A87A22]">
-                  <span
-                    className="material-symbols-outlined text-sm leading-none text-white"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    verified
-                  </span>
+                  <Icon name="verified" size={14} className="leading-none text-white" style={{ fontVariationSettings: "'FILL' 1" }} />
                 </span>
               </span>
               <div>
@@ -70,12 +66,7 @@ export default function AgentListingServiceClient() {
                   {t.services.profileExample}
                 </p>
                 <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#A87A22]">
-                  <span
-                    className="material-symbols-outlined text-sm leading-none"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    verified
-                  </span>
+                  <Icon name="verified" size={14} className="leading-none" style={{ fontVariationSettings: "'FILL' 1" }} />
                   {t.services.verifiedLabel}
                 </p>
               </div>
@@ -84,9 +75,7 @@ export default function AgentListingServiceClient() {
             <ul className="mt-8 space-y-3">
               {['badge', 'location_on', 'workspace_premium', 'home_work'].map((icon, i) => (
                 <li key={icon} className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg leading-none text-[#E6E1D6]">
-                    {icon}
-                  </span>
+                  <Icon name={icon} size={18} className="leading-none text-[#E6E1D6]" />
                   <span className="h-2.5 rounded-full bg-[#EDEAE2]" style={{ width: `${70 - i * 12}%` }} />
                 </li>
               ))}
@@ -112,9 +101,7 @@ export default function AgentListingServiceClient() {
                 className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-[#e9c877]/40 hover:bg-white/[0.07]"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e9c877]/15">
-                  <span className="material-symbols-outlined text-xl leading-none text-[#e9c877]">
-                    {BENEFIT_ICONS[i]}
-                  </span>
+                  <Icon name={BENEFIT_ICONS[i]} className="leading-none text-[#e9c877]" />
                 </span>
                 <p className="mt-5 text-sm font-medium leading-relaxed text-white/80">{benefit}</p>
               </div>
@@ -151,7 +138,7 @@ export default function AgentListingServiceClient() {
           className="mt-12 inline-flex items-center gap-2 rounded-xl bg-[#13233F] px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#e9c877] transition-all hover:opacity-90 active:scale-95"
         >
           {t.services.startNow}
-          <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
+          <Icon name="arrow_forward" size={18} className="leading-none" />
         </Link>
       </section>
     </ServiceLayout>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Icon from '@/components/ui/Icon';
 
 const STEPS = [
   { id: 1, name: 'Personal', icon: 'person' },
@@ -130,7 +131,7 @@ export default function AgentRegisterPage() {
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 ${
                   step >= s.id ? 'bg-[#13233F] text-white' : 'bg-[#eceef1] text-[#9aa0a8]'
                 }`}>
-                  <span className="material-symbols-outlined text-[18px]">{s.icon}</span>
+                  <Icon name={s.icon} size={18} />
                 </div>
                 <span className={`text-[12px] font-medium ${
                   step === s.id ? 'text-[#13233F]' : 'text-[#9aa0a8]'
@@ -255,12 +256,12 @@ export default function AgentRegisterPage() {
                           <Image src={formData.avatar} alt="Profile" fill className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[#9aa0a8]">
-                            <span className="material-symbols-outlined text-3xl">add_a_photo</span>
+                            <Icon name="add_a_photo" size={30} />
                           </div>
                         )}
                       </div>
                       <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#13233F] text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-[#0a2f5c] transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">upload</span>
+                        <Icon name="upload" size={18} />
                         <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                       </label>
                     </div>
@@ -289,7 +290,7 @@ export default function AgentRegisterPage() {
                           <span key={spec} className="px-2.5 py-1 bg-[#f1f3f5] text-[#5b616b] rounded-md text-[12px] font-medium flex items-center gap-1.5">
                             {spec}
                             <button type="button" onClick={() => removeSpecialization(spec)} className="text-[#9aa0a8] hover:text-red-500">
-                              <span className="material-symbols-outlined text-[14px]">close</span>
+                              <Icon name="close" size={14} />
                             </button>
                           </span>
                         ))}
@@ -309,7 +310,7 @@ export default function AgentRegisterPage() {
                         onClick={addSpecialization}
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#13233F] text-white rounded-md flex items-center justify-center hover:bg-[#0a2f5c] transition-colors"
                       >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
+                        <Icon name="add" size={18} />
                       </button>
                     </div>
                   </div>
@@ -324,7 +325,7 @@ export default function AgentRegisterPage() {
                     onClick={handleBack}
                     className="flex-1 h-11 rounded-lg border border-[#e3e6ea] text-[#13233F] text-[14px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <Icon name="arrow_back" size={18} />
                     Back
                   </button>
                 )}
@@ -341,7 +342,7 @@ export default function AgentRegisterPage() {
                   ) : (
                     <>
                       {step === 3 ? 'Complete application' : 'Continue'}
-                      <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                      <Icon name="arrow_forward" size={18} />
                     </>
                   )}
                 </button>

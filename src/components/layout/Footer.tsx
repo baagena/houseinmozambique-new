@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 const SOCIALS = [
   {
@@ -128,17 +129,17 @@ export default function Footer() {
             <h5>{t.footer.getInTouch}</h5>
             <ul className="footer-contact">
               <li>
-                <span className="material-symbols-outlined mt-0.5 text-[1rem] text-[var(--gold)]">call</span>
+                <Icon name="call" size={16} className="mt-0.5 text-[var(--gold)]" />
                 <a href="tel:+258879329012">+258 879 329 012</a>
               </li>
               <li>
-                <span className="material-symbols-outlined mt-0.5 text-[1rem] text-[var(--gold)]">mail</span>
+                <Icon name="mail" size={16} className="mt-0.5 text-[var(--gold)]" />
                 <a href="mailto:info@houseinmozambique.com" className="break-all">
                   info@houseinmozambique.com
                 </a>
               </li>
               <li>
-                <span className="material-symbols-outlined mt-0.5 text-[1rem] text-[var(--gold)]">location_on</span>
+                <Icon name="location_on" size={16} className="mt-0.5 text-[var(--gold)]" />
                 <span>Av. Mozambique N1, Maputo — Zimpeto</span>
               </li>
             </ul>
@@ -177,9 +178,7 @@ export default function Footer() {
                 required
               />
               <button type="submit" disabled={newsletterStatus === 'submitting'} aria-label={t.footer.subscribe}>
-                <span className="material-symbols-outlined text-[1.1rem]">
-                  {newsletterStatus === 'submitting' ? 'progress_activity' : 'arrow_forward'}
-                </span>
+                <Icon name={newsletterStatus === 'submitting' ? 'progress_activity' : 'arrow_forward'} size={18} />
               </button>
             </form>
             {newsletterMessage ? (

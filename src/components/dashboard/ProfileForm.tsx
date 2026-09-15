@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Icon from '@/components/ui/Icon';
 
 const SPECIALIZATIONS = [
   'Luxury Villas', 'Expat Relocations', 'Polana District', 
@@ -85,13 +86,13 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
 
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold rounded-2xl flex items-center gap-3">
-          <span className="material-symbols-outlined text-lg">check_circle</span>
+          <Icon name="check_circle" size={18} />
           Profile updated successfully!
         </div>
       )}
       {error && (
         <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl flex items-center gap-3">
-          <span className="material-symbols-outlined text-lg">error</span>
+          <Icon name="error" size={18} />
           {error}
         </div>
       )}
@@ -118,7 +119,7 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
                 rel="noreferrer"
                 className="mt-3 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#002045] underline"
               >
-                <span className="material-symbols-outlined text-base">download</span>
+                <Icon name="download" size={16} />
                 Download photo
               </a>
             )}
@@ -207,7 +208,7 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                <span className="material-symbols-outlined text-lg group-hover:rotate-12 transition-transform">save</span>
+                <Icon name="save" size={18} className="group-hover:rotate-12 transition-transform" />
                 Save Profile Changes
               </>
             )}

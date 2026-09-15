@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 /**
  * Three-state theme control: System / Light / Dark.
@@ -84,9 +85,7 @@ export default function ThemeSwitch() {
               border: active ? '1px solid var(--d-border)' : '1px solid transparent',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }} aria-hidden="true">
-              {opt.icon}
-            </span>
+            <Icon name={opt.icon} size={16} />
             <span className="sr-only">{opt.label}</span>
           </button>
         );

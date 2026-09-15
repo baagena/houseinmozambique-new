@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 const HERO_IMG = '/hero-marina.jpg';
 
@@ -109,7 +110,7 @@ export default function HomeHero() {
 
             <button type="submit" className="btn btn--gold search__go">
               {t.home.findProperty}
-              <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
+              <Icon name="arrow_forward" size={18} />
             </button>
           </form>
         </div>

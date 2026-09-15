@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PlanFeature, PricingPlanRecord } from '@/lib/pricing';
+import Icon from '@/components/ui/Icon';
 
 type PlanForm = Omit<PricingPlanRecord, 'id'> & { id?: string };
 
@@ -76,13 +77,7 @@ function PlanPreview({ form, lang }: { form: PlanForm; lang: 'en' | 'pt' }) {
             key={`${f.label}-${i}`}
             className={`flex items-start gap-3 text-xs leading-relaxed ${!f.included ? 'opacity-40' : ''}`}
           >
-            <span
-              className={`material-symbols-outlined text-base flex-shrink-0 ${
-                f.included ? (form.highlighted ? 'text-[#fab983]' : 'text-[#845326]') : 'text-[#74777f]'
-              }`}
-            >
-              {f.included ? (f.star ? 'stars' : 'check_circle') : 'do_not_disturb_on'}
-            </span>
+            <Icon name={f.included ? (f.star ? 'stars' : 'check_circle') : 'do_not_disturb_on'} size={16} className={`flex-shrink-0 ${ f.included ? (form.highlighted ? 'text-[#fab983]' : 'text-[#845326]') : 'text-[#74777f]' }`} />
             <span>{f.label}</span>
           </li>
         ))}
@@ -128,9 +123,7 @@ function FeatureEditor({
                 : 'border-[#e0e0e0] bg-[#f5f6f8] text-[#9aa0a8]'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {f.included ? 'check_circle' : 'do_not_disturb_on'}
-            </span>
+            <Icon name={f.included ? 'check_circle' : 'do_not_disturb_on'} size={18} />
           </button>
           <button
             type="button"
@@ -142,7 +135,7 @@ function FeatureEditor({
                 : 'border-[#e0e0e0] bg-[#f5f6f8] text-[#9aa0a8]'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">stars</span>
+            <Icon name="stars" size={18} />
           </button>
           <button
             type="button"
@@ -150,7 +143,7 @@ function FeatureEditor({
             onClick={() => onChange(features.filter((_, index) => index !== i))}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9aa0a8] hover:bg-red-50 hover:text-red-500 transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
+            <Icon name="delete" size={18} />
           </button>
         </div>
       ))}
@@ -159,7 +152,7 @@ function FeatureEditor({
         onClick={() => onChange([...features, { label: '', included: true, star: false }])}
         className="flex items-center gap-1.5 text-[13px] font-medium text-[#002045] hover:underline"
       >
-        <span className="material-symbols-outlined text-[18px]">add</span>
+        <Icon name="add" size={18} />
         Add feature
       </button>
     </div>
@@ -278,7 +271,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
           onClick={openNew}
           className="flex items-center gap-1.5 bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+          <Icon name="add" size={18} />
           New plan
         </button>
       </div>
@@ -292,7 +285,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-xl px-5 py-4 border border-[#eceef1]">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`material-symbols-outlined text-[20px] ${s.color ?? 'text-[#002045]'}`}>{s.icon}</span>
+              <Icon name={s.icon} className={`${s.color ?? 'text-[#002045]'}`} />
               <span className="text-[13px] text-[#74777f] font-medium">{s.label}</span>
             </div>
             <p className="text-2xl font-semibold text-[#002045] tabular-nums">{s.value}</p>
@@ -317,7 +310,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
               onClick={closeForm}
               className="flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <Icon name="close" />
             </button>
           </div>
 
@@ -485,7 +478,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                   disabled={saving}
                   className="flex items-center gap-1.5 bg-[#002045] text-white px-4 py-2.5 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[18px]">save</span>
+                  <Icon name="save" size={18} />
                   {saving ? 'Saving…' : editing ? 'Save changes' : 'Create plan'}
                 </button>
                 <button
@@ -558,15 +551,13 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                 title={plan.isActive ? 'Hide from the pricing page' : 'Show on the pricing page'}
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045] transition-colors"
               >
-                <span className="material-symbols-outlined text-[19px]">
-                  {plan.isActive ? 'visibility' : 'visibility_off'}
-                </span>
+                <Icon name={plan.isActive ? 'visibility' : 'visibility_off'} size={19} />
               </button>
               <button
                 onClick={() => openEdit(plan)}
                 className="flex items-center gap-1.5 rounded-lg border border-[#e0e0e0] px-3 py-2 text-[13px] font-medium text-[#374151] hover:bg-[#f5f6f8] transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px]">edit</span>
+                <Icon name="edit" size={18} />
                 Edit
               </button>
               <button
@@ -575,7 +566,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                 title="Delete plan"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9aa0a8] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
               >
-                <span className="material-symbols-outlined text-[19px]">delete</span>
+                <Icon name="delete" size={19} />
               </button>
             </div>
           </div>

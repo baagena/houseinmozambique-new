@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import ServiceLayout from '@/components/services/ServiceLayout';
+import Icon from '@/components/ui/Icon';
 
 const BENEFIT_ICONS = ['web', 'category', 'star', 'share', 'forward_to_inbox'];
 
@@ -60,9 +61,7 @@ export default function AdvertisingServiceClient() {
                   className="group flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-[#F5F2EC]"
                 >
                   <span className="text-sm font-bold text-[#13233F]">{t.nav[cat.labelKey]}</span>
-                  <span className="material-symbols-outlined text-lg leading-none text-[#E6E1D6] transition-all group-hover:translate-x-1 group-hover:text-[#A87A22]">
-                    arrow_forward
-                  </span>
+                  <Icon name="arrow_forward" size={18} className="leading-none text-[#E6E1D6] transition-all group-hover:translate-x-1 group-hover:text-[#A87A22]" />
                 </Link>
               ))}
             </div>
@@ -92,9 +91,7 @@ export default function AdvertisingServiceClient() {
                 }`}
               >
                 <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#A87A22]/10">
-                  <span className="material-symbols-outlined text-2xl leading-none text-[#A87A22]">
-                    {BENEFIT_ICONS[i]}
-                  </span>
+                  <Icon name={BENEFIT_ICONS[i]} size={24} className="leading-none text-[#A87A22]" />
                 </span>
                 <p className="text-base font-medium leading-relaxed text-[#5E6B7A]">{benefit}</p>
               </div>
@@ -133,7 +130,7 @@ export default function AdvertisingServiceClient() {
             className="inline-flex items-center gap-2 rounded-xl bg-[#13233F] px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#e9c877] transition-all hover:opacity-90 active:scale-95"
           >
             {t.services.pricingCta}
-            <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
+            <Icon name="arrow_forward" size={18} className="leading-none" />
           </Link>
           <Link
             href="/post-property"

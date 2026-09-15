@@ -6,6 +6,7 @@ import Link from 'next/link';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import ThemeSwitch from '@/components/dashboard/ThemeSwitch';
 import { logout } from '@/lib/auth';
+import Icon from '@/components/ui/Icon';
 
 interface SessionUser {
   id: string;
@@ -74,13 +75,10 @@ export default function DashboardLayout({
       className="him-dash flex h-screen overflow-hidden"
       style={{ background: 'var(--d-paper)' }}
     >
-      {/* Console typefaces. Rendered here rather than in the root layout so the
-          public marketing pages do not pay for fonts only the console uses;
-          React hoists these into <head>. */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      />
+      {/* Typefaces are self-hosted via next/font — see src/app/fonts.ts. They
+          used to be a render-blocking <link> to fonts.googleapis.com right
+          here, which cost a third-party round trip before the console could
+          paint. */}
       <DashboardSidebar role={roleLabel as 'admin' | 'agent'} userName={user.name} accountRole={user.role} />
 
       <main className="flex-1 overflow-y-auto custom-scrollbar relative">
@@ -100,13 +98,7 @@ export default function DashboardLayout({
               border: '1px solid transparent',
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 19, color: 'var(--d-text-3)' }}
-              aria-hidden="true"
-            >
-              search
-            </span>
+            <Icon name="search" size={19} style={{ color: 'var(--d-text-3)' }} />
             <label htmlFor="dash-search" className="sr-only">Search listings, leads and agents</label>
             <input
               id="dash-search"
@@ -126,9 +118,7 @@ export default function DashboardLayout({
               style={{ borderRadius: 'var(--d-radius-sm)', color: 'var(--d-text-3)' }}
               aria-label="Notifications"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 21 }} aria-hidden="true">
-                notifications
-              </span>
+              <Icon name="notifications" size={21} />
               <span
                 className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
                 style={{ background: 'var(--d-crit)', boxShadow: '0 0 0 2px var(--d-card)' }}
@@ -168,9 +158,7 @@ export default function DashboardLayout({
                     }}
                   />
                 ) : (
-                  <span className="material-symbols-outlined" style={{ fontSize: 19 }} aria-hidden="true">
-                    logout
-                  </span>
+                  <Icon name="logout" size={19} />
                 )}
                 <span className="sr-only">Sign out</span>
               </button>

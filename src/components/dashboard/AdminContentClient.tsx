@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 type Lang = 'en' | 'pt';
 type FlatMap = Record<string, string>;
@@ -148,7 +149,7 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2.5 rounded-lg border border-[#e3e6ea] bg-white px-3 h-9 w-full sm:w-72">
-          <span className="material-symbols-outlined text-[19px] text-[#9aa0a8]">search</span>
+          <Icon name="search" size={19} className="text-[#9aa0a8]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -171,7 +172,7 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
                 className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-[#fafbfc]"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-[20px] text-[#9aa0a8]">description</span>
+                  <Icon name="description" className="text-[#9aa0a8]" />
                   <span className="text-sm font-semibold text-[#002045]">{sectionLabel(section)}</span>
                   <span className="text-[12px] font-medium text-[#9aa0a8]">{keys.length}</span>
                   {sectionDirty && (
@@ -180,9 +181,7 @@ export default function AdminContentClient({ defaults, overrides }: Props) {
                     </span>
                   )}
                 </div>
-                <span className={`material-symbols-outlined text-[20px] text-[#9aa0a8] transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-                  expand_more
-                </span>
+                <Icon name="expand_more" className={`text-[#9aa0a8] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isOpen && (

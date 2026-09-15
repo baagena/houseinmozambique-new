@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Icon from '@/components/ui/Icon';
 
 type Ad = {
   id: string;
@@ -255,7 +256,7 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
             onClick={openNew}
             className="flex items-center gap-1.5 bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Icon name="add" size={18} />
             New ad
           </button>
         </div>
@@ -270,7 +271,7 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl px-5 py-4 border border-[#eceef1]">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className={`material-symbols-outlined text-[20px] ${s.color ?? 'text-[#002045]'}`}>{s.icon}</span>
+                <Icon name={s.icon} className={`${s.color ?? 'text-[#002045]'}`} />
                 <span className="text-[13px] text-[#74777f] font-medium">{s.label}</span>
               </div>
               <p className="text-2xl font-semibold text-[#002045] tabular-nums">{s.value}</p>
@@ -284,7 +285,7 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
             <div className="flex items-center justify-between px-5 h-12 border-b border-[#eceef1]">
               <h2 className="text-sm font-semibold text-[#002045]">{editing ? 'Edit ad' : 'Create new ad'}</h2>
               <button onClick={closeForm} className="flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]">
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <Icon name="close" />
               </button>
             </div>
 
@@ -543,7 +544,7 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
                           className="p-1.5 text-[#9aa0a8] hover:text-[#002045] hover:bg-[#f5f6f8] rounded-md transition-colors"
                           title="Edit"
                         >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                          <Icon name="edit" size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(ad.id)}
@@ -551,7 +552,7 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
                           className="p-1.5 text-[#9aa0a8] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-40"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                          <Icon name="delete" size={18} />
                         </button>
                       </div>
                     </div>

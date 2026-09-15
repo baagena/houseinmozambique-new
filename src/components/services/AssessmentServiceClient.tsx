@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import ServiceLayout from '@/components/services/ServiceLayout';
+import Icon from '@/components/ui/Icon';
 
 const SHOT_IMAGE =
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1200';
@@ -112,7 +113,7 @@ export default function AssessmentServiceClient() {
             className="mt-12 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:opacity-90 active:scale-95"
           >
             {t.services.talkToUs}
-            <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
+            <Icon name="arrow_forward" size={18} className="leading-none" />
           </Link>
         </div>
       </section>

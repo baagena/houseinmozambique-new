@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 type NotificationKind = 'lead' | 'approval' | 'payment' | 'system';
 
@@ -110,7 +111,7 @@ export default function NotificationsClient() {
             className="flex items-start gap-3.5 rounded-xl border border-[#eceef1] bg-white p-4"
           >
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.unread ? 'bg-[#002045] text-[#fab983]' : 'bg-[#f5f6f8] text-[#9aa0a8]'}`}>
-              <span className="material-symbols-outlined text-[20px]">{iconByKind[item.kind]}</span>
+              <Icon name={iconByKind[item.kind]} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
@@ -126,7 +127,7 @@ export default function NotificationsClient() {
 
       {visibleNotifications.length === 0 && (
         <div className="rounded-xl border border-dashed border-[#e3e6ea] bg-white py-16 text-center">
-          <span className="material-symbols-outlined text-5xl text-[#d7dbe0]">notifications_off</span>
+          <Icon name="notifications_off" size={48} className="text-[#d7dbe0]" />
           <h2 className="mt-3 text-[15px] font-semibold text-[#002045]">{t.dashboard.notifications.noNotifications}</h2>
           <p className="mt-1 text-sm text-[#9aa0a8]">
             {unreadCount === 0 ? t.dashboard.notifications.markAllAsRead : t.dashboard.notifications.desc}

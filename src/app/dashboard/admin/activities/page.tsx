@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import InquiriesList from './InquiriesList';
 import { getSession } from '@/lib/session';
+import Icon from '@/components/ui/Icon';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +53,7 @@ export default async function AdminActivitiesPage() {
           href="/dashboard/admin/subscribers"
           className="flex items-center gap-1.5 rounded-lg border border-[#e0e0e0] bg-white px-3.5 py-2 text-[13px] font-medium text-[#374151] hover:bg-[#f5f6f8] transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">group</span>
+          <Icon name="group" size={18} />
           {subscriberCount} newsletter subscriber(s)
         </Link>
       </div>

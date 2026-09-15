@@ -8,6 +8,7 @@ import PropertyCard from '@/components/properties/PropertyCard';
 import AdBanner from '@/components/ads/AdBanner';
 import { Property } from '@/types';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 interface Ad {
   id: string;
@@ -310,7 +311,7 @@ export default function PropertiesClient({
             </div>
             <div className="flex items-center gap-3">
               <button className="btn btn--ghost btn--sm filters-toggle" onClick={() => setSheetOpen(true)}>
-                <span className="material-symbols-outlined text-[1.1rem]">tune</span>
+                <Icon name="tune" size={18} />
                 {t.propertiesList.filtersBtn}
               </button>
               <div className="sort">
@@ -341,7 +342,7 @@ export default function PropertiesClient({
               ) : (
                 <div className="empty">
                   <span className="ico">
-                    <span className="material-symbols-outlined text-[1.7rem]">search_off</span>
+                    <Icon name="search_off" size={27} />
                   </span>
                   <h3>{t.propertiesList.noProperties}</h3>
                   <p>{t.propertiesList.tryAdjusting}</p>

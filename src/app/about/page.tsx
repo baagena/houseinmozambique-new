@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 const heroImage =
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1800';
@@ -82,7 +83,7 @@ export default function AboutPage() {
             {services.map((service) => (
               <div key={service.title} className="item">
                 <span className="ico">
-                  <span className="material-symbols-outlined text-[1.1rem]">{service.icon}</span>
+                  <Icon name={service.icon} size={18} />
                 </span>
                 <h3 className="ui">{service.title}</h3>
                 <p>{service.desc}</p>

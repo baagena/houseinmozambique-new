@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Icon from '@/components/ui/Icon';
 
 interface Reply {
   id: string;
@@ -173,7 +174,7 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
 
       {visibleInquiries.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-[#eceef1] text-[#9aa0a8]">
-          <span className="material-symbols-outlined text-4xl mb-2 text-[#d7dbe0] block">mail_outline</span>
+          <Icon name="mail_outline" size={36} className="mb-2 text-[#d7dbe0] block" />
           <p className="text-sm font-medium">No messages found</p>
         </div>
       ) : (
@@ -232,7 +233,7 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
                       onClick={() => (isComposing ? closeReply() : openReply(inq))}
                       className="text-[#002045] hover:underline flex items-center gap-1"
                     >
-                      <span className="material-symbols-outlined text-[16px]">reply</span>
+                      <Icon name="reply" size={16} />
                       {isComposing ? 'Cancel' : isAnswered ? 'Reply again' : 'Reply by email'}
                     </button>
                     {!inq.isRead && (
@@ -242,7 +243,7 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
                         className="text-[#5b616b] hover:underline disabled:opacity-50 flex items-center gap-1"
                       >
                         {isProcessing === inq.id ? (
-                          <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                          <Icon name="sync" size={16} className="animate-spin" />
                         ) : (
                           <span>Mark read</span>
                         )}
@@ -254,7 +255,7 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
                       className="text-red-500 hover:text-red-700 disabled:opacity-50 flex items-center gap-1"
                     >
                       {isProcessing === inq.id ? (
-                        <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                        <Icon name="sync" size={16} className="animate-spin" />
                       ) : (
                         <span>Delete</span>
                       )}
@@ -322,7 +323,7 @@ export default function InquiriesList({ initialInquiries }: InquiriesListProps) 
                       disabled={sending}
                       className="flex items-center gap-1.5 bg-[#002045] text-white px-4 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[17px]">send</span>
+                      <Icon name="send" size={17} />
                       {sending ? 'Sending…' : 'Send answer'}
                     </button>
                     <button

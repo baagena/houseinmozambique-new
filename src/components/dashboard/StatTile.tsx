@@ -1,15 +1,20 @@
 'use client';
 
+import Icon from '@/components/ui/Icon';
+
 /**
  * The single stat tile every dashboard figure composes from.
  *
- * Figures use the display face and tabular numerals so a column of numbers
- * lines up and does not jitter as values change.
+ * Figures are set in the mono face with tabular numerals: a column of numbers
+ * lines up, and a value does not jitter sideways as it changes. The unit rides
+ * alongside at caption size so the number itself stays the thing you read.
  */
 
 interface StatTileProps {
   label: string;
   value: string | number;
+  /** Unit suffix set beside the figure at caption size, e.g. "MT", "m²". */
+  unit?: string;
   icon?: string;
   /** Optional supporting line under the figure — units, comparison, context. */
   hint?: string;
@@ -28,6 +33,7 @@ const TONE_FG: Record<string, string> = {
 export default function StatTile({
   label,
   value,
+  unit,
   icon,
   hint,
   trend,
@@ -55,9 +61,7 @@ export default function StatTile({
               color: 'var(--d-ink)',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 19 }} aria-hidden="true">
-              {icon}
-            </span>
+            <Icon name={icon} size={19} />
           </div>
         )}
 
@@ -69,9 +73,7 @@ export default function StatTile({
               color: trend.isUp ? 'var(--d-good)' : 'var(--d-crit)',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }} aria-hidden="true">
-              {trend.isUp ? 'trending_up' : 'trending_down'}
-            </span>
+            <Icon name={trend.isUp ? 'trending_up' : 'trending_down'} size={14} />
             {trend.value}%
             <span className="sr-only">{trend.isUp ? 'increase' : 'decrease'}</span>
           </span>
@@ -79,10 +81,31 @@ export default function StatTile({
       </div>
 
       <p
-        className="display tabular"
-        style={{ fontSize: 'var(--d-fs-xl)', fontWeight: 600, color: TONE_FG[tone], margin: 0 }}
+        className="tabular"
+        style={{
+          fontFamily: 'var(--d-font-mono)',
+          fontSize: 'var(--d-fs-figure)',
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.05,
+          color: TONE_FG[tone],
+          margin: 0,
+        }}
       >
         {value}
+        {unit && (
+          <span
+            style={{
+              fontSize: 'var(--d-fs-base)',
+              fontWeight: 500,
+              color: 'var(--d-text-3)',
+              marginLeft: 7,
+              letterSpacing: 0,
+            }}
+          >
+            {unit}
+          </span>
+        )}
       </p>
 
       <p style={{ fontSize: 'var(--d-fs-base)', color: 'var(--d-text-2)', margin: '2px 0 0' }}>

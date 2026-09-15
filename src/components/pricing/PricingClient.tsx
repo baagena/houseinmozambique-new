@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getAuth } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { toPlanView, type PricingPlanRecord } from '@/lib/pricing';
+import Icon from '@/components/ui/Icon';
 
 const VILLA_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuWSUXLzid2u3OTERtIK6qJpnQlbOOhtVc8LqRxn7Hrx7ruVHxYBf8--9D8l6yM3GhgeRVipuoE11QCFta8tp1kWWb90aRa29GOMGpZxetULhNqwHN9tg4DZJDQxxvHeC-Bc3s1qnnRU9xhJbqMu-ghY4452JCSdw7aDslq4hnlZFFAWHbV07Uq3tveepD8WDCZTmpWuIOLlG2eJpCcRD1tC_uwEg4ED4mP7Gc4i8hoQXD_vB7MunEBhDwdlvRjJzo8dR2NdGnUEs';
 
@@ -86,9 +87,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                 <ul>
                   {plan.features.map((f) => (
                     <li key={f.label} style={f.included ? undefined : { opacity: 0.45 }}>
-                      <span className="material-symbols-outlined ic text-[1.05rem]">
-                        {f.included ? (f.star ? 'star' : 'check') : 'remove'}
-                      </span>
+                      <Icon name={f.included ? (f.star ? 'star' : 'check') : 'remove'} size={17} className="ic" />
                       <span>{f.label}</span>
                     </li>
                   ))}
@@ -141,7 +140,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                 ].map((item) => (
                   <li key={item.title} className="flex gap-4">
                     <span className="grid h-11 w-11 flex-none place-items-center rounded-[11px] bg-[var(--paper)] text-[var(--gold-deep)]">
-                      <span className="material-symbols-outlined text-[1.1rem]">{item.icon}</span>
+                      <Icon name={item.icon} size={18} />
                     </span>
                     <span>
                       <span className="block font-semibold text-[var(--ink)]">{item.title}</span>
@@ -174,13 +173,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                   }}
                 >
                   {faq.q}
-                  <span
-                    className={`material-symbols-outlined text-[1.1rem] text-[var(--hm-muted)] transition-transform ${
-                      openFaq === i ? 'rotate-180' : ''
-                    }`}
-                  >
-                    expand_more
-                  </span>
+                  <Icon name="expand_more" size={18} className={`text-[var(--hm-muted)] transition-transform ${ openFaq === i ? 'rotate-180' : '' }`} />
                 </summary>
                 <p>{faq.a}</p>
               </details>

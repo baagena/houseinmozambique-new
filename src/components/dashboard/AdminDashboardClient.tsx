@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import StatCard from '@/components/dashboard/StatCard';
+import StatTile from '@/components/dashboard/StatTile';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 
 interface DashboardAgent {
@@ -68,7 +68,7 @@ export default function AdminDashboardClient({
   return (
     <div className="space-y-7">
       <div>
-        <h2 className="text-xl font-semibold text-[#002045] tracking-tight">
+        <h2 className="display text-xl font-semibold text-[#002045] tracking-tight">
           {t.dashboard.admin.platformOverview}
         </h2>
         <p className="mt-1 text-sm text-[#74777f]">
@@ -77,22 +77,51 @@ export default function AdminDashboardClient({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title={t.dashboard.stats.totalProperties} value={stats.propertyCount} icon="domain" />
-        <StatCard title={t.dashboard.stats.activeAgents} value={stats.agentCount} icon="group" />
-        <StatCard title="Total inquiries" value={stats.totalInquiries || 0} icon="forum" />
-        <StatCard title="Pending payments" value={stats.pendingPayments || 0} icon="payments" />
+        <StatTile
+          label={t.dashboard.stats.totalProperties}
+          value={stats.propertyCount}
+          icon="domain"
+          hint="Every listing, whatever its state"
+        />
+        <StatTile
+          label={t.dashboard.stats.activeAgents}
+          value={stats.agentCount}
+          icon="group"
+          hint="Verified and able to publish"
+        />
+        <StatTile
+          label="Total inquiries"
+          value={stats.totalInquiries || 0}
+          icon="forum"
+          hint="From listing and contact forms"
+        />
+        <StatTile
+          label="Pending payments"
+          value={stats.pendingPayments || 0}
+          icon="payments"
+          tone={(stats.pendingPayments || 0) > 0 ? 'warn' : 'default'}
+          hint={(stats.pendingPayments || 0) > 0 ? 'Needs review' : 'Nothing outstanding'}
+        />
       </div>
 
       <section className="bg-white rounded-xl border border-[#eceef1] p-5">
-        <h3 className="text-sm font-semibold text-[#002045] mb-4">Analytics</h3>
+        <div className="mb-4">
+          <h3 className="text-[15px] font-semibold text-[#002045] m-0">Analytics</h3>
+          <p className="mt-0.5 text-xs text-[#9aa0a8]">
+            Listings, agents, inquiries and revenue over the selected period
+          </p>
+        </div>
         <AnalyticsChart data={chartData} />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 bg-white rounded-xl border border-[#eceef1] overflow-hidden">
-          <div className="flex items-center justify-between px-5 h-12 border-b border-[#eceef1]">
-            <h3 className="text-sm font-semibold text-[#002045]">{t.dashboard.admin.activeCurators}</h3>
-            <Link href="/dashboard/admin/approvals" className="text-xs font-medium text-[#845326] hover:underline">
+          <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[#eceef1]">
+            <div>
+              <h3 className="text-[15px] font-semibold text-[#002045] m-0">{t.dashboard.admin.activeCurators}</h3>
+              <p className="mt-0.5 text-xs text-[#9aa0a8]">Most recently approved, newest first</p>
+            </div>
+            <Link href="/dashboard/admin/approvals" className="text-xs font-medium text-[#845326] hover:underline whitespace-nowrap">
               {t.dashboard.admin.viewAllRequests}
             </Link>
           </div>

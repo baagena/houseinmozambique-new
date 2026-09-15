@@ -5,6 +5,7 @@ import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SERVICES, getService, serviceHref } from '@/components/services/catalog';
+import Icon from '@/components/ui/Icon';
 
 /**
  * Shared chrome for a single service page: hero, breadcrumb, and the
@@ -49,7 +50,7 @@ export default function ServiceLayout({
 
           <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:gap-6 md:gap-7">
             <span className="grid h-11 w-11 flex-none place-items-center rounded-[12px] border border-white/15 bg-white/10 md:h-12 md:w-12">
-              <span className="material-symbols-outlined text-[1.2rem] text-[#e9c877]">{service.icon}</span>
+              <Icon name={service.icon} size={19} className="text-[#e9c877]" />
             </span>
             <div className="min-w-0">
               <h1>{t.services[service.titleKey]}</h1>
@@ -58,7 +59,7 @@ export default function ServiceLayout({
               <div className="hero-cta">
                 <Link href={primaryHref} className="btn btn--gold">
                   {t.services[primaryLabelKey]}
-                  <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
+                  <Icon name="arrow_forward" size={18} />
                 </Link>
                 {/* Never repeat the primary label — pick the action it isn't. */}
                 <Link href={secondary.href} className="btn btn--ghost-l">
@@ -84,7 +85,7 @@ export default function ServiceLayout({
             {others.map((entry) => (
               <Link key={entry.slug} href={serviceHref(entry.slug)} className="mv group flex gap-5">
                 <span className="grid h-12 w-12 flex-none place-items-center rounded-[12px] bg-[var(--paper)] text-[var(--gold-deep)]">
-                  <span className="material-symbols-outlined text-[1.15rem]">{entry.icon}</span>
+                  <Icon name={entry.icon} size={18} />
                 </span>
                 <span>
                   <span className="h-ui block text-[var(--ink)]">{t.services[entry.titleKey]}</span>
@@ -93,9 +94,7 @@ export default function ServiceLayout({
                   </span>
                   <span className="mono mt-4 inline-flex items-center gap-1 text-[0.7rem] uppercase tracking-[0.1em] text-[var(--gold-deep)]">
                     {t.services.exploreService}
-                    <span className="material-symbols-outlined text-[0.95rem] transition-transform group-hover:translate-x-1">
-                      arrow_forward
-                    </span>
+                    <Icon name="arrow_forward" size={15} className="transition-transform group-hover:translate-x-1" />
                   </span>
                 </span>
               </Link>

@@ -1,5 +1,7 @@
 'use client';
 
+import Icon from '@/components/ui/Icon';
+
 /**
  * Status pill.
  *
@@ -61,9 +63,7 @@ export default function Pill({ tone = 'neutral', icon, children, className = '' 
         border: '1px solid color-mix(in srgb, currentColor 22%, transparent)',
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">
-        {icon || t.icon}
-      </span>
+      <Icon name={icon || t.icon} size={14} />
       {children}
     </span>
   );

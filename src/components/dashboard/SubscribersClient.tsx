@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Icon from '@/components/ui/Icon';
 
 interface Subscriber {
   id: string;
@@ -179,9 +180,7 @@ export default function SubscribersClient({
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl px-5 py-4 border border-[#eceef1]">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`material-symbols-outlined text-[20px] ${stat.color ?? 'text-[#002045]'}`}>
-                {stat.icon}
-              </span>
+              <Icon name={stat.icon} className={`${stat.color ?? 'text-[#002045]'}`} />
               <span className="text-[13px] text-[#74777f] font-medium">{stat.label}</span>
             </div>
             <p className="text-2xl font-semibold text-[#002045] tabular-nums">{stat.value}</p>
@@ -204,7 +203,7 @@ export default function SubscribersClient({
       {/* Broadcast composer */}
       <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
         <div className="flex items-center gap-2 px-5 h-12 border-b border-[#eceef1]">
-          <span className="material-symbols-outlined text-[19px] text-[#845326]">campaign</span>
+          <Icon name="campaign" size={19} className="text-[#845326]" />
           <h2 className="text-sm font-semibold text-[#002045]">Send a notification to all subscribers</h2>
         </div>
         <div className="p-6 space-y-4">
@@ -237,7 +236,7 @@ export default function SubscribersClient({
               disabled={sending || active.length === 0}
               className="flex items-center gap-1.5 bg-[#002045] text-white px-4 py-2.5 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[18px]">send</span>
+              <Icon name="send" size={18} />
               {sending ? 'Sending…' : `Send to ${active.length} subscriber(s)`}
             </button>
             <button
@@ -245,7 +244,7 @@ export default function SubscribersClient({
               disabled={active.length === 0}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-[#e0e0e0] text-[#374151] font-medium text-[13px] hover:bg-[#f5f6f8] transition-colors disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[18px]">content_copy</span>
+              <Icon name="content_copy" size={18} />
               Copy addresses
             </button>
           </div>
@@ -274,7 +273,7 @@ export default function SubscribersClient({
               disabled={adding || !newEmail.trim()}
               className="flex items-center gap-1 rounded-lg border border-[#e0e0e0] px-3 py-1.5 text-[13px] font-medium text-[#374151] hover:bg-[#f5f6f8] transition-colors disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[17px]">add</span>
+              <Icon name="add" size={17} />
               Add
             </button>
           </div>
@@ -282,7 +281,7 @@ export default function SubscribersClient({
 
         {visible.length === 0 ? (
           <div className="px-6 py-12 text-center text-[#9aa0a8]">
-            <span className="material-symbols-outlined text-4xl mb-2 text-[#d7dbe0] block">mail_outline</span>
+            <Icon name="mail_outline" size={36} className="mb-2 text-[#d7dbe0] block" />
             <p className="text-sm font-medium">
               {subscribers.length === 0 ? 'Nobody has subscribed yet.' : 'No address matches that search.'}
             </p>
@@ -318,9 +317,7 @@ export default function SubscribersClient({
                     title={subscriber.isActive ? 'Stop sending to this address' : 'Start sending again'}
                     className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045] transition-colors disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[19px]">
-                      {subscriber.isActive ? 'notifications_off' : 'notifications_active'}
-                    </span>
+                    <Icon name={subscriber.isActive ? 'notifications_off' : 'notifications_active'} size={19} />
                   </button>
                   <button
                     onClick={() => handleRemove(subscriber)}
@@ -328,7 +325,7 @@ export default function SubscribersClient({
                     title="Remove from the list"
                     className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9aa0a8] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[19px]">delete</span>
+                    <Icon name="delete" size={19} />
                   </button>
                 </div>
               </li>

@@ -2,6 +2,7 @@
 
 import Image, { type ImageProps } from 'next/image';
 import { useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 /**
  * next/image with a branded fallback. Listing media comes from Cloudinary and
@@ -23,7 +24,7 @@ export default function SafeImage({
         className="absolute inset-0 grid place-items-center bg-[#EDEAE2]"
         role="presentation"
       >
-        <span className="material-symbols-outlined text-[1.6rem] text-[var(--line)]">image</span>
+        <Icon name="image" size={26} className="text-[var(--line)]" />
       </span>
     );
   }

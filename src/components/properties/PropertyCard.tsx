@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Property } from '@/types';
 import { formatPrice, formatListingTitle } from '@/lib/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 interface PropertyCardProps {
   property: Property;
@@ -130,7 +131,7 @@ export default function PropertyCard({
               aria-label="Show previous property image"
               title="Previous image"
             >
-              <span className="material-symbols-outlined">chevron_left</span>
+              <Icon name="chevron_left" />
             </button>
             <button
               type="button"
@@ -143,7 +144,7 @@ export default function PropertyCard({
               aria-label="Show next property image"
               title="Next image"
             >
-              <span className="material-symbols-outlined">chevron_right</span>
+              <Icon name="chevron_right" />
             </button>
             <span className="card__counter" aria-live="polite">{imageIndex + 1} / {images.length}</span>
           </>
@@ -160,7 +161,7 @@ export default function PropertyCard({
           aria-label={isShared ? 'Property link copied' : 'Share this property'}
           title={isShared ? 'Link copied' : 'Share property'}
         >
-          <span className="material-symbols-outlined">{isShared ? 'check' : 'share'}</span>
+          <Icon name={isShared ? 'check' : 'share'} />
         </button>
 
         <button
@@ -174,12 +175,7 @@ export default function PropertyCard({
           aria-pressed={isSaved}
           aria-label={isSaved ? 'Remove from saved' : 'Save this property'}
         >
-          <span
-            className="material-symbols-outlined text-[1.1rem]"
-            style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }}
-          >
-            favorite
-          </span>
+          <Icon name="favorite" size={18} style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }} />
         </button>
       </div>
 
@@ -196,7 +192,7 @@ export default function PropertyCard({
 
         {!hideLocation && (
           <p className="card__loc">
-            <span className="material-symbols-outlined text-[0.95rem]">location_on</span>
+            <Icon name="location_on" size={15} />
             <span className="truncate">{property.location}</span>
           </p>
         )}

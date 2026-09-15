@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useEffect } from 'react';
+import Icon from '@/components/ui/Icon';
 
 type Settings = {
   adminName: string;
@@ -167,7 +168,7 @@ export default function AdminSettingsPage() {
               <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                <span className="material-symbols-outlined text-[18px]">check</span>
+                <Icon name="check" size={18} />
                 Save changes
               </>
             )}

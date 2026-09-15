@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 interface PaymentFormProps {
   planType: string;
@@ -167,7 +168,7 @@ export default function PaymentForm({ planType, amount, onSuccess }: PaymentForm
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
           >
-            <span className="material-symbols-outlined text-lg">smartphone</span>
+            <Icon name="smartphone" size={18} />
             {curT.mobileMoney}
           </button>
           <button
@@ -179,7 +180,7 @@ export default function PaymentForm({ planType, amount, onSuccess }: PaymentForm
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
           >
-            <span className="material-symbols-outlined text-lg">account_balance</span>
+            <Icon name="account_balance" size={18} />
             {curT.bankTransfer}
           </button>
         </div>
@@ -267,7 +268,7 @@ export default function PaymentForm({ planType, amount, onSuccess }: PaymentForm
           {/* Error */}
           {error && (
             <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">error</span>
+              <Icon name="error" size={18} />
               {error}
             </div>
           )}
@@ -301,7 +302,7 @@ export default function PaymentForm({ planType, amount, onSuccess }: PaymentForm
             onClick={() => router.back()}
             className="px-6 py-3 bg-white text-sm font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-2 shadow-sm transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <Icon name="arrow_back" size={18} />
             {curT.back}
           </button>
           <button
@@ -310,7 +311,7 @@ export default function PaymentForm({ planType, amount, onSuccess }: PaymentForm
             disabled={isProcessing}
             className="px-8 py-3 bg-[#845326] text-white text-sm font-bold rounded-lg hover:bg-[#6c431f] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm"
           >
-            <span className="material-symbols-outlined text-lg">send</span>
+            <Icon name="send" size={18} />
             {isProcessing ? curT.processing : curT.publishAd}
           </button>
         </div>

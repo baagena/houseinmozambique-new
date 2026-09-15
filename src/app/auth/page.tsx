@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 import { setAuth } from '@/lib/auth';
+import Icon from '@/components/ui/Icon';
 
 // Professional, agent-focused hero image
 const BG_IMG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
@@ -318,9 +319,9 @@ function AuthForm() {
                       {/* Step Indicator */}
                       <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#A87A22] text-white border-[#e9c877]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
                         {isCompleted ? (
-                          <span className="material-symbols-outlined text-[20px]">check</span>
+                          <Icon name="check" />
                         ) : (
-                          <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
+                          <Icon name={s.icon} />
                         )}
                       </div>
 
@@ -403,7 +404,7 @@ function AuthForm() {
 
             {error && (
               <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-[13px] font-medium rounded-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">error</span>
+                <Icon name="error" size={18} />
                 {error}
               </div>
             )}
@@ -483,7 +484,7 @@ function AuthForm() {
                     className="w-full h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? t.auth.signingIn : t.auth.signInBtn}
-                    {!isLoading && <span className="material-symbols-outlined text-[18px]">login</span>}
+                    {!isLoading && <Icon name="login" size={18} />}
                   </button>}
                 </>
               ) : (
@@ -523,9 +524,7 @@ function AuthForm() {
                                   : 'border-[#e3e6ea] hover:bg-[#f5f6f8]'
                               }`}
                             >
-                              <span className={`material-symbols-outlined text-[20px] ${accountType === option.value ? 'text-[#13233F]' : 'text-[#9aa0a8]'}`}>
-                                {option.icon}
-                              </span>
+                              <Icon name={option.icon} className={`${accountType === option.value ? 'text-[#13233F]' : 'text-[#9aa0a8]'}`} />
                               <span className="text-[13px] font-medium text-[#13233F] leading-tight">{option.label}</span>
                               <span className="text-[11px] text-[#9aa0a8] leading-tight">{option.hint}</span>
                             </button>
@@ -645,7 +644,7 @@ function AuthForm() {
                         onClick={prevStep}
                         className="flex-1 h-11 border border-[#e3e6ea] text-[#13233F] text-[14px] font-medium rounded-lg hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                        <Icon name="arrow_back" size={18} />
                         {t.auth.backBtn}
                       </button>
                     )}
@@ -655,7 +654,7 @@ function AuthForm() {
                         className="flex-[2] h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] flex items-center justify-center gap-2"
                       >
                          {t.auth.saveAndContinue}
-                        <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        <Icon name="arrow_forward" size={18} />
                       </button>
                     ) : (
                       <button
@@ -664,7 +663,7 @@ function AuthForm() {
                         className="flex-[2] h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                          {isLoading ? 'Submitting…' : t.auth.completeRegistration}
-                        {!isLoading && <span className="material-symbols-outlined text-[18px]">how_to_reg</span>}
+                        {!isLoading && <Icon name="how_to_reg" size={18} />}
                       </button>
                     )}
                   </div>
@@ -681,7 +680,7 @@ function AuthForm() {
                       onClick={() => handleDevQuickLogin('agent')}
                       className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-[18px]">person</span>
+                      <Icon name="person" size={18} />
                       {t.auth.agentLogin}
                     </button>
                     <button
@@ -689,7 +688,7 @@ function AuthForm() {
                       onClick={() => handleDevQuickLogin('admin')}
                       className="h-10 bg-white text-[#13233F] border border-[#e3e6ea] rounded-lg text-[13px] font-medium hover:bg-[#f5f6f8] transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                      <Icon name="admin_panel_settings" size={18} />
                       {t.auth.adminLogin}
                     </button>
                   </div>

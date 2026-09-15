@@ -35,7 +35,13 @@
   --d-gold-line: #b9791f; /* outlines, selected — 3.61:1 */
   --d-gold-ink: #7a5313;
   --d-bronze: #8a5a2b; /* links — 5.87:1 */
+
+  /* --- sidebar. Dark in BOTH themes: the nav is a fixed anchor, not a
+         surface that flips. Ratios are against --d-nav-bg. --- */
+  --d-nav-bg: #0a2540;
+  --d-nav-line: #1b3f68;
   --d-nav-label: #8098bb; /* sidebar eyebrows — 5.27:1 on ink */
+  --d-nav-idle: #aebbcc; /* resting nav row  — 8.02:1 */
 
   /* --- status: never colour-alone, always icon + label --- */
   --d-good: #157a4a;
@@ -45,12 +51,20 @@
   --d-crit: #b23b34;
   --d-crit-bg: #fbeae8;
 
-  /* --- chart series: FIXED ORDER, never cycled --- */
+  /* --- chart series: FIXED ORDER, never cycled.
+         Validated as a categorical set: OKLCH L inside the light band
+         (0.43-0.77), chroma >= 0.1, worst adjacent CVD dE 10.6 (deutan),
+         all >= 3:1 on the card. --- */
   --d-slot-1: #2a78d6;
   --d-slot-2: #c9631f;
   --d-slot-3: #1a9a76;
   --d-slot-4: #a87c00;
   --d-slot-5: #c25e8c;
+
+  /* Single-series chart fill. NOT --d-gold: that measures 2.07:1 on a white
+     card, under the 3:1 floor for a chart mark. This is the same brand hue
+     stepped down to 3.61:1. */
+  --d-chart-solo: #b9791f;
 
   /* --- type. Nothing carrying meaning below 12px.
          --d-fs-label is for UPPERCASE letter-spaced eyebrows only. --- */
@@ -60,10 +74,14 @@
   --d-fs-md: 15px;
   --d-fs-lg: 18px;
   --d-fs-xl: 23px;
+  --d-fs-figure: 31px; /* headline numbers only — always mono, always tabular */
 
-  --d-font-display: 'Fraunces', ui-serif, Georgia, serif;
-  --d-font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --d-font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  /* Self-hosted via next/font (src/app/fonts.ts). The variables carry their own
+     metric-matched fallbacks, so the second stack here is only for the case
+     where the variable is missing entirely. */
+  --d-font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --d-font-body: var(--font-public-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --d-font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Consolas, monospace;
 
   --d-shadow: 0 1px 2px rgba(10, 37, 64, 0.04), 0 8px 24px -12px rgba(10, 37, 64, 0.12);
   --d-radius-card: 14px;
@@ -96,6 +114,9 @@
     --d-ink-2: #173a63;
     --d-bronze: #d09a5c; /* the light step fails at 2.95 */
     --d-gold-line: #e8a53d; /* 8.15:1 */
+    --d-nav-bg: #081019; /* sits deeper than the card so the nav still reads */
+    --d-nav-line: #1b2734;
+    --d-nav-idle: #a7b2c2;
     --d-good: #45b881;
     --d-good-bg: #0f2b1f;
     --d-warn: #dba24a;
@@ -103,10 +124,11 @@
     --d-crit: #e8857b;
     --d-crit-bg: #301514;
     --d-slot-1: #5596e8;
-    --d-slot-2: #e2834a;
-    --d-slot-3: #33b590;
+    --d-slot-2: #d0733c; /* was #e2834a — L 0.702, above the 0.67 dark ceiling */
+    --d-slot-3: #2aa17e; /* was #33b590 — L 0.694, same reason */
     --d-slot-4: #d9aa2e;
     --d-slot-5: #d97faa;
+    --d-chart-solo: #b8892a;
     --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
   }
@@ -125,6 +147,9 @@
   --d-ink-2: #173a63;
   --d-bronze: #d09a5c;
   --d-gold-line: #e8a53d;
+  --d-nav-bg: #081019;
+  --d-nav-line: #1b2734;
+  --d-nav-idle: #a7b2c2;
   --d-good: #45b881;
   --d-good-bg: #0f2b1f;
   --d-warn: #dba24a;
@@ -132,10 +157,11 @@
   --d-crit: #e8857b;
   --d-crit-bg: #301514;
   --d-slot-1: #5596e8;
-  --d-slot-2: #e2834a;
-  --d-slot-3: #33b590;
+  --d-slot-2: #d0733c;
+  --d-slot-3: #2aa17e;
   --d-slot-4: #d9aa2e;
   --d-slot-5: #d97faa;
+  --d-chart-solo: #b8892a;
   --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }
@@ -244,3 +270,62 @@
 /* A white card on the brand navy must keep contrast in dark mode: the nav's
    active row sets its own colour, so exclude it from the ink remap above. */
 .him-dash nav a[aria-current='page'] { color: #ffffff; }
+
+/* =============================================================================
+   Geometry, weight and type-scale bridge
+   -----------------------------------------------------------------------------
+   An audit of the console turned up four ways the markup drifted away from the
+   tokens above. All four are why the surfaces read as assembled rather than
+   designed, and all four are fixable here rather than across ~500 call sites.
+
+     1. NINE corner radii in use (6/8/12/16/24/32/40px) across 339 class uses.
+        The system defines TWO. Nothing lined up with anything.
+     2. 129 uses of font-black — weight 900 — against a type system whose
+        headings are 600.
+     3. 165 uses of type below 12px (88 at 10px, 64 at 11px, 10 at 9px, 3 at
+        8px), against this file's own rule: nothing carrying meaning below 12px.
+     4. A handful of colours the first bridge pass missed, so they stayed frozen
+        in dark mode.
+
+   Scoped to .him-dash, so the marketing pages are untouched. As with the bridge
+   above this is a REMAP, not the destination — new console code should use the
+   var(--d-*) tokens directly.
+   ========================================================================== */
+
+/* --- 1. radii: collapse nine onto two ---------------------------------------
+   rounded-lg already resolves to 8px, and rounded-full is pills and avatars,
+   so both are left alone. */
+.him-dash .rounded-md { border-radius: var(--d-radius-sm); }
+.him-dash .rounded-xl,
+.him-dash .rounded-2xl,
+.him-dash .rounded-3xl,
+.him-dash .rounded-\[1\.5rem\],
+.him-dash .rounded-\[2rem\],
+.him-dash .rounded-\[2\.5rem\] { border-radius: var(--d-radius-card); }
+
+/* --- 2. weight: 900 and 800 are not in this type system --------------------- */
+.him-dash .font-black,
+.him-dash .font-extrabold { font-weight: 600; }
+
+/* --- 3. type scale: snap arbitrary sizes onto the ramp ----------------------
+   Everything below the floor lands on --d-fs-label, which is the smallest size
+   this system lets carry meaning. */
+.him-dash .text-\[8px\],
+.him-dash .text-\[9px\],
+.him-dash .text-\[10px\],
+.him-dash .text-\[11px\] { font-size: var(--d-fs-label); }
+.him-dash .text-\[12px\] { font-size: var(--d-fs-sm); }
+.him-dash .text-\[13px\],
+.him-dash .text-\[14px\] { font-size: var(--d-fs-base); }
+.him-dash .text-\[15px\] { font-size: var(--d-fs-md); }
+
+/* --- 4. tracking: the display face carries -0.01em, not -0.05em ------------- */
+.him-dash .tracking-tighter { letter-spacing: -0.01em; }
+
+/* --- 5. colours the first pass missed --------------------------------------- */
+.him-dash .hover\:bg-\[\#faf5ed\]:hover,
+.him-dash .hover\:bg-\[\#edf5fb\]:hover { background-color: var(--d-border-soft); }
+.him-dash .border-\[\#dde3e8\] { border-color: var(--d-border); }
+.him-dash .text-\[\#6b7280\] { color: var(--d-text-2); }
+/* #f4a61d and #1a3c5e are deliberately NOT here: they are per-advert colour
+   DATA chosen by an admin, not console chrome, and must not be themed. */

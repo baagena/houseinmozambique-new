@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { formatPostDate, getBlogPostBySlug, getPublishedBlogPosts } from '@/lib/blog';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from '@/lib/seo';
+import Icon from '@/components/ui/Icon';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600';
 
@@ -79,7 +80,7 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
           <div className="wrap">
             <Link href="/news" className="eyebrow inline-flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[1rem]">arrow_back</span>
+              <Icon name="arrow_back" size={16} />
               Blog
             </Link>
             <div className="post-meta" style={{ color: 'rgba(255,255,255,.7)' }}>

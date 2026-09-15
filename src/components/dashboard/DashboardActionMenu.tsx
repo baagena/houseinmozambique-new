@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import Icon from '@/components/ui/Icon';
 
 export default function DashboardActionMenu({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function DashboardActionMenu({ children }: { children: ReactNode 
         title="More actions"
         aria-expanded={isOpen}
       >
-        <span className="material-symbols-outlined text-[20px]">more_vert</span>
+        <Icon name="more_vert" />
       </button>
       {isOpen && (
         <div

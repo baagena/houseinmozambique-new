@@ -3,6 +3,7 @@ import SafeImage from '@/components/ui/SafeImage';
 import Link from 'next/link';
 import { getPublishedBlogPosts, formatPostDate } from '@/lib/blog';
 import { buildMetadata } from '@/lib/seo';
+import Icon from '@/components/ui/Icon';
 
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600';
@@ -64,14 +65,14 @@ export default async function NewsPage() {
                 <p className="muted mt-3 leading-relaxed">{featured.excerpt}</p>
                 <Link href={`/news/${featured.slug}`} className="btn btn--dark btn--sm mt-6">
                   Continue reading
-                  <span className="material-symbols-outlined text-[1.1rem]">arrow_forward</span>
+                  <Icon name="arrow_forward" size={18} />
                 </Link>
               </article>
             </div>
           ) : (
             <div className="empty">
               <span className="ico">
-                <span className="material-symbols-outlined text-[1.7rem]">article</span>
+                <Icon name="article" size={27} />
               </span>
               <h3>Nothing published yet.</h3>
               <p>Posts appear here once the editorial desk sends them live.</p>

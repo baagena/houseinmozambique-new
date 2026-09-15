@@ -6,6 +6,7 @@ import Link from 'next/link';
 import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
+import Icon from '@/components/ui/Icon';
 
 /**
  * Paid plans only. The Standard tier is advertised as free on /pricing, so it
@@ -420,7 +421,7 @@ function PostPropertyContent() {
               onClick={() => setStep('details')}
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#13233F] shadow-sm"
             >
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <Icon name="arrow_back" size={18} />
               {t.postProperty.previousStep}
             </button>
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#A87A22]">{planType}</span>
@@ -451,7 +452,7 @@ function PostPropertyContent() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F5F2EC] px-4">
         <div className="max-w-xl rounded-2xl bg-white p-8 text-center shadow-sm">
-          <span className="material-symbols-outlined text-6xl text-[#A87A22]">task_alt</span>
+          <Icon name="task_alt" size={60} className="text-[#A87A22]" />
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#13233F]" style={{ fontFamily: 'var(--serif)' }}>
             {t.postProperty.publishAsset}
           </h1>
@@ -475,7 +476,7 @@ function PostPropertyContent() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F5F2EC] px-4">
         <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
-          <span className="material-symbols-outlined text-5xl text-[#A87A22]">lock</span>
+          <Icon name="lock" size={48} className="text-[#A87A22]" />
           <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#13233F]" style={{ fontFamily: 'var(--serif)' }}>
             Sign in to post a property
           </h1>
@@ -557,7 +558,7 @@ function PostPropertyContent() {
                 <p className="mt-1 text-sm font-medium text-[#5E6B7A]">{t.postProperty.photographyDesc}</p>
               </div>
               <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#13233F] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#e9c877]">
-                <span className="material-symbols-outlined text-lg">upload</span>
+                <Icon name="upload" size={18} />
                 {isPreparingPhotos ? 'Preparing…' : t.postProperty.uploadMediaBtn}
                 <input
                   type="file"
@@ -583,13 +584,13 @@ function PostPropertyContent() {
                     title="Remove photo"
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
                   >
-                    <span className="material-symbols-outlined text-[16px]">close</span>
+                    <Icon name="close" size={16} />
                   </button>
                 </div>
               ))}
               {Array.from({ length: Math.max(1, 4 - photos.length) }).map((_, index) => (
                 <div key={index} className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-[#E6E1D6]/50 bg-[#F5F2EC]">
-                  <span className="material-symbols-outlined text-[#E6E1D6]">add_photo_alternate</span>
+                  <Icon name="add_photo_alternate" className="text-[#E6E1D6]" />
                 </div>
               ))}
             </div>
@@ -632,7 +633,7 @@ function PostPropertyContent() {
                   }`}
                 >
                   <input type="checkbox" checked={contactMethods.includes(option.id)} onChange={() => toggleContact(option.id)} className="sr-only" />
-                  <span className="material-symbols-outlined">{option.icon}</span>
+                  <Icon name={option.icon} />
                   <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
                 </label>
               ))}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 interface Lead {
   id: string;
@@ -87,7 +88,7 @@ export default function AgentLeadsClient({ myInquiries }: AgentLeadsClientProps)
                     href={`mailto:${lead.email}?subject=${encodeURIComponent(`Reply: ${lead.subject}`)}&body=${encodeURIComponent(`Hello ${lead.name},\n\nThank you for reaching out. Regarding your inquiry: "${lead.message}"\n\nHow can I best assist you?\n\nBest regards,\n`)}`}
                     className="flex-1 md:flex-none h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-widest bg-[#002045] text-white shadow-xl shadow-[#002045]/10 hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-2"
                  >
-                   <span className="material-symbols-outlined text-sm">reply</span>
+                   <Icon name="reply" size={14} />
                    Contact
                  </a>
                  <button

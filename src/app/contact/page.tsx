@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 const CONTACT_IMAGE =
   'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
@@ -92,9 +93,7 @@ export default function ContactPage() {
               {submitted ? (
                 <div className="empty">
                   <span className="ico">
-                    <span className="material-symbols-outlined text-[1.8rem] text-[var(--verified)]">
-                      check_circle
-                    </span>
+                    <Icon name="check_circle" size={29} className="text-[var(--verified)]" />
                   </span>
                   <h3>{t.contact.messageSent}</h3>
                   <p>{t.contact.messageSentDesc}</p>
@@ -162,7 +161,7 @@ export default function ContactPage() {
 
                   <button disabled={isSubmitting} className="btn btn--gold btn--full mt-6">
                     {isSubmitting ? t.contact.btnSending : t.contact.btnSend}
-                    <span className="material-symbols-outlined text-[1.1rem]">send</span>
+                    <Icon name="send" size={18} />
                   </button>
                 </form>
               )}
@@ -174,7 +173,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
+                  <Icon name="location_on" size={18} />
                 </span>
                 <div>
                   <h4>{t.contact.headquarters}</h4>
@@ -188,7 +187,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.1rem]">call</span>
+                  <Icon name="call" size={18} />
                 </span>
                 <div>
                   <h4>{t.contact.directLine}</h4>
@@ -201,7 +200,7 @@ export default function ContactPage() {
 
               <div className="office">
                 <span className="ic">
-                  <span className="material-symbols-outlined text-[1.1rem]">mail</span>
+                  <Icon name="mail" size={18} />
                 </span>
                 <div>
                   <h4>{t.contact.generalInquiries}</h4>

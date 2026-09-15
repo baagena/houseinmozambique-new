@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import AdminPropertyActions from './AdminPropertyActions';
+import Icon from '@/components/ui/Icon';
 
 export interface AdminProperty {
   id: string;
@@ -100,7 +101,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
             href="/post-property"
             className="flex items-center gap-1.5 rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
           >
-            <span className="material-symbols-outlined text-[18px]">add_home</span>
+            <Icon name="add_home" size={18} />
             Add property
           </Link>
         </div>
@@ -183,7 +184,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1f3a]/30 p-4 backdrop-blur-sm">
           <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[#eceef1] bg-white p-6 shadow-xl">
             <button onClick={() => setEditing(null)} className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-md text-[#9aa0a8] hover:bg-[#f5f6f8] hover:text-[#002045]">
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <Icon name="close" />
             </button>
             <h3 className="mb-5 text-base font-semibold text-[#002045]">Edit listing</h3>
 
@@ -243,7 +244,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                 href={`/api/admin/property/${editing.id}/images`}
                 className="inline-flex items-center gap-2 text-[13px] font-medium text-[#002045] hover:underline"
               >
-                <span className="material-symbols-outlined text-[18px]">download</span>
+                <Icon name="download" size={18} />
                 Download all property images
               </a>
             </div>

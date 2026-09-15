@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import StatCard from '@/components/dashboard/StatCard';
+import Icon from '@/components/ui/Icon';
 
 interface DashboardProperty {
   id: string;
@@ -105,7 +106,7 @@ export default function AgentDashboardClient({ agentName, myProperties, myInquir
                             <Image src={p.images[0]} alt={p.title} fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full bg-[#f2f4f6] flex items-center justify-center">
-                              <span className="material-symbols-outlined text-[#74777f]">image</span>
+                              <Icon name="image" className="text-[#74777f]" />
                             </div>
                           )}
                         </div>
@@ -128,7 +129,7 @@ export default function AgentDashboardClient({ agentName, myProperties, myInquir
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link href={`/post-property?edit=${p.id}`} className="p-2 text-[#74777f] hover:text-[#002045] hover:bg-white rounded-lg border border-transparent hover:border-[#f2f4f6] transition-all inline-flex items-center justify-center">
-                        <span className="material-symbols-outlined text-xl">edit_note</span>
+                        <Icon name="edit_note" />
                       </Link>
                     </td>
                   </tr>
@@ -145,11 +146,11 @@ export default function AgentDashboardClient({ agentName, myProperties, myInquir
             <h3 className="text-xl font-black text-[#002045] tracking-tight">{t.dashboard.agent.quickActions}</h3>
             <div className="grid grid-cols-2 gap-4">
               <Link href="/post-property" className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-[#002045] text-white hover:-translate-y-1 transition-all shadow-xl shadow-[#002045]/10">
-                <span className="material-symbols-outlined text-3xl">add_box</span>
+                <Icon name="add_box" size={30} />
                 <span className="text-[10px] font-black uppercase tracking-widest">{t.dashboard.agent.postHome}</span>
               </Link>
               <a href={`mailto:hello@houseinmoz.com?subject=Share%20my%20agent%20profile&body=Hello%2C%0A%0APlease%20review%20my%20agent%20profile%20on%20House%20in%20Mozambique.%0A%0AThank%20you.%0A`} className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-white border border-[#f2f4f6] text-[#002045] hover:-translate-y-1 transition-all shadow-sm">
-                <span className="material-symbols-outlined text-3xl text-[#fab983]">share</span>
+                <Icon name="share" size={30} className="text-[#fab983]" />
                 <span className="text-[10px] font-black uppercase tracking-widest">{t.dashboard.agent.shareProfile}</span>
               </a>
             </div>
