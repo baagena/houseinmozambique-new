@@ -3,194 +3,399 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import StatCard from '@/components/dashboard/StatCard';
 import Icon from '@/components/ui/Icon';
+import StatTile from '@/components/dashboard/StatTile';
 
-interface DashboardProperty {
+/**
+ * The agent overview, following #view-ag-overview in the design package's
+ * ops-console-preview.html.
+ *
+ * The preview has no quick-actions card. Urgency is stated once, at the top, as
+ * an alert that only exists when there is something to answer — then the leads
+ * themselves are the next thing on the page. A shortcut grid that looks the
+ * same whether or not there is work in it is what that replaces.
+ *
+ * Every figure is computed from the database in page.tsx. Where the data does
+ * not exist yet the tile shows an em dash and says so, rather than showing the
+ * preview's sample number.
+ */
+
+export interface AgentLead {
   id: string;
-  title: string;
-  location: string;
-  type: string;
-  status: string;
-  price: number;
-  images?: string[] | null;
-}
-
-interface DashboardInquiry {
-  id?: string;
   name: string;
-  email: string;
+  contact: string;
   subject: string;
   message: string;
-  createdAt: string | Date;
+  listing: string | null;
+  answered: boolean;
+  waitedHours: number;
+  createdAt: string;
 }
 
-interface AgentDashboardClientProps {
+export interface AttentionListing {
+  id: string;
+  title: string;
+  status: string;
+  image: string | null;
+  score: number;
+  band: 'good' | 'warn' | 'crit';
+  missing: string[];
+}
+
+interface Props {
   agentName: string;
-  myProperties: DashboardProperty[];
-  myInquiries: DashboardInquiry[];
+  stats: {
+    liveListings: number;
+    pendingListings: number;
+    views: number;
+    contactClicks: number;
+    leadsThisMonth: number;
+  };
+  leads: AgentLead[];
+  overdueLeads: number;
+  attention: AttentionListing[];
+  /** Presses of the listing contact buttons in the last 30 days, by channel. */
+  channels: Array<{ channel: string; count: number }>;
+  compare: {
+    myQuality: number | null;
+    marketQuality: number | null;
+    myLeadsPerListing: number | null;
+    marketLeadsPerListing: number | null;
+  };
 }
 
-export default function AgentDashboardClient({ agentName, myProperties, myInquiries }: AgentDashboardClientProps) {
-  const { t } = useLanguage();
-  const publishedListings = myProperties.filter((property) => property.status === 'PUBLISHED').length;
-  const pendingListings = myProperties.filter((property) => property.status !== 'PUBLISHED').length;
-  const portfolioValue = myProperties.reduce((sum, property) => sum + (Number(property.price) || 0), 0);
-  const formattedPortfolioValue = `MT ${portfolioValue.toLocaleString('en-US', {
-    maximumFractionDigits: 0,
-  })}`;
+/** The preview's thresholds: a day is critical, four hours is a warning. */
+function waitBand(hours: number): 'good' | 'warn' | 'crit' {
+  return hours >= 24 ? 'crit' : hours >= 4 ? 'warn' : 'good';
+}
+
+type AgentCopy = ReturnType<typeof useLanguage>['t']['dashboard']['agent'];
+
+function waitText(hours: number, t: AgentCopy): string {
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} ${t.unitMin}`;
+  if (hours < 48) return `${Math.round(hours)} ${t.unitHours}`;
+  return `${Math.round(hours / 24)} ${t.unitDays}`;
+}
+
+/** Fills {name}, {count} and {wait} the way the rest of the dictionary does. */
+function fill(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce(
+    (out, [k, v]) => out.replace(`{${k}}`, String(v)),
+    template,
+  );
+}
+
+/** One slot colour per channel, so the bars stay stable as counts reorder. */
+const CHANNEL_COLOR: Record<string, string> = {
+  WHATSAPP: 'var(--d-good)',
+  CALL: 'var(--d-slot-2)',
+  EMAIL: 'var(--d-slot-3)',
+  FORM: 'var(--d-slot-4)',
+  VIEWING: 'var(--d-slot-5)',
+};
+
+function channelLabel(channel: string, t: AgentCopy): string {
+  switch (channel) {
+    case 'WHATSAPP': return t.channelWhatsapp;
+    case 'CALL': return t.channelCall;
+    case 'EMAIL': return t.channelEmail;
+    case 'FORM': return t.channelForm;
+    case 'VIEWING': return t.channelViewing;
+    default: return channel;
+  }
+}
+
+function initials(name: string): string {
+  return name.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase();
+}
+
+export default function AgentDashboardClient({
+  agentName, stats, leads, overdueLeads, attention, channels, compare,
+}: Props) {
+  const t = useLanguage().t.dashboard.agent;
+  const waiting = leads.filter((l) => !l.answered);
+  const longestWait = waiting.reduce((max, l) => Math.max(max, l.waitedHours), 0);
+  const channelTotal = channels.reduce((sum, c) => sum + c.count, 0);
 
   return (
-    <div className="space-y-12">
-      {/* Welcome Header */}
-      <div>
-        <h2 className="text-3xl font-black text-[#002045] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
-          {t.dashboard.agent.portfolioPerformance}
-        </h2>
-        <p className="text-[#74777f] font-medium font-serif leading-relaxed italic">
-          {t.dashboard.agent.welcome.replace('{name}', agentName)}
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title={t.dashboard.stats.activeListings} 
-          value={publishedListings} 
-          icon="home_work" 
-        />
-        <StatCard 
-          title={t.dashboard.stats.totalLeads} 
-          value={myInquiries.length} 
-          icon="chat_bubble" 
-        />
-        <StatCard 
-          title="Pending Listings" 
-          value={pendingListings} 
-          icon="pending_actions" 
-        />
-        <StatCard 
-          title={t.dashboard.stats.portfolioValue} 
-          value={formattedPortfolioValue} 
-          icon="payments" 
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Recent Listings */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="flex justify-between items-end">
-            <h3 className="text-xl font-black text-[#002045] tracking-tight">{t.dashboard.agent.activeListingsTitle}</h3>
-            <Link href="/dashboard/agent/listings" className="text-xs font-black text-[#845326] uppercase tracking-widest hover:underline">
-              {t.dashboard.agent.viewAll}
-            </Link>
-          </div>
-          
-          <div className="bg-white rounded-[2rem] border border-[#f2f4f6] overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-[#f2f4f6] bg-[#f7f9fb]/50">
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">{t.dashboard.agent.property}</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">{t.dashboard.agent.type}</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest">{t.dashboard.agent.status}</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-[#74777f] uppercase tracking-widest text-right">{t.dashboard.agent.action}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f2f4f6]">
-                {myProperties.slice(0, 4).map((p) => (
-                  <tr key={p.id} className="hover:bg-[#f7f9fb] transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden relative border border-[#f2f4f6]">
-                          {p.images && p.images[0] ? (
-                            <Image src={p.images[0]} alt={p.title} fill className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-[#f2f4f6] flex items-center justify-center">
-                              <Icon name="image" className="text-[#74777f]" />
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-black text-[#002045] text-sm tracking-tight">{p.title}</p>
-                          <p className="text-[10px] text-[#74777f] font-medium">{p.location.split(',')[0]}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-[#002045] uppercase tracking-widest px-2 py-1 bg-[#f2f4f6] rounded-md">{p.type}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-xs font-bold text-[#002045]">
-                          {p.status === 'PUBLISHED' ? t.dashboard.agent.statusActive : t.dashboard.agent.statusPending}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link href={`/post-property?edit=${p.id}`} className="p-2 text-[#74777f] hover:text-[#002045] hover:bg-white rounded-lg border border-transparent hover:border-[#f2f4f6] transition-all inline-flex items-center justify-center">
-                        <Icon name="edit_note" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div>
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">{t.eyebrow}</p>
+          <h1>{fill(t.greeting, { name: agentName.split(' ')[0] })}</h1>
+          <p>{t.welcome}</p>
         </div>
+        <Link href="/dashboard/agent/new" className="btn primary" style={{ textDecoration: 'none' }}>
+          {t.newListing}
+        </Link>
+      </div>
 
-        {/* Quick Actions / Recent Leads Sidebar */}
-        <div className="space-y-12">
-          {/* Quick Actions */}
-          <div className="space-y-6">
-            <h3 className="text-xl font-black text-[#002045] tracking-tight">{t.dashboard.agent.quickActions}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <Link href="/post-property" className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-[#002045] text-white hover:-translate-y-1 transition-all shadow-xl shadow-[#002045]/10">
-                <Icon name="add_box" size={30} />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t.dashboard.agent.postHome}</span>
-              </Link>
-              <a href={`mailto:hello@houseinmoz.com?subject=Share%20my%20agent%20profile&body=Hello%2C%0A%0APlease%20review%20my%20agent%20profile%20on%20House%20in%20Mozambique.%0A%0AThank%20you.%0A`} className="flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] bg-white border border-[#f2f4f6] text-[#002045] hover:-translate-y-1 transition-all shadow-sm">
-                <Icon name="share" size={30} className="text-[#fab983]" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t.dashboard.agent.shareProfile}</span>
-              </a>
+      {waiting.length > 0 && (
+        <div className={`alert ${overdueLeads > 0 ? 'crit' : 'warn'}`}>
+          <Icon name="chat_bubble" size={18} />
+          <div>
+            <div className="a-title">
+              {waiting.length === 1
+                ? t.waitingOne
+                : fill(t.waitingMany, { count: waiting.length })}
+            </div>
+            <div className="a-sub">
+              {longestWait >= 1
+                ? fill(t.waitingLongest, { wait: waitText(longestWait, t) })
+                : t.waitingGeneric}
             </div>
           </div>
+          <Link
+            href="/dashboard/agent/leads"
+            className={`btn ${overdueLeads > 0 ? 'ghost-crit' : ''}`}
+            style={{ textDecoration: 'none' }}
+          >
+            {t.openLeads}
+          </Link>
+        </div>
+      )}
 
-          {/* Newest Leads */}
-          <div className="space-y-6">
-            <h3 className="text-xl font-black text-[#002045] tracking-tight">{t.dashboard.agent.recentLeads}</h3>
-            <div className="space-y-4">
-              {myInquiries.slice(0, 3).map((lead, i) => (
-                <div key={i} className="bg-white p-4 rounded-2xl border border-[#f2f4f6] flex flex-col gap-4 hover:shadow-lg hover:shadow-[#002045]/5 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[#f7f9fb] flex items-center justify-center text-[#002045] font-black text-[10px] group-hover:bg-[#002045] group-hover:text-white transition-colors">
-                      {lead.name.split(' ').map((n: string) => n[0]).join('')}
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <p className="text-sm font-black text-[#002045] leading-none mb-1">{lead.name}</p>
-                      <p className="text-[10px] text-[#74777f] font-medium truncate">
-                        {t.dashboard.agent.inquiryOn} <span className="font-bold text-[#845326]">{lead.subject}</span>
-                      </p>
-                    </div>
-                    <span className="text-[9px] font-bold text-[#c4c6cf] uppercase whitespace-nowrap">
-                      {new Date(lead.createdAt).toLocaleDateString()}
-                    </span>
+      <div className="stat-row">
+        <StatTile label={t.liveListings} value={stats.liveListings} icon="home_work"
+          hint={stats.pendingListings > 0 ? fill(t.notPublished, { count: stats.pendingListings }) : t.allPublished} />
+        <StatTile label={t.views} value={stats.views.toLocaleString('en-US')} icon="visibility"
+          hint={t.viewsHint} />
+        <StatTile label={t.leadsThisMonth} value={stats.leadsThisMonth} icon="mail"
+          hint={fill(t.leadsTotal, { count: leads.length })} />
+        <StatTile
+          label={t.waitingOnYou}
+          value={waiting.length}
+          icon="schedule"
+          tone={overdueLeads > 0 ? 'crit' : waiting.length > 0 ? 'warn' : 'default'}
+          hint={overdueLeads > 0 ? fill(t.overdueHint, { count: overdueLeads }) : t.nothingOverdue}
+        />
+      </div>
+
+      <div className="grid-2" style={{ gridTemplateColumns: '1.15fr 1fr', alignItems: 'start' }}>
+        <div className="card">
+          <div className="card-head">
+            <h3>{t.leadsWaitingTitle}</h3>
+            <Link className="link" href="/dashboard/agent/leads">{t.allLeads}</Link>
+          </div>
+          {waiting.length === 0 ? (
+            <div className="empty">
+              <Icon name="mark_email_read" size={34} />
+              <p>{t.leadsEmpty}</p>
+            </div>
+          ) : (
+            <div style={{ padding: 4 }}>
+              {waiting.slice(0, 5).map((lead) => (
+                <LeadRow key={lead.id} lead={lead} t={t} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="card-head">
+            <h3>{t.compareTitle}</h3>
+            <span className="hint">{t.marketAverage}</span>
+          </div>
+          <div className="bar-list">
+            <CompareRow
+              name={t.compareQuality}
+              you={compare.myQuality}
+              avg={compare.marketQuality}
+              higherIsBetter
+            />
+            <CompareRow
+              name={t.compareLeads}
+              you={compare.myLeadsPerListing}
+              avg={compare.marketLeadsPerListing}
+              decimals={1}
+              higherIsBetter
+            />
+          </div>
+          <div className="vfoot">
+            <span className="hint">{t.replyTimeNote}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid-2" style={{ gridTemplateColumns: '1.15fr 1fr', alignItems: 'start' }}>
+        <div className="card">
+          <div className="card-head">
+            <h3>{t.channelsTitle}</h3>
+            <span className="hint">{t.channelsWindow}</span>
+          </div>
+          {channelTotal === 0 ? (
+            <div className="empty">
+              <Icon name="ads_click" size={34} />
+              <p>{t.channelsEmpty}</p>
+            </div>
+          ) : (
+            <div className="bar-list">
+              {channels.map((c) => (
+                <div key={c.channel} className="bar-row" style={{ gridTemplateColumns: '120px 1fr 84px' }}>
+                  <span className="name">{channelLabel(c.channel, t)}</span>
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${Math.max(4, (c.count / channelTotal) * 100).toFixed(0)}%`,
+                        background: CHANNEL_COLOR[c.channel] ?? 'var(--d-slot-5)',
+                      }}
+                    />
                   </div>
-                  <a
-                    href={`mailto:${lead.email}?subject=${encodeURIComponent(`Reply: ${lead.subject}`)}&body=${encodeURIComponent(`Hello ${lead.name},\n\nThank you for reaching out. Regarding your inquiry: "${lead.message}"\n\nHow can I best assist you?\n\nBest regards,\n`)}`}
-                    className="inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-[#002045] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#001a38] transition-colors"
-                  >
-                    {t.dashboard.agent.replyToLead}
-                  </a>
+                  <span className="count">
+                    {c.count}{' '}
+                    <span style={{ color: 'var(--d-text-3)', fontWeight: 500 }}>
+                      {Math.round((c.count / channelTotal) * 100)}%
+                    </span>
+                  </span>
                 </div>
               ))}
-              {myInquiries.length === 0 && (
-                <p className="text-sm text-[#74777f] font-medium italic">No leads captured yet.</p>
-              )}
             </div>
+          )}
+          <div className="vfoot">
+            <span className="hint">{t.channelsNote}</span>
           </div>
         </div>
+        <div />
       </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h3>{t.attentionTitle}</h3>
+          <Link className="link" href="/dashboard/agent/listings">{t.allListings}</Link>
+        </div>
+        {attention.length === 0 ? (
+          <div className="empty">
+            <Icon name="task_alt" size={34} />
+            <p>{t.attentionEmpty}</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>{t.listing}</th>
+                <th>{t.whatsMissing}</th>
+                <th>{t.quality}</th>
+                <th>{t.status}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {attention.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <div className="cell-primary">
+                      <div className="thumb" style={{ background: 'var(--d-paper)', position: 'relative', overflow: 'hidden' }}>
+                        {p.image ? (
+                          <Image src={p.image} alt="" fill sizes="42px" style={{ objectFit: 'cover' }} />
+                        ) : (
+                          <Icon name="image" size={18} style={{ color: 'var(--d-text-3)' }} />
+                        )}
+                      </div>
+                      <div>
+                        <div className="name-strong">{p.title}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="name-sub">
+                      {p.missing.length ? p.missing.join(', ') : t.nothingMissing}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`pill ${p.band}`}>{p.score}</span>
+                  </td>
+                  <td>
+                    <span className={`pill ${p.status === 'PUBLISHED' ? 'good' : p.status === 'REJECTED' ? 'crit' : 'muted'}`}>
+                      {p.status === 'PUBLISHED' ? t.statusLive : p.status === 'REJECTED' ? t.statusNeedsFixing : t.statusReview}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <Link href={`/post-property?edit=${p.id}`} className="btn" style={{ textDecoration: 'none' }}>
+                      {t.fix}
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The preview's compact lead card (`leadCard(l, true)`). */
+function LeadRow({ lead, t }: { lead: AgentLead; t: AgentCopy }) {
+  const band = waitBand(lead.waitedHours);
+  return (
+    <Link
+      href="/dashboard/agent/leads"
+      className="doc-row"
+      style={{ textDecoration: 'none', color: 'inherit' }}
+    >
+      <div className="avatar-sm">{initials(lead.name)}</div>
+      <div className="body" style={{ flex: 1, minWidth: 0 }}>
+        <div className="meta" style={{ marginBottom: 2 }}>
+          <span className="tag">{t.sourceForm}</span>
+          <span className={`pill ${band}`}>
+            {band !== 'good' && <Icon name="error" size={10} />}
+            {fill(t.waitingFor, { wait: waitText(lead.waitedHours, t) })}
+          </span>
+        </div>
+        {/* One line: agent listing titles run to 90 characters of shouty caps,
+            and letting them wrap makes every row a different height. */}
+        <div
+          className="name-strong"
+          style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          title={lead.listing ?? undefined}
+        >
+          {lead.name}
+          {lead.listing && (
+            <> · <span style={{ fontWeight: 500, color: 'var(--d-text-2)' }}>{lead.listing}</span></>
+          )}
+        </div>
+        <div className="name-sub mono" style={{ fontSize: 12, marginTop: 1 }}>{lead.contact}</div>
+      </div>
+    </Link>
+  );
+}
+
+function CompareRow({
+  name, you, avg, decimals = 0, higherIsBetter,
+}: {
+  name: string;
+  you: number | null;
+  avg: number | null;
+  decimals?: number;
+  higherIsBetter: boolean;
+}) {
+  if (you === null || avg === null) {
+    return (
+      <div className="bar-row" style={{ gridTemplateColumns: '120px 1fr 84px' }}>
+        <span className="name">{name}</span>
+        <div className="bar-track" />
+        <span className="count" style={{ color: 'var(--d-text-3)' }}>—</span>
+      </div>
+    );
+  }
+
+  const better = higherIsBetter ? you > avg : you < avg;
+  const pct = Math.max(4, Math.min(100, (you / Math.max(avg, 0.1)) * 50));
+
+  return (
+    <div className="bar-row" style={{ gridTemplateColumns: '120px 1fr 84px' }}>
+      <span className="name">{name}</span>
+      <div className="bar-track">
+        <div
+          className="bar-fill"
+          style={{ width: `${pct.toFixed(0)}%`, background: `var(--d-${better ? 'good' : 'warn'})` }}
+        />
+      </div>
+      <span className="count" style={{ color: `var(--d-${better ? 'good' : 'warn'})` }}>
+        {you.toFixed(decimals)}{' '}
+        <span style={{ color: 'var(--d-text-3)', fontWeight: 500 }}>vs {avg.toFixed(decimals)}</span>
+      </span>
     </div>
   );
 }

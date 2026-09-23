@@ -1,22 +1,46 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { logout } from '@/lib/auth';
 import Icon from '@/components/ui/Icon';
+import type { NavCounts } from '@/app/api/dashboard/nav-counts/route';
+
+/**
+ * The console sidebar.
+ *
+ * Markup and classes come straight from the design package's
+ * ops-console-preview.html — .sidebar / .brand / .ws-switch / .nav-item /
+ * .nav-count / .sidebar-foot — with the styling living in dashboard-ui.css.
+ * Nothing here re-invents geometry or colour; if something looks wrong, the
+ * preview is the thing to check, not this file.
+ *
+ * No identity block in the footer: in the reference the signed-in user lives in
+ * the TOPBAR, and the sidebar foot carries only "View storefront" and
+ * "Sign out". No workspace switcher either — an admin reaches the agent side
+ * through its own routes, and the control only invited confusion.
+ *
+ * The NAV owns the vertical scroll, not the <aside>. With the scroll on the
+ * aside, a long list ran underneath .sidebar-foot, which margin-top:auto pins
+ * to the bottom.
+ *
+ * Only routes that EXIST are listed. Still missing from the reference: Verify
+ * payments, Listing quality, SEO & pages, Listing standards, Documents, Support
+ * cases and Audit log. Each needs a model from the design package's migration
+ * (PropertyPhoto, AgentDocument, SupportCase, AuditEvent, LandingPage), so they
+ * appear once that lands. A nav row pointing at a 404 is worse than an absent
+ * one.
+ */
 
 interface SidebarLink {
   label: string;
   href: string;
   icon: string;
+  /** Key into the counts payload. Absent means this row never shows a badge. */
+  count?: keyof NavCounts;
 }
 
-/**
- * Admin has eleven destinations. As one flat list they read as an inventory
- * rather than a tool, so they are grouped by the job you came to do. The first
- * group carries no heading — the overview is the landing place, not a category.
- */
 interface SidebarGroup {
   label?: string;
   links: SidebarLink[];
@@ -30,18 +54,23 @@ interface DashboardSidebarProps {
 }
 
 const AGENT_GROUPS: SidebarGroup[] = [
-  { links: [{ label: 'Overview', href: '/dashboard/agent', icon: 'dashboard' }] },
   {
-    label: 'Listings',
+    label: 'My business',
     links: [
-      { label: 'Compose listing', href: '/dashboard/agent/compose', icon: 'edit_note' },
-      { label: 'My listings', href: '/dashboard/agent/listings', icon: 'home_work' },
-      { label: 'Leads & inquiries', href: '/dashboard/agent/leads', icon: 'chat_bubble' },
+      { label: 'New listing', href: '/dashboard/agent/new', icon: 'add' },
+      { label: 'Overview', href: '/dashboard/agent', icon: 'dashboard' },
+      { label: 'My listings', href: '/dashboard/agent/listings', icon: 'home_work', count: 'myListings' },
+      { label: 'My leads', href: '/dashboard/agent/leads', icon: 'chat_bubble', count: 'myLeads' },
+      /* Buyers who have said what they want. Above Billing on purpose: it is
+         the thing a subscription buys, so it should be visible to somebody
+         deciding whether to renew one. */
+      { label: 'Buyers looking', href: '/dashboard/agent/requests', icon: 'group', count: 'openRequests' },
     ],
   },
   {
     label: 'Account',
     links: [
+      { label: 'Billing', href: '/dashboard/agent/billing', icon: 'payments' },
       { label: 'My profile', href: '/dashboard/agent/profile', icon: 'person_edit' },
       { label: 'Settings', href: '/dashboard/agent/settings', icon: 'settings' },
     ],
@@ -49,41 +78,142 @@ const AGENT_GROUPS: SidebarGroup[] = [
 ];
 
 const ADMIN_GROUPS: SidebarGroup[] = [
-  { links: [{ label: 'Hub overview', href: '/dashboard/admin', icon: 'analytics' }] },
   {
-    label: 'Listings',
+    label: 'Marketplace',
     links: [
-      { label: 'All properties', href: '/dashboard/admin/properties', icon: 'domain' },
-      { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'verified' },
-      { label: 'Manage agents', href: '/dashboard/admin/agents', icon: 'group' },
+      { label: 'Overview', href: '/dashboard/admin', icon: 'dashboard' },
+      { label: 'Properties', href: '/dashboard/admin/properties', icon: 'home_work', count: 'properties' },
+      { label: 'Agents', href: '/dashboard/admin/agents', icon: 'group' },
+      { label: 'Approvals', href: '/dashboard/admin/approvals', icon: 'check_circle', count: 'approvals' },
+      { label: 'Leads', href: '/dashboard/admin/leads', icon: 'chat_bubble', count: 'messages' },
+      { label: 'Property requests', href: '/dashboard/admin/requests', icon: 'group', count: 'requestsToRelease' },
     ],
   },
   {
-    label: 'Audience',
+    label: 'Money',
+    links: [
+      /* Above the ledger on purpose: the queue is work waiting, the ledger is
+         a record. The badge counts submitted proofs only — a reference nobody
+         has paid yet is not something an admin can act on. */
+      { label: 'Verify payments', href: '/dashboard/admin/payments/verify', icon: 'inbox', count: 'paymentsToVerify' },
+      { label: 'Payments ledger', href: '/dashboard/admin/payments', icon: 'payments', count: 'payments' },
+      { label: 'Pricing plans', href: '/dashboard/admin/pricing', icon: 'sell' },
+    ],
+  },
+  {
+    label: 'Inbox & trust',
     links: [
       { label: 'Contact messages', href: '/dashboard/admin/activities', icon: 'mail' },
-      { label: 'Subscribers', href: '/dashboard/admin/subscribers', icon: 'group_add' },
+      { label: 'Notifications', href: '/dashboard/notifications', icon: 'notifications' },
+    ],
+  },
+  {
+    label: 'Content',
+    links: [
+      { label: 'Blog', href: '/dashboard/admin/blog', icon: 'article' },
+      { label: 'Subscribers', href: '/dashboard/admin/subscribers', icon: 'group_add', count: 'subscribers' },
+      { label: 'Edit pages', href: '/dashboard/admin/content', icon: 'edit_document' },
       { label: 'Advertisements', href: '/dashboard/admin/ads', icon: 'campaign' },
     ],
   },
   {
-    label: 'Content & setup',
-    links: [
-      { label: 'Blog', href: '/dashboard/admin/blog', icon: 'article' },
-      { label: 'Edit pages', href: '/dashboard/admin/content', icon: 'edit_document' },
-      { label: 'Pricing plans', href: '/dashboard/admin/pricing', icon: 'sell' },
-      { label: 'System settings', href: '/dashboard/admin/settings', icon: 'tune' },
-    ],
+    label: 'Platform',
+    links: [{ label: 'Account & team', href: '/dashboard/admin/settings', icon: 'tune' }],
   },
 ];
 
-export default function DashboardSidebar({ role, userName, accountRole }: DashboardSidebarProps) {
+/** 1240 → "1.2k". Badges must stay narrow or the label truncates. */
+function compact(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k`;
+  return String(n);
+}
+
+/**
+ * Routes whose content needs the width more than the nav needs its labels.
+ *
+ * The guided listing screen is a two-column wizard with a live preview beside
+ * it; at 1440px the 236px of nav labels is the difference between the preview
+ * reading comfortably and wrapping every line.
+ */
+const WIDE_ROUTES = ['/dashboard/agent/new'];
+
+const COLLAPSE_KEY = 'him_sidebar_collapsed';
+
+export default function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [counts, setCounts] = useState<NavCounts>({});
+
+  /*
+   * Two separate answers, because they are answers to different questions.
+   *
+   * `pref` is the standing preference for ordinary pages, remembered across
+   * visits. `visitPref` is a choice made about the page currently open, and it
+   * is thrown away on navigation.
+   *
+   * They were one value before, and the standing preference won everywhere.
+   * That meant collapsing the nav once — or expanding it once — permanently
+   * disabled the wizard's own default, so "New listing" stopped narrowing the
+   * nav and nobody could see why. A preference about the pages you read is not
+   * a preference about the page you work in.
+   */
+  const [pref, setPref] = useState<boolean | null>(null);
+  const [visitPref, setVisitPref] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(COLLAPSE_KEY);
+      if (stored === '0' || stored === '1') setPref(stored === '1');
+    } catch {
+      /* private mode or blocked storage — the route default still applies */
+    }
+  }, []);
+
+  const routeWantsCollapse = WIDE_ROUTES.some((r) => pathname.startsWith(r));
+
+  /* Moving to another page ends whatever was decided about the last one.
+     Adjusted during render rather than in an effect, so the nav never paints
+     one frame at the previous page's width. */
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setVisitPref(null);
+  }
+
+  /*
+   * The wizard collapses on arrival every time, and can still be expanded for
+   * as long as you are on it. Everywhere else follows the remembered
+   * preference, defaulting to labels shown.
+   */
+  const collapsed = visitPref ?? (routeWantsCollapse ? true : pref ?? false);
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setVisitPref(next);
+
+    /* On a wide route the toggle is about this screen only. Writing it to
+       storage would mean expanding the nav for one wizard session expanded it
+       on every page from then on. */
+    if (routeWantsCollapse) return;
+
+    setPref(next);
+    try {
+      localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+    } catch {
+      /* the toggle still works for this session */
+    }
+  };
+
   const groups = role === 'admin' ? ADMIN_GROUPS : AGENT_GROUPS;
-  const isOwner = accountRole === 'OWNER';
-  const workspaceLabel = role === 'admin' ? 'admin' : isOwner ? 'owner' : 'agent';
-  const roleCaption = role === 'admin' ? 'Administrator' : isOwner ? 'Property owner' : 'Verified agent';
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/dashboard/nav-counts', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { counts: {} }))
+      .then((d) => { if (!cancelled) setCounts(d.counts ?? {}); })
+      .catch(() => { /* badges are an enhancement; the nav works without them */ });
+    return () => { cancelled = true; };
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -93,141 +223,79 @@ export default function DashboardSidebar({ role, userName, accountRole }: Dashbo
     }
   };
 
-  const initials = userName
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || (role === 'admin' ? 'AD' : 'AG');
-
   return (
-    <aside
-      className="w-60 h-full flex flex-col relative z-20 overflow-y-auto custom-scrollbar"
-      style={{ background: 'var(--d-nav-bg)', borderRight: '1px solid var(--d-nav-line)' }}
-    >
-      {/* Branding */}
-      <div className="px-5 pt-5 pb-5">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div
-            className="relative w-8 h-8 overflow-hidden flex-none"
-            style={{
-              borderRadius: 'var(--d-radius-sm)',
-              background: '#ffffff',
-              border: '1px solid var(--d-nav-line)',
-            }}
-          >
-            <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" />
-          </div>
-          <div className="leading-tight min-w-0">
-            <p
-              className="display truncate"
-              style={{ fontSize: 'var(--d-fs-base)', fontWeight: 600, color: '#ffffff', margin: 0 }}
-            >
-              House in Mozambique
-            </p>
-            <p
-              style={{
-                fontSize: 'var(--d-fs-label)',
-                letterSpacing: '0.07em',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                color: 'var(--d-nav-label)',
-                margin: '2px 0 0',
-              }}
-            >
-              {workspaceLabel} workspace
-            </p>
-          </div>
-        </Link>
-      </div>
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      <Link
+        href="/"
+        className="brand"
+        style={{ textDecoration: 'none' }}
+        title={collapsed ? 'House in Mozambique' : undefined}
+      >
+        <span className="brand-mark" aria-hidden="true">H</span>
+        <span className="brand-text">
+          <span className="brand-name" style={{ display: 'block' }}>House in Mozambique</span>
+          <span className="brand-sub" style={{ display: 'block' }}>
+            {role === 'admin' ? 'Ops console' : 'Agent workspace'}
+          </span>
+        </span>
+      </Link>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 pb-3">
+      <nav className="custom-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {groups.map((group, gi) => (
-          <div key={group.label ?? `group-${gi}`}>
-            {group.label && (
-              <p
-                style={{
-                  fontSize: 'var(--d-fs-label)',
-                  letterSpacing: '0.07em',
-                  textTransform: 'uppercase',
-                  fontWeight: 600,
-                  color: 'var(--d-nav-label)',
-                  margin: 0,
-                  padding: '16px 12px 6px',
-                }}
-              >
-                {group.label}
-              </p>
-            )}
-            <div className="flex flex-col gap-0.5">
-              {group.links.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    className="flex items-center gap-3 px-3 py-2 transition-colors duration-150"
-                    style={{
-                      borderRadius: 'var(--d-radius-sm)',
-                      background: isActive ? 'rgba(255,255,255,.10)' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--d-nav-idle)',
-                      fontWeight: isActive ? 600 : 500,
-                      boxShadow: isActive ? 'inset 2px 0 0 var(--d-gold)' : undefined,
-                    }}
-                  >
-                    <Icon
-                      name={link.icon}
-                      style={{ color: isActive ? 'var(--d-gold)' : 'var(--d-nav-label)' }}
-                    />
-                    <span style={{ fontSize: 'var(--d-fs-base)' }}>{link.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
+          <div key={group.label ?? `g${gi}`}>
+            {group.label && <p className="nav-label" style={{ margin: 0 }}>{group.label}</p>}
+            {group.links.map((link) => {
+              const isActive = pathname === link.href;
+              const value = link.count ? counts[link.count] : undefined;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`nav-item${isActive ? ' active' : ''}`}
+                  style={{ textDecoration: 'none' }}
+                  // The label is the only thing naming this row; with it hidden
+                  // the icon needs to answer "what is this" on hover.
+                  title={collapsed ? link.label : undefined}
+                >
+                  <Icon name={link.icon} size={17} />
+                  <span className="nav-text">{link.label}</span>
+                  {/* A zero means nothing is waiting, so the badge disappears. */}
+                  {typeof value === 'number' && value > 0 && (
+                    <span className="nav-count">{compact(value)}</span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         ))}
       </nav>
 
-      {/* Footer / Profile */}
-      <div className="px-3 py-3 mt-auto" style={{ borderTop: '1px solid var(--d-nav-line)' }}>
-        <div className="flex items-center gap-2.5 px-2 py-2" style={{ borderRadius: 'var(--d-radius-sm)' }}>
-          <div
-            className="w-8 h-8 flex items-center justify-center font-semibold flex-none"
-            style={{
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,.12)',
-              color: 'var(--d-gold)',
-              fontSize: 'var(--d-fs-label)',
-            }}
-          >
-            {initials}
-          </div>
-          <div className="flex-1 overflow-hidden leading-tight">
-            <p
-              className="truncate"
-              style={{ fontSize: 'var(--d-fs-sm)', fontWeight: 600, color: '#ffffff', margin: 0 }}
-            >
-              {userName}
-            </p>
-            <p
-              className="truncate"
-              style={{ fontSize: 'var(--d-fs-label)', color: 'var(--d-nav-label)', margin: 0 }}
-            >
-              {roleCaption}
-            </p>
-          </div>
-          <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="p-1.5 transition-colors"
-            style={{ borderRadius: 6, color: 'var(--d-nav-label)' }}
-          >
-            <Icon name="logout" size={18} />
-            <span className="sr-only">Sign out</span>
-          </button>
-        </div>
+      <div className="sidebar-foot">
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          className="nav-item"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!collapsed}
+        >
+          <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} size={17} />
+          <span className="nav-text">Collapse</span>
+        </button>
+        <Link href="/" className="nav-item" title={collapsed ? 'View storefront' : undefined}>
+          <Icon name="home_work" size={17} />
+          <span className="nav-text">View storefront</span>
+          <Icon name="arrow_forward" size={13} className="ext" />
+        </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="nav-item signout"
+          title={collapsed ? 'Sign out' : undefined}
+        >
+          <Icon name="logout" size={17} />
+          <span className="nav-text">Sign out</span>
+        </button>
       </div>
     </aside>
   );

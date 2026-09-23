@@ -320,7 +320,10 @@ function SiteHeaderContent() {
           </nav>
 
           <div className="header-actions">
-            <Link href="/pricing" className="btn btn--gold btn--sm">
+            <Link href="/request-property" className="btn btn--ghost-l btn--sm">
+              {t.nav.requestProperty}
+            </Link>
+            <Link href="/post-listing" className="btn btn--gold btn--sm">
               {t.nav.postHouse}
             </Link>
 
@@ -419,7 +422,10 @@ function SiteHeaderContent() {
         })}
 
         <div className="mcta">
-          <Link href="/pricing" className="btn btn--gold" onClick={() => setMobileOpen(false)}>
+          <Link href="/request-property" className="btn btn--ghost" onClick={() => setMobileOpen(false)}>
+            {t.nav.requestProperty}
+          </Link>
+          <Link href="/post-listing" className="btn btn--gold" onClick={() => setMobileOpen(false)}>
             {t.nav.postHouse}
           </Link>
           {isLoggedIn ? (

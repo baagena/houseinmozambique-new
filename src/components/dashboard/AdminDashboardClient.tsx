@@ -114,7 +114,9 @@ export default function AdminDashboardClient({
         <AnalyticsChart data={chartData} />
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* items-start: grid stretches children to equal row height by default, which
+          left a short card padded out with dead space beside a taller one. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         <div className="lg:col-span-2 bg-white rounded-xl border border-[#eceef1] overflow-hidden">
           <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[#eceef1]">
             <div>

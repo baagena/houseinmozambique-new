@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import Icon from '@/components/ui/Icon';
+import type { PaymentInstructions } from '@/lib/payment-instructions';
 
 type Settings = {
   adminName: string;
@@ -13,12 +14,36 @@ type Settings = {
   weeklyReport: boolean;
 };
 
+const EMPTY_PAY: PaymentInstructions = {
+  accountName: '', mpesaNumber: '', emolaNumber: '',
+  bankName: '', bankAccount: '', bankIban: '', notes: '',
+};
+
+/*
+ * Every field starts blank and stays blank until an admin types a real one.
+ * There is no placeholder account number anywhere in this flow: an agent shown
+ * a plausible-looking number that nobody owns would send real money to it.
+ */
+const PAY_FIELDS: { key: keyof PaymentInstructions; label: string; hint: string; wide?: boolean }[] = [
+  { key: 'accountName', label: 'Account name', hint: 'The name payers will see when they confirm the transfer.', wide: true },
+  { key: 'mpesaNumber', label: 'M-Pesa number', hint: 'Vodacom. Shown first, because most payments arrive this way.' },
+  { key: 'emolaNumber', label: 'e-Mola number', hint: 'Movitel. Leave blank if you do not take e-Mola.' },
+  { key: 'bankName', label: 'Bank', hint: 'e.g. BCI, Millennium bim, Standard Bank.' },
+  { key: 'bankAccount', label: 'Account number', hint: 'For domestic transfers.' },
+  { key: 'bankIban', label: 'IBAN / NIB', hint: 'For transfers from outside Mozambique.' },
+];
+
 async function readResponse(response: Response) {
   const text = await response.text();
   if (!text) throw new Error(`The server returned an empty response (${response.status}).`);
 
   try {
-    return JSON.parse(text) as { settings?: Settings; error?: string };
+    return JSON.parse(text) as {
+      settings?: Settings;
+      paymentInstructions?: PaymentInstructions;
+      freeRentalCeiling?: string;
+      error?: string;
+    };
   } catch {
     throw new Error(`The server returned an invalid response (${response.status}).`);
   }
@@ -34,6 +59,9 @@ export default function AdminSettingsPage() {
     agentApprovalAlerts: true,
     weeklyReport: false,
   });
+  const [pay, setPay] = useState<PaymentInstructions>(EMPTY_PAY);
+  /* Blank means the exemption is off, which is its default. */
+  const [freeCeiling, setFreeCeiling] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +73,8 @@ export default function AdminSettingsPage() {
         if (!response.ok) throw new Error(data.error || 'Could not load settings.');
         if (!data.settings) throw new Error('The server did not return settings.');
         setFormData(data.settings);
+        if (data.paymentInstructions) setPay(data.paymentInstructions);
+        setFreeCeiling(data.freeRentalCeiling ?? '');
       })
       .catch((loadError: Error) => setError(loadError.message))
       .finally(() => setIsLoading(false));
@@ -60,12 +90,14 @@ export default function AdminSettingsPage() {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, paymentInstructions: pay, freeRentalCeiling: freeCeiling }),
       });
       const data = await readResponse(response);
       if (!response.ok) throw new Error(data.error || 'Could not save settings.');
       if (!data.settings) throw new Error('The server did not return saved settings.');
       setFormData(data.settings);
+      if (data.paymentInstructions) setPay(data.paymentInstructions);
+      setFreeCeiling(data.freeRentalCeiling ?? '');
       setMessage('Settings updated successfully.');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Could not save settings.');
@@ -73,6 +105,12 @@ export default function AdminSettingsPage() {
       setIsSaving(false);
     }
   };
+
+  /* Matches hasAnyDestination() on the server: at least one place money can
+     actually go. An account name alone does not make the flow workable. */
+  const anyDestination = Boolean(
+    pay.mpesaNumber.trim() || pay.emolaNumber.trim() || pay.bankAccount.trim() || pay.bankIban.trim(),
+  );
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -123,6 +161,95 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setFormData({ ...formData, platformTagline: e.target.value })}
                 className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Where manual payments should be sent ---------------------------
+            These are the only things an agent is told when they owe money, so
+            a blank here is not a cosmetic gap: the billing page has to fall
+            back to "contact the team" and the payment stalls. */}
+        <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+          <div className="px-5 h-12 flex items-center justify-between gap-3 border-b border-[#eceef1]">
+            <h3 className="text-sm font-semibold text-[#002045]">Where payments are sent</h3>
+            {!anyDestination && !isLoading && (
+              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                Not set — agents cannot pay
+              </span>
+            )}
+          </div>
+          <div className="p-5 space-y-4">
+            <p className="text-[12px] leading-relaxed text-[#74777f]">
+              Shown on every agent&apos;s billing page beside their payment reference, with a copy
+              button on each one. Leave a field blank to hide it. Nothing here is guessed or
+              pre-filled &mdash; whatever you type is what agents will send money to, so check it.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {PAY_FIELDS.map((f) => (
+                <div key={f.key} className={f.wide ? 'md:col-span-2' : undefined}>
+                  <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{f.label}</label>
+                  <input
+                    type="text"
+                    value={pay[f.key]}
+                    onChange={(e) => setPay({ ...pay, [f.key]: e.target.value })}
+                    className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                    autoComplete="off"
+                  />
+                  <p className="mt-1 text-[11px] text-[#9aa0a8]">{f.hint}</p>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">
+                Anything else payers should know
+              </label>
+              <textarea
+                value={pay.notes}
+                onChange={(e) => setPay({ ...pay, notes: e.target.value })}
+                rows={2}
+                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+                placeholder="e.g. transfers are only checked on working days"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Who lists for free -------------------------------------------
+            A free tier defined by what the property is worth, not by a count.
+            A quota turns away the person with one cheap flat exactly as firmly
+            as the agency with forty — and only one of those two was ever going
+            to pay. */}
+        <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
+          <div className="px-5 h-12 flex items-center justify-between gap-3 border-b border-[#eceef1]">
+            <h3 className="text-sm font-semibold text-[#002045]">Free listings for modest rentals</h3>
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${freeCeiling ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f2f4f6] text-[#74777f]'}`}>
+              {freeCeiling ? 'On' : 'Off'}
+            </span>
+          </div>
+          <div className="p-5 space-y-4">
+            <p className="text-[12px] leading-relaxed text-[#74777f]">
+              A private owner renting out below this figure can publish without a plan, however
+              many listings their plan covers. Agencies never qualify, and sales never qualify —
+              a sale earns a commission that can carry a fee. Leave it blank to switch the
+              exemption off.
+            </p>
+            <div className="max-w-xs">
+              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">
+                Monthly rent below (MZN)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={freeCeiling}
+                onChange={(e) => setFreeCeiling(e.target.value)}
+                placeholder="e.g. 15000"
+                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
+              />
+              <p className="mt-1 text-[11px] text-[#9aa0a8]">
+                Blank or 0 means no free listings. Nothing is assumed here.
+              </p>
             </div>
           </div>
         </div>

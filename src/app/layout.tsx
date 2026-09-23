@@ -70,16 +70,29 @@ export default async function RootLayout({
   const contentOverrides = await getContentOverrides();
 
   return (
+    /*
+     * Portuguese, because that is what this renders.
+     *
+     * LanguageProvider opens on 'pt' and only switches after it has read
+     * localStorage on the client, so the server HTML — the copy Google indexes
+     * and the one a screen reader meets first — is always Portuguese. Declaring
+     * it as English made every assistive technology read a Portuguese page in
+     * an English voice. The provider rewrites this attribute when a visitor
+     * picks the other language.
+     */
     <html
-      lang="en"
+      lang="pt"
       className={`antialiased ${fontVariables}`}
     >
       <body>
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <LanguageProvider overrides={contentOverrides}>
           <SiteChrome>{children}</SiteChrome>
+          {/* Inside the provider: the button writes its own opening message,
+              which has to be in the language the visitor is reading. It sat
+              outside while it was a third-party script that needed no copy. */}
+          <ChatWidget />
         </LanguageProvider>
-        <ChatWidget />
       </body>
     </html>
   );

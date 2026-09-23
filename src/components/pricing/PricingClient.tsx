@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { afterAuth } from '@/lib/after-auth';
 import { getAuth } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { toPlanView, type PricingPlanRecord } from '@/lib/pricing';
@@ -46,12 +47,16 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
   ];
 
   function handlePlanSelect(planSlug: string) {
+    /*
+     * Both branches aim at the same place: the guided form, carrying the plan.
+     * This used to point at /post-property, which is now only the EDIT form —
+     * so choosing a plan started you in the wrong one.
+     */
+    const target = afterAuth('/post-property', { plan: planSlug });
     const auth = getAuth();
-    if (auth.isLoggedIn) {
-      router.push(`/post-property?plan=${planSlug}`);
-    } else {
-      router.push(`/auth?redirect=/post-property&plan=${planSlug}`);
-    }
+    router.push(
+      auth.isLoggedIn ? target : `/auth?redirect=${encodeURIComponent(target)}`,
+    );
   }
 
   return (

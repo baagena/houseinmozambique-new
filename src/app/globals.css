@@ -1,12 +1,33 @@
 @import "tailwindcss";
 @import "./him.css";
 @import "./dashboard-tokens.css";
+@import "./dashboard-ui.css";
 
+/*
+ * ONE TYPE SYSTEM, NOT TWO.
+ *
+ * These four variables were named after typefaces the site does not load:
+ * --font-inter, --font-montserrat and --font-dmsans all resolved to Segoe UI,
+ * and --font-newsreader to Georgia. So the public pages rendered in whatever
+ * the operating system happened to supply while the console next door used the
+ * three real faces that app/fonts.ts self-hosts — which is why the site read as
+ * a patchwork, and why a heading on the home page and a heading in the
+ * dashboard looked like two different products.
+ *
+ * They now point at the SAME three families the console uses. The names are
+ * kept because a lot of CSS refers to them; only what they resolve to changes.
+ *
+ *   Fraunces      — display. Headings, prices, anything with presence.
+ *   Public Sans   — interface text. This is the sidebar face.
+ *   IBM Plex Mono — every figure and every small uppercase label.
+ *
+ * The fallbacks stay for the moment before the webfont lands.
+ */
 :root {
-  --font-dmsans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-montserrat: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-newsreader: Georgia, "Times New Roman", serif;
-  --font-inter: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-dmsans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-montserrat: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-newsreader: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-inter: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-plexmono: var(--font-plex-mono), "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 }
 
@@ -69,7 +90,9 @@
   --color-on-error-container: #93000a;
 
   /* ── Typography ── */
-  --font-headline: var(--font-montserrat), sans-serif;
+  /* Display is the SERIF here, matching the console — a Fraunces h1 beside a
+     Public Sans body is the pairing the whole product is drawn in. */
+  --font-headline: var(--font-newsreader), Georgia, serif;
   --font-body: var(--font-dmsans), sans-serif;
   --font-label: var(--font-dmsans), sans-serif;
 
@@ -165,8 +188,101 @@ button:disabled {
   --shadow-card: 0 1px 2px rgba(19, 35, 63, .04), 0 8px 24px rgba(19, 35, 63, .06);
   --shadow-float: 0 6px 16px rgba(19, 35, 63, .1), 0 16px 40px rgba(19, 35, 63, .12);
   --pad-section: clamp(48px, 7vw, 88px);
-  --wrap: 1200px;
+  /* 1200 → 1440. The grid gains a column at desktop width and the hero stops
+     floating in margin; body copy is unaffected because every text block below
+     is capped in `ch` rather than by this. */
+  --wrap: 1440px;
   --serif: var(--font-newsreader), Georgia, serif;
   --sans: var(--font-inter), system-ui, sans-serif;
   --mono: var(--font-plexmono), ui-monospace, monospace;
 }
+
+
+/* -----------------------------------------------------------------------
+   Listing description
+
+   Generated descriptions carry their structure in the text: blank lines
+   separate blocks and "• " marks list items. ListingDescription parses that
+   back into headings and lists, so the section names read as section names
+   instead of as another line of prose.
+   -------------------------------------------------------------------- */
+.listing-desc .ld-block + .ld-block { margin-top: 1.15rem; }
+.listing-desc .ld-h {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink, #0a2540);
+  margin: 0 0 .4rem;
+  line-height: 1.35;
+}
+.listing-desc .ld-p { margin: 0 0 .35rem; line-height: 1.7; }
+.listing-desc .ld-list { margin: 0; padding-left: 1.15rem; list-style: disc; }
+.listing-desc .ld-list li { margin: .18rem 0; line-height: 1.6; }
+
+/* -----------------------------------------------------------------------
+   Post-a-listing gate
+
+   Two choices, side by side and equal in weight — "I have an account" is
+   the commoner answer so it takes the gold button, but neither is buried
+   behind a link. Below them, the three steps of the whole job, because the
+   email verification in the middle is better known about in advance.
+   -------------------------------------------------------------------- */
+.gate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 720px) {
+  .gate-grid { grid-template-columns: 1fr; }
+}
+
+.gate-card {
+  background: #fff;
+  border: 1px solid var(--hm-line, #e7e9ee);
+  border-radius: 16px;
+  padding: 1.6rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+}
+.gate-card h2 { font-size: 1.1rem; margin: 0; }
+.gate-card p { margin: 0 0 .5rem; color: var(--hm-muted, #5b616b); font-size: .94rem; line-height: 1.55; }
+.gate-card .btn { margin-top: auto; }
+
+.gate-ico {
+  width: 42px; height: 42px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  background: #f4f6f9; color: var(--ink, #0a2540);
+  margin-bottom: .3rem;
+}
+
+.gate-steps {
+  list-style: none;
+  margin: 2.25rem 0 0;
+  padding: 1.35rem 1.5rem;
+  background: #f7f9fb;
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+@media (max-width: 720px) {
+  .gate-steps { grid-template-columns: 1fr; }
+}
+.gate-steps li { display: flex; gap: .7rem; align-items: flex-start; }
+.gate-steps strong { display: block; font-size: .92rem; margin-bottom: .12rem; }
+.gate-steps span:not(.gate-step-n) { font-size: .86rem; color: var(--hm-muted, #5b616b); line-height: 1.5; }
+.gate-step-n {
+  flex: none;
+  width: 22px; height: 22px; border-radius: 99px;
+  background: var(--ink, #0a2540); color: #fff;
+  font-size: .75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.gate-foot {
+  margin-top: 1.4rem;
+  text-align: center;
+  font-size: .9rem;
+  color: var(--hm-muted, #5b616b);
+}
+.gate-foot a { text-decoration: underline; }

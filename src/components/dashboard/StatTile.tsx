@@ -5,9 +5,10 @@ import Icon from '@/components/ui/Icon';
 /**
  * The single stat tile every dashboard figure composes from.
  *
- * Figures are set in the mono face with tabular numerals: a column of numbers
- * lines up, and a value does not jitter sideways as it changes. The unit rides
- * alongside at caption size so the number itself stays the thing you read.
+ * Figures use the DISPLAY face (Fraunces) with tabular numerals, per the build
+ * spec: Fraunces is for headings and stat figures, Public Sans for UI, and the
+ * mono face is reserved for references, slugs and IDs. The unit rides alongside
+ * at caption size so the number itself stays the thing you read.
  */
 
 interface StatTileProps {
@@ -81,9 +82,8 @@ export default function StatTile({
       </div>
 
       <p
-        className="tabular"
+        className="display tabular"
         style={{
-          fontFamily: 'var(--d-font-mono)',
           fontSize: 'var(--d-fs-figure)',
           fontWeight: 600,
           letterSpacing: '-0.02em',

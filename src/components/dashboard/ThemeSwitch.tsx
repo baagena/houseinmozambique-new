@@ -55,16 +55,7 @@ export default function ThemeSwitch() {
   }, []);
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Colour theme"
-      className="inline-flex items-center gap-0.5 p-0.5"
-      style={{
-        background: 'var(--d-border-soft)',
-        borderRadius: 'var(--d-radius-sm)',
-        border: '1px solid var(--d-border)',
-      }}
-    >
+    <div role="radiogroup" aria-label="Colour theme" className="theme-switch">
       {OPTIONS.map((opt) => {
         const active = theme === opt.value;
         return (
@@ -75,17 +66,9 @@ export default function ThemeSwitch() {
             aria-checked={active}
             title={opt.label}
             onClick={() => choose(opt.value)}
-            className="flex items-center justify-center transition-colors"
-            style={{
-              width: 26,
-              height: 24,
-              borderRadius: 6,
-              background: active ? 'var(--d-card)' : 'transparent',
-              color: active ? 'var(--d-text-1)' : 'var(--d-text-3)',
-              border: active ? '1px solid var(--d-border)' : '1px solid transparent',
-            }}
+            className={`th-btn${active ? ' on' : ''}`}
           >
-            <Icon name={opt.icon} size={16} />
+            <Icon name={opt.icon} size={15} />
             <span className="sr-only">{opt.label}</span>
           </button>
         );

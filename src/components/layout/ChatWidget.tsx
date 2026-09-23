@@ -1,47 +1,78 @@
 'use client';
 
-import Script from 'next/script';
+/**
+ * A WhatsApp button, on the few pages where a visitor is deciding whether to
+ * get in touch.
+ *
+ * This was a Tidio launcher on every public page. Two problems with that. It
+ * loads a third-party script and a fixed-position iframe on a connection where
+ * around 1 GB of mobile data costs roughly 1.3% of GNI per capita — and it sat
+ * over the content everywhere, including pages that already carry their own
+ * contact controls.
+ *
+ * WhatsApp is how this market actually makes first contact, it costs one link
+ * and no script, and it opens in the app the visitor already has.
+ */
+
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/components/i18n/LanguageContext';
+import Icon from '@/components/ui/Icon';
 
 /**
- * Tidio live chat. It only belongs on the public marketplace — on the
- * dashboard and the auth/post flows it covers real controls and adds nothing.
+ * The number the button opens. Digits only — wa.me rejects spaces and plus.
  *
- * Tidio renders its launcher in a fixed-position iframe it styles itself, so
- * the only way to move it is to override that iframe from here. On mobile it
- * has to clear the sticky price bar on a property page.
+ * `NEXT_PUBLIC_WHATSAPP` overrides it per environment; the fallback is the
+ * number already published in the footer and on the contact page, so the
+ * button cannot point somewhere nobody answers.
  */
-const HIDDEN_PATHS = ['/dashboard', '/auth', '/post-property'];
+const NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP || '258879329012').replace(/\D/g, '');
+
+/**
+ * ONLY the front pages, matched exactly.
+ *
+ * A floating button belongs where somebody is still deciding whether to talk
+ * to us. It does not belong on:
+ *   · a property page, which already has WhatsApp, call and enquiry buttons
+ *     and a sticky price bar on mobile that it would sit on top of;
+ *   · the dashboard, where it covers real controls;
+ *   · auth and the listing wizard, where the visitor is mid-task.
+ *
+ * An allow-list rather than a deny-list, so a page added later is quiet by
+ * default and has to opt in — which is the way round that keeps this from
+ * creeping back onto everything.
+ */
+const SHOW_ON = new Set([
+  '/',
+  '/properties',
+  '/agents',
+  '/about',
+  '/contact',
+  '/services',
+  '/pricing',
+]);
 
 export default function ChatWidget() {
   const pathname = usePathname() || '/';
-  if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
+  const { lang } = useLanguage();
+  const pt = lang === 'pt';
+
+  // Exact match: /properties shows it, /properties/some-listing does not.
+  if (!SHOW_ON.has(pathname.replace(/\/$/, '') || '/')) return null;
+
+  const message = pt
+    ? 'Olá! Vi o House in Mozambique e queria saber mais.'
+    : 'Hello! I saw House in Mozambique and would like to know more.';
 
   return (
-    <>
-      <style>{`
-        /* Desktop: sit just inside the corner rather than flush to it. */
-        #tidio-chat-iframe {
-          bottom: 20px !important;
-          right: 16px !important;
-          z-index: 70 !important;
-        }
-        @media (max-width: 680px) {
-          #tidio-chat-iframe {
-            bottom: calc(14px + env(safe-area-inset-bottom)) !important;
-            right: 10px !important;
-            z-index: 74 !important;
-          }
-          /* A property page has a sticky price bar pinned to the bottom edge. */
-          body:has(.pdp-page) #tidio-chat-iframe {
-            bottom: calc(84px + env(safe-area-inset-bottom)) !important;
-          }
-        }
-      `}</style>
-      <Script
-        src="//code.tidio.co/dskhwbtaf4xshe1pluqs7ilizketnylv.js"
-        strategy="lazyOnload"
-      />
-    </>
+    <a
+      className="wa-fab"
+      href={`https://wa.me/${NUMBER}?text=${encodeURIComponent(message)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={pt ? 'Falar connosco no WhatsApp' : 'Message us on WhatsApp'}
+    >
+      <Icon name="chat" size={20} />
+      <span>{pt ? 'WhatsApp' : 'WhatsApp'}</span>
+    </a>
   );
 }

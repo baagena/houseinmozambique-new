@@ -26,7 +26,7 @@ import {
   LayoutDashboard, LayoutGrid, SlidersHorizontal, Settings, Lock, KeyRound,
   Key, Info, Clock, Inbox, CirclePause, Eye, EyeOff, TrendingUp, TrendingDown,
   CircleMinus, Minus, Circle, Moon, Sun, Ruler, Gavel, Tag, Sofa, Palette,
-  CreditCard, Banknote, Globe, IdCard, CircleDot,
+  CreditCard, Banknote, Globe, IdCard, CircleDot, ExternalLink, TriangleAlert,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -42,6 +42,8 @@ const ICONS: Record<string, LucideIcon> = {
   menu: Menu,
   close: X,
   more_vert: EllipsisVertical,
+  open_in_new: ExternalLink,
+  launch: ExternalLink,
   search: Search,
   search_off: SearchX,
   dashboard: LayoutDashboard,
@@ -57,6 +59,9 @@ const ICONS: Record<string, LucideIcon> = {
   task_alt: CircleCheckBig,
   approval: CircleCheckBig,
   error: CircleAlert,
+  /* Distinct from `error`: a warning is something to look at, an error is
+     something that failed. The payment screens use both in the same column. */
+  warning: TriangleAlert,
   info: Info,
   schedule: Clock,
   pause_circle: CirclePause,
@@ -80,11 +85,13 @@ const ICONS: Record<string, LucideIcon> = {
   manage_accounts: UserCog,
   admin_panel_settings: ShieldCheck,
   real_estate_agent: Handshake,
+  handshake: Handshake,
   verified: BadgeCheck,
   verified_user: ShieldCheck,
   badge: IdCard,
 
   // messaging
+  call: Phone,
   mail: Mail,
   mail_outline: Mail,
   mark_email_read: MailCheck,
@@ -138,6 +145,7 @@ const ICONS: Record<string, LucideIcon> = {
   ads_click: MousePointerClick,
   analytics: ChartColumn,
   sell: Tag,
+  tag: Tag,
   payment: CreditCard,
   payments: Banknote,
   workspace_premium: Award,

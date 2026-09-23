@@ -5,6 +5,54 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AdminPropertyActions from './AdminPropertyActions';
 import Icon from '@/components/ui/Icon';
+import { listingQuality } from '@/lib/listing-quality';
+
+/** Status chips, in the reference's order. */
+const STATUS_FILTERS = [
+  { key: 'ALL', label: 'All' },
+  { key: 'PUBLISHED', label: 'Published' },
+  { key: 'PENDING', label: 'Pending' },
+  { key: 'REJECTED', label: 'Rejected' },
+  { key: 'SUSPENDED', label: 'Suspended' },
+] as const;
+
+type StatusKey = (typeof STATUS_FILTERS)[number]['key'];
+
+/** Fixed slot per property type, so a type keeps its colour across screens. */
+const TYPE_SLOT: Record<string, string> = {
+  Villa: 'var(--d-slot-1)',
+  Apartment: 'var(--d-slot-2)',
+  'Beach House': 'var(--d-slot-3)',
+  Studio: 'var(--d-slot-4)',
+  Penthouse: 'var(--d-slot-5)',
+};
+function typeColor(type: string): string {
+  return TYPE_SLOT[type] ?? 'var(--d-ink)';
+}
+
+const mzn = (n: number) => `MT ${Math.round(n).toLocaleString('en-US')}`;
+function fmtPrice(price: number, unit: string): string {
+  if (unit === 'monthly') return `${mzn(price)}/mo`;
+  if (unit === 'nightly') return `${mzn(price)}/nt`;
+  return mzn(price);
+}
+
+/** Status is never colour-alone — every pill carries an icon and a word. */
+const STATUS_PILL: Record<string, { cls: string; icon: string; label: string }> = {
+  PUBLISHED: { cls: 'good', icon: 'check_circle', label: 'Published' },
+  PENDING: { cls: 'warn', icon: 'schedule', label: 'Pending' },
+  REJECTED: { cls: 'crit', icon: 'close', label: 'Rejected' },
+  SUSPENDED: { cls: 'muted', icon: 'error', label: 'Suspended' },
+};
+function statusPill(status: string) {
+  const s = STATUS_PILL[status] ?? { cls: 'muted', icon: 'info', label: status };
+  return (
+    <span className={`pill ${s.cls}`}>
+      <Icon name={s.icon} size={11} />
+      {s.label}
+    </span>
+  );
+}
 
 export interface AdminProperty {
   id: string;
@@ -34,9 +82,17 @@ export interface AdminProperty {
 
 export default function AdminPropertiesClient({ initialProperties }: { initialProperties: AdminProperty[] }) {
   const [properties, setProperties] = useState(initialProperties);
+  const [statusFilter, setStatusFilter] = useState<StatusKey>('ALL');
   const [editing, setEditing] = useState<AdminProperty | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Counts come from the real list, so a chip reading "Pending · 0" is true.
+  const counts = STATUS_FILTERS.reduce<Record<string, number>>((acc, f) => {
+    acc[f.key] = f.key === 'ALL' ? properties.length : properties.filter((p) => p.status === f.key).length;
+    return acc;
+  }, {});
+  const visible = statusFilter === 'ALL' ? properties : properties.filter((p) => p.status === statusFilter);
 
   function open(property: AdminProperty) {
     setEditing({ ...property, amenities: [...property.amenities], images: [...property.images], tags: [...property.tags] });
@@ -88,98 +144,129 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="page-head">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Property inventory</h2>
-          <p className="mt-1 text-sm text-[#74777f]">Edit, publish, or remove any listing on the platform.</p>
+          <p className="eyebrow">Inventory</p>
+          <h1>All properties</h1>
+          <p>Every listing across every agent and market, regardless of status.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-[13px] font-medium text-[#9aa0a8]">{properties.length} listings</span>
-          {/* Admins post directly: no payment step, and the listing goes live immediately. */}
-          <Link
-            href="/post-property"
-            className="flex items-center gap-1.5 rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
-          >
-            <Icon name="add_home" size={18} />
-            Add property
-          </Link>
-        </div>
+        <Link
+          href="/post-property?as=admin"
+          className="chip on"
+          style={{ textDecoration: 'none' }}
+        >
+          + New listing
+        </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-[#eceef1] bg-[#fafbfc]">
-              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Property</th>
-              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Host / agent</th>
-              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Status</th>
-              <th className="px-5 py-2.5 text-[11px] font-medium text-[#9aa0a8]">Views / clicks</th>
-              <th className="px-5 py-2.5 text-right text-[11px] font-medium text-[#9aa0a8]">Controls</th>
-            </tr>
-          </thead>
-          <tbody>
-            {properties.map((p) => (
-              <tr key={p.id} className="group border-b border-[#f2f4f6] transition-colors hover:bg-[#fafbfc] last:border-0">
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md">
-                      <Image
-                        src={p.images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200'}
-                        alt={p.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="leading-tight">
-                      <p className="max-w-[390px] truncate text-[13px] font-medium text-[#002045]" title={p.title}>{p.title}</p>
-                      <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
-                        <span className="text-[#845326]">{p.type || 'Property'}</span>
-                        <span className="text-[#c4c6cf]">·</span>
-                        <span className="text-[#9aa0a8]">{p.listingType || 'Listing'}</span>
-                        <span className="text-[#c4c6cf]">·</span>
-                        <span className="text-[#9aa0a8]">{p.city}</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-3 text-[13px] text-[#5b616b]">{p.hostName}</td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`h-1.5 w-1.5 rounded-full ${p.status === 'PUBLISHED' ? 'bg-emerald-500' : p.status === 'REJECTED' ? 'bg-red-500' : 'bg-[#e0a458]'}`} />
-                    <span className={`text-[13px] font-medium capitalize ${p.status === 'PUBLISHED' ? 'text-emerald-600' : p.status === 'REJECTED' ? 'text-red-600' : 'text-[#845326]'}`}>
-                      {p.status.toLowerCase()}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex flex-col gap-1.5 text-[10px] font-bold uppercase tracking-wider">
-                    <span className="flex items-center gap-1.5 text-[#315f8d]">
-                      <strong className="text-[12px] text-[#002045]">{p.views}</strong> views
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[#845326]">
-                      <strong className="text-[12px] text-[#002045]">{p.contactClicks + p.viewingClicks}</strong> interest
-                    </span>
-                  </div>
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center justify-end text-[13px] font-medium">
-                    <AdminPropertyActions propertyId={p.id} currentStatus={p.status} onEdit={() => open(p)} />
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {properties.length === 0 && (
+      <div className="card">
+        <div className="toolbar">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setStatusFilter(f.key)}
+              className={`chip${statusFilter === f.key ? ' on' : ''}`}
+            >
+              {f.label} · {counts[f.key]}
+            </button>
+          ))}
+          <span className="spacer" />
+          <span className="hint">Sorted by newest</span>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table>
+            <thead>
               <tr>
-                <td colSpan={5} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
-                  No properties yet.
-                </td>
+                <th>Listing</th>
+                <th>Type</th>
+                <th>Host</th>
+                <th>Price</th>
+                <th>Performance</th>
+                <th>Quality</th>
+                <th>Status</th>
+                <th />
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((p) => {
+                const q = listingQuality(p);
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <div className="cell-primary">
+                        <div className="thumb" style={{ background: typeColor(p.type), overflow: 'hidden' }}>
+                          {p.images[0] ? (
+                            <Image src={p.images[0]} alt="" width={42} height={42} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                          ) : (
+                            <Icon name="domain" size={18} />
+                          )}
+                        </div>
+                        <div>
+                          <div className="name-strong">
+                            {p.title}
+                            {p.isFeatured && <span className="tag gold" style={{ marginLeft: 6 }}>Featured</span>}
+                            {p.badge && <span className="tag" style={{ marginLeft: 6 }}>{p.badge}</span>}
+                          </div>
+                          <div className="name-sub">{[p.neighborhood, p.city].filter(Boolean).join(', ')}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="tag">{p.listingType}</span></td>
+                    <td>{p.hostName}</td>
+                    <td className="tabular" style={{ fontWeight: 600 }}>{fmtPrice(p.price, p.priceUnit)}</td>
+                    <td className="tabular" style={{ color: 'var(--d-text-2)' }}>
+                      {p.views.toLocaleString('en-US')} views · {p.contactClicks} contacts
+                    </td>
+                    <td>
+                      <div style={{ minWidth: 96 }} title={q.missing.length ? `Missing: ${q.missing.join(', ')}` : 'Complete'}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'var(--d-border-soft)', overflow: 'hidden' }}>
+                            <div style={{ width: `${q.score}%`, height: '100%', background: `var(--d-${q.band})` }} />
+                          </div>
+                          <span className="tabular" style={{ fontSize: 'var(--d-fs-sm)', fontWeight: 700, color: `var(--d-${q.band})` }}>
+                            {q.score}
+                          </span>
+                        </div>
+                        {q.missing.length > 0 && (
+                          <div style={{ fontSize: 'var(--d-fs-label)', color: 'var(--d-text-3)', marginTop: 3 }}>
+                            {q.missing.length} item{q.missing.length > 1 ? 's' : ''} missing
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td>{statusPill(p.status)}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div className="row-actions">
+                        <AdminPropertyActions propertyId={p.id} currentStatus={p.status} onEdit={() => open(p)} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {visible.length === 0 && (
+                <tr>
+                  <td colSpan={8}>
+                    <div className="empty">
+                      <Icon name="domain" size={22} />
+                      <p style={{ margin: '8px 0 0', fontWeight: 600, color: 'var(--d-text-1)' }}>
+                        {properties.length === 0 ? 'No listings yet' : `Nothing ${STATUS_FILTERS.find((f) => f.key === statusFilter)?.label.toLowerCase()}`}
+                      </p>
+                      <p style={{ margin: '3px 0 0', fontSize: 'var(--d-fs-sm)', color: 'var(--d-text-3)' }}>
+                        {properties.length === 0
+                          ? 'Once an agent publishes, listings appear here.'
+                          : 'Try another filter above.'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1f3a]/30 p-4 backdrop-blur-sm">
           <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[#eceef1] bg-white p-6 shadow-xl">

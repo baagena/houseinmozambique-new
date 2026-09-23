@@ -69,6 +69,15 @@ export async function POST(request: Request) {
         name: newAgent.name,
         email: newAgent.email,
         token: newAgent.emailVerifyToken || undefined,
+        /*
+         * Where they were going before being asked to register. The sign-up
+         * form already carries it as `?redirect=`; passing it through means
+         * somebody who set out to post a house lands on the listing form when
+         * they click the link, instead of on a sign-in box.
+         */
+        next: typeof body.redirect === 'string' && body.redirect.startsWith('/')
+          ? body.redirect
+          : undefined,
       });
     } catch (emailError) {
       console.error('Agent verification email failed:', emailError);

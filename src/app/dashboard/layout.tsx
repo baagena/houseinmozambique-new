@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import ThemeSwitch from '@/components/dashboard/ThemeSwitch';
+import LanguageSwitch from '@/components/dashboard/LanguageSwitch';
 import { logout } from '@/lib/auth';
 import Icon from '@/components/ui/Icon';
 
@@ -82,91 +83,53 @@ export default function DashboardLayout({
       <DashboardSidebar role={roleLabel as 'admin' | 'agent'} userName={user.name} accountRole={user.role} />
 
       <main className="flex-1 overflow-y-auto custom-scrollbar relative">
-        {/* Top Header */}
-        <header
-          className="sticky top-0 z-10 px-6 h-14 flex justify-between items-center backdrop-blur-xl"
-          style={{
-            background: 'color-mix(in srgb, var(--d-card) 85%, transparent)',
-            borderBottom: '1px solid var(--d-border)',
-          }}
-        >
-          <div
-            className="flex items-center gap-2.5 px-3 h-9 w-72 max-w-[40vw] transition-colors"
-            style={{
-              background: 'var(--d-border-soft)',
-              borderRadius: 'var(--d-radius-sm)',
-              border: '1px solid transparent',
-            }}
-          >
-            <Icon name="search" size={19} style={{ color: 'var(--d-text-3)' }} />
+        {/* Topbar — classes from the design package's ops-console-preview.html.
+            The signed-in identity lives HERE, not in the sidebar foot. */}
+        <header className="topbar">
+          <div className="search">
+            <Icon name="search" size={15} />
             <label htmlFor="dash-search" className="sr-only">Search listings, leads and agents</label>
             <input
               id="dash-search"
               type="text"
               placeholder="Search listings, leads, agents…"
-              className="bg-transparent border-none outline-none w-full"
-              style={{ fontSize: 'var(--d-fs-base)', fontWeight: 500, color: 'var(--d-text-1)' }}
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="topbar-right">
+            <LanguageSwitch />
             <ThemeSwitch />
 
             <Link
               href="/dashboard/notifications"
-              className="relative p-2 flex items-center justify-center transition-colors"
-              style={{ borderRadius: 'var(--d-radius-sm)', color: 'var(--d-text-3)' }}
+              className="icon-btn"
               aria-label="Notifications"
             >
-              <Icon name="notifications" size={21} />
-              <span
-                className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                style={{ background: 'var(--d-crit)', boxShadow: '0 0 0 2px var(--d-card)' }}
-              />
+              <Icon name="notifications" size={18} />
+              <span className="dot" />
             </Link>
 
-            <div style={{ height: 24, width: 1, background: 'var(--d-border)' }} />
-
-            <div className="flex items-center gap-2.5">
-              <div className="text-right hidden sm:block leading-tight">
-                <p style={{ fontSize: 'var(--d-fs-sm)', fontWeight: 600, color: 'var(--d-text-1)', margin: 0 }}>
-                  {user.name}
-                </p>
-                <p className="eyebrow" style={{ margin: 0 }}>{roleLabel}</p>
+            <div className="who-chip">
+              <div className="leading-tight" style={{ textAlign: 'right' }}>
+                <div className="who-name">{user.name}</div>
+                <div className="who-role">{user.role === 'ADMIN' ? 'Administrator' : 'Agent'}</div>
               </div>
-              <div
-                className="w-8 h-8 flex items-center justify-center"
-                style={{ borderRadius: 'var(--d-radius-sm)', background: 'var(--d-ink)' }}
-              >
-                <span style={{ fontSize: 'var(--d-fs-label)', fontWeight: 700, color: 'var(--d-gold)' }}>
-                  {user.initials}
-                </span>
-              </div>
+              <div className="avatar-sm">{user.initials}</div>
               <button
+                type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
                 title="Sign out"
-                className="p-2 transition-colors disabled:opacity-50"
-                style={{ borderRadius: 'var(--d-radius-sm)', color: 'var(--d-text-3)' }}
+                className="icon-btn"
+                aria-label="Sign out"
               >
-                {isLoggingOut ? (
-                  <span
-                    className="block w-[18px] h-[18px] rounded-full animate-spin"
-                    style={{
-                      border: '2px solid color-mix(in srgb, var(--d-text-3) 30%, transparent)',
-                      borderTopColor: 'var(--d-text-3)',
-                    }}
-                  />
-                ) : (
-                  <Icon name="logout" size={19} />
-                )}
-                <span className="sr-only">Sign out</span>
+                <Icon name="logout" size={17} />
               </button>
             </div>
           </div>
         </header>
 
-        <div className="px-6 py-6 lg:px-8 lg:py-8 max-w-[1400px]">
+        <div className="content">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-12">

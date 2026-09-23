@@ -133,12 +133,10 @@ function CardShell({
         </h3>
         <p style={{ fontSize: 'var(--d-fs-sm)', color: 'var(--d-text-3)', margin: '3px 0 0' }}>{sub}</p>
         <p
-          className="tabular"
+          className="display tabular"
           style={{
-            fontFamily: 'var(--d-font-mono)',
             fontSize: 'var(--d-fs-figure)',
             fontWeight: 600,
-            letterSpacing: '-0.02em',
             lineHeight: 1.1,
             color: 'var(--d-text-1)',
             margin: '10px 0 0',
@@ -229,7 +227,7 @@ export default function AnalyticsChart({ data }: AnalyticsChartProps) {
                 cursor={{ fill: theme.grid }}
                 content={<ChartTooltip theme={theme} format={fullMT} />}
               />
-              <Bar dataKey="revenue" name="Revenue" fill={theme.solo} radius={[4, 4, 0, 0]} maxBarSize={22} />
+              <Bar dataKey="revenue" name="Revenue" fill={theme.slots[0]} radius={[4, 4, 0, 0]} maxBarSize={22} />
             </BarChart>
           </ResponsiveContainer>
         </CardShell>

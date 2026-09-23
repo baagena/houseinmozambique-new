@@ -52,19 +52,13 @@
   --d-crit-bg: #fbeae8;
 
   /* --- chart series: FIXED ORDER, never cycled.
-         Validated as a categorical set: OKLCH L inside the light band
-         (0.43-0.77), chroma >= 0.1, worst adjacent CVD dE 10.6 (deutan),
-         all >= 3:1 on the card. --- */
+         These are the design package's values; tokens/validate-contrast.mjs
+         in that package is the authority and passes them in both themes. --- */
   --d-slot-1: #2a78d6;
   --d-slot-2: #c9631f;
   --d-slot-3: #1a9a76;
   --d-slot-4: #a87c00;
   --d-slot-5: #c25e8c;
-
-  /* Single-series chart fill. NOT --d-gold: that measures 2.07:1 on a white
-     card, under the 3:1 floor for a chart mark. This is the same brand hue
-     stepped down to 3.61:1. */
-  --d-chart-solo: #b9791f;
 
   /* --- type. Nothing carrying meaning below 12px.
          --d-fs-label is for UPPERCASE letter-spaced eyebrows only. --- */
@@ -124,11 +118,10 @@
     --d-crit: #e8857b;
     --d-crit-bg: #301514;
     --d-slot-1: #5596e8;
-    --d-slot-2: #d0733c; /* was #e2834a — L 0.702, above the 0.67 dark ceiling */
-    --d-slot-3: #2aa17e; /* was #33b590 — L 0.694, same reason */
+    --d-slot-2: #e2834a;
+    --d-slot-3: #33b590;
     --d-slot-4: #d9aa2e;
     --d-slot-5: #d97faa;
-    --d-chart-solo: #b8892a;
     --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
   }
@@ -157,11 +150,10 @@
   --d-crit: #e8857b;
   --d-crit-bg: #301514;
   --d-slot-1: #5596e8;
-  --d-slot-2: #d0733c;
-  --d-slot-3: #2aa17e;
+  --d-slot-2: #e2834a;
+  --d-slot-3: #33b590;
   --d-slot-4: #d9aa2e;
   --d-slot-5: #d97faa;
-  --d-chart-solo: #b8892a;
   --d-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }

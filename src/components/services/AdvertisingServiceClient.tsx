@@ -133,7 +133,7 @@ export default function AdvertisingServiceClient() {
             <Icon name="arrow_forward" size={18} className="leading-none" />
           </Link>
           <Link
-            href="/post-property"
+            href="/post-listing"
             className="inline-flex items-center gap-2 rounded-xl border border-[#13233F]/20 px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[#13233F] transition-all hover:bg-[#13233F]/5"
           >
             {t.nav.postHouse}

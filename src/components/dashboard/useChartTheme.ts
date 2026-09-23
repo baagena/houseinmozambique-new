@@ -16,8 +16,6 @@ export interface ChartTheme {
   mode: ChartMode;
   /** Fixed order, never cycled. Validated as a categorical set. */
   slots: [string, string, string, string, string];
-  /** Single-series fill — brand gold stepped to clear 3:1 on the card. */
-  solo: string;
   surface: string;
   grid: string;
   axis: string;
@@ -30,7 +28,6 @@ export interface ChartTheme {
 const LIGHT: ChartTheme = {
   mode: 'light',
   slots: ['#2a78d6', '#c9631f', '#1a9a76', '#a87c00', '#c25e8c'],
-  solo: '#b9791f',
   surface: '#ffffff',
   grid: '#edeff3',
   axis: '#c4c9d2',
@@ -42,8 +39,7 @@ const LIGHT: ChartTheme = {
 
 const DARK: ChartTheme = {
   mode: 'dark',
-  slots: ['#5596e8', '#d0733c', '#2aa17e', '#d9aa2e', '#d97faa'],
-  solo: '#b8892a',
+  slots: ['#5596e8', '#e2834a', '#33b590', '#d9aa2e', '#d97faa'],
   surface: '#111b29',
   grid: '#1b2734',
   axis: '#3a4a5f',

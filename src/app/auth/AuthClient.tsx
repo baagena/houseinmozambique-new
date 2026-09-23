@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 import { setAuth } from '@/lib/auth';
+import { afterAuth } from '@/lib/after-auth';
 import Icon from '@/components/ui/Icon';
 
 // Professional, agent-focused hero image
@@ -52,7 +53,15 @@ function AuthForm() {
     }
   ];
 
-  const [tab, setTab] = useState<'signin' | 'signup'>('signin');
+  /*
+   * `?tab=signup` opens straight on the register form. The posting flow sends
+   * people here having already said they are new, and making them click
+   * "Create account" again to confirm an answer they just gave reads as the
+   * product not listening.
+   */
+  const [tab, setTab] = useState<'signin' | 'signup'>(
+    searchParams.get('tab') === 'signup' ? 'signup' : 'signin',
+  );
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,6 +92,10 @@ function AuthForm() {
   const redirect = searchParams.get('redirect') || '/';
   const plan = searchParams.get('plan');
   const verified = searchParams.get('verified') === '1';
+  /* The verify route redirects here when a link is stale, reused, or arrives
+     without a token. It used to answer those with a raw JSON error document,
+     which reads as a broken site rather than as a link already used. */
+  const linkError = searchParams.get('error');
 
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -96,7 +109,14 @@ function AuthForm() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tab === 'signup' ? { ...formData, accountType } : formData),
+        /* `redirect` travels with the sign-up so the verification email can
+           bring them back to where they were heading, rather than dropping
+           them on this page again once they confirm. */
+        body: JSON.stringify(
+          tab === 'signup'
+            ? { ...formData, accountType, redirect: redirect !== '/' ? redirect : undefined }
+            : formData,
+        ),
       });
 
       const data = await response.json();
@@ -126,17 +146,9 @@ function AuthForm() {
         localStorage.setItem('userId', user.id);
       }
       
-      // Admins always go to admin dashboard; agents respect the ?redirect= param
-      if (user.role === 'ADMIN') {
-        router.push('/dashboard/admin');
-      } else {
-        // Build the full redirect URL, appending plan if present
-        let destination = redirect && redirect !== '/' ? redirect : '/dashboard/agent';
-        if (plan && !destination.includes('plan=')) {
-          destination += destination.includes('?') ? `&plan=${plan}` : `?plan=${plan}`;
-        }
-        router.push(destination);
-      }
+      /* One answer for where people land, shared with the server guard on this
+         page. A `?redirect=` at the old posting form becomes the wizard. */
+      router.push(afterAuth(redirect, { isAdmin: user.role === 'ADMIN', plan }));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -219,15 +231,7 @@ function AuthForm() {
         localStorage.setItem('userId', user.id);
       }
 
-      if (role === 'admin') {
-        router.push('/dashboard/admin');
-      } else {
-        let destination = redirect && redirect !== '/' ? redirect : '/dashboard/agent';
-        if (plan && !destination.includes('plan=')) {
-          destination += destination.includes('?') ? `&plan=${plan}` : `?plan=${plan}`;
-        }
-        router.push(destination);
-      }
+      router.push(afterAuth(redirect, { isAdmin: role === 'admin', plan }));
     } catch (err: any) {
       setError("Dev Login failed: " + err.message);
     } finally {
@@ -253,10 +257,17 @@ function AuthForm() {
   return (
     <main className="min-h-screen flex flex-col md:flex-row md:h-screen md:overflow-hidden">
       {/* Left: Professional Editorial Visual */}
-      <section className="hidden md:flex md:w-5/12 lg:w-1/2 relative overflow-hidden bg-[#13233F] items-center p-12 lg:p-24 uppercase-off">
+      {/* `on-dark` flips the .site heading colour for everything in here — see
+          the rule in him.css. Without it, h1–h3 inherit an ink colour that is
+          the same navy as this panel. */}
+      <section className="hidden md:flex md:w-5/12 lg:w-1/2 relative overflow-hidden bg-[#13233F] items-center p-12 lg:p-24 uppercase-off on-dark">
         <div className="absolute inset-0 z-0 scale-105">
           <Image src={BG_IMG} alt="Professional Agency Office" fill className="object-cover opacity-50 brightness-[0.7] mix-blend-luminosity" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#13233F] via-[#13233F]/40 to-transparent opacity-100" />
+          {/* A flat wash first, so every word clears contrast wherever it lands
+              on the photograph; the gradients then shape the image on top of a
+              floor rather than instead of one. */}
+          <div className="absolute inset-0 bg-[#13233F]/75" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#13233F] via-[#13233F]/50 to-[#13233F]/25" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#13233F]/40 via-transparent to-transparent opacity-60" />
         </div>
         
@@ -271,7 +282,7 @@ function AuthForm() {
                 <span className="text-[11px] font-medium text-white/90 tracking-wide">{t.auth.accessBadge}</span>
               </div>
 
-              <h2 className="text-4xl lg:text-5xl font-semibold !text-white leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
+              <h2 className="text-4xl lg:text-5xl font-semibold leading-[1.1] tracking-tight" style={{ fontFamily: 'var(--serif)' }}>
                 {t.auth.signInHeroTitle}
               </h2>
 
@@ -315,9 +326,9 @@ function AuthForm() {
                   const isCompleted = step > s.id;
 
                   return (
-                    <div key={s.id} className={`relative flex gap-4 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
+                    <div key={s.id} className="relative flex gap-4">
                       {/* Step Indicator */}
-                      <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#A87A22] text-white border-[#e9c877]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/5 text-white/50 border-white/10'}`}>
+                      <div className={`relative z-10 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 border ${isActive ? 'bg-[#A87A22] text-white border-[#e9c877]/30' : isCompleted ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-white/10 text-white/70 border-white/15'}`}>
                         {isCompleted ? (
                           <Icon name="check" />
                         ) : (
@@ -327,11 +338,17 @@ function AuthForm() {
 
                       {/* Step Content */}
                       <div className={`flex-1 px-4 py-3 rounded-xl transition-colors duration-300 ${isActive ? 'bg-white/5 backdrop-blur-xl border border-white/10' : ''}`}>
-                        <h3 className="text-white font-medium text-[15px] tracking-tight mb-0.5 flex justify-between items-center">
+                        <h3 className={`font-medium text-[15px] tracking-tight mb-0.5 flex justify-between items-center${isActive || isCompleted ? '' : ' is-dim'}`}>
                           {s.title}
-                          {isActive && <span className="text-[11px] font-medium text-[#e9c877]">Current</span>}
+                          {/* Was hardcoded English on a page that is Portuguese
+                              by default. */}
+                          {isActive && (
+                            <span className="text-[11px] font-medium text-[#e9c877]">{t.auth.stepCurrent}</span>
+                          )}
                         </h3>
-                        <p className={`text-[13px] leading-relaxed ${isActive ? 'text-[#9fb4d6]' : 'text-[#9fb4d6]/60'}`}>
+                        {/* Still quieter than the active step, but readable:
+                            one colour step, not a second layer of alpha. */}
+                        <p className={`text-[13px] leading-relaxed ${isActive ? 'text-[#c3d4ec]' : 'text-[#93a8c8]'}`}>
                           {s.description}
                         </p>
                       </div>
@@ -412,6 +429,15 @@ function AuthForm() {
             {verified && (
               <div className="mb-6 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-[13px] font-medium text-emerald-700">
                 {t.auth.emailVerified}
+              </div>
+            )}
+
+            {linkError && (
+              <div className="mb-6 rounded-lg border border-[#e9c877]/40 bg-[#fff9e8] p-4 text-[13px] text-[#705313]">
+                <p>{t.auth.verifyLinkDead}</p>
+                <button type="button" onClick={resendVerification} disabled={isLoading} className="mt-2 font-semibold underline disabled:opacity-50">
+                  {t.auth.resendVerification}
+                </button>
               </div>
             )}
 
@@ -710,7 +736,7 @@ function AuthForm() {
   );
 }
 
-export default function AuthPage() {
+export default function AuthClient() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#13233F] text-white">Authenticating...</div>}>
       <AuthForm />

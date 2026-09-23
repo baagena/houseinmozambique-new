@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/db';
+import { grantFromPayment } from '@/lib/entitlements';
 
 /**
  * Webhook handler for payment provider callbacks (M-Pesa, e-Mola, Stripe).
@@ -98,16 +99,32 @@ export async function POST(req: Request) {
       },
     });
 
-    // NOTE: granting the plan is intentionally not implemented here. The old
-    // code ran `prisma.agent.update({ data: {} })` — a no-op write against a
-    // schema that has no subscription fields — and logged as though something
-    // had happened. What a paid plan actually grants needs the Subscription
-    // model from the pending schema migration; until then this handler only
-    // records the payment outcome truthfully.
+    /*
+     * A settled payment now grants what it bought.
+     *
+     * This used to record the status and stop, because there was no model for
+     * what a plan gives you. grantFromPayment() creates the Subscription or the
+     * single-listing credit, and is idempotent on paymentId — gateways retry
+     * webhooks, and M-Pesa callbacks in particular can arrive twice, so a
+     * second delivery must not buy a second month.
+     *
+     * A failure here is logged and swallowed rather than returned as an error:
+     * the money has moved and the gateway needs its 200, or it will keep
+     * retrying a callback that has already been recorded. An ungranted
+     * settled payment is visible in the admin payments table and can be
+     * granted by hand.
+     */
     if (paymentStatus === 'COMPLETED') {
-      console.log(
-        `payments/webhook: payment ${payment.id} (${payment.planType}) marked COMPLETED for user ${payment.userId}`
-      );
+      try {
+        const granted = await grantFromPayment(payment.id);
+        console.log(
+          granted
+            ? `payments/webhook: payment ${payment.id} (${payment.planType}) settled and granted to ${payment.userId}`
+            : `payments/webhook: payment ${payment.id} settled but nothing was granted — check the plan slug`
+        );
+      } catch (grantError) {
+        console.error(`payments/webhook: granting for payment ${payment.id} failed`, grantError);
+      }
     }
 
     return NextResponse.json(

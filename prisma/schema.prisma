@@ -10,34 +10,45 @@ datasource db {
 }
 
 model Agent {
-  id              String     @id @default(cuid())
-  name            String
-  initials        String
-  title           String
-  location        String
-  phone           String?
-  rating          Float      @default(0)
-  reviewCount     Int        @default(0)
-  isFeatured      Boolean    @default(false)
-  isVerified      Boolean    @default(false)
-  avatar          String?
-  bio             String?
-  yearsExperience Int?
-  specializations String[]
-  email           String     @unique
-  password        String
-  emailVerifiedAt DateTime?
-  emailVerifyToken String?   @unique
-  emailVerifyExpiresAt DateTime?
-  passwordResetToken String? @unique
+  id                     String          @id @default(cuid())
+  name                   String
+  initials               String
+  title                  String
+  location               String
+  phone                  String?
+  rating                 Float           @default(0)
+  reviewCount            Int             @default(0)
+  isFeatured             Boolean         @default(false)
+  isVerified             Boolean         @default(false)
+  // Demo, test, store-review and internal accounts. They keep every
+  // ability a normal account has; they are simply not advertised in the
+  // public agent directory, where a visitor would read them as real
+  // people they could ring. Admin-controlled, never self-service.
+  isHidden               Boolean         @default(false)
+  avatar                 String?
+  bio                    String?
+  yearsExperience        Int?
+  specializations        String[]
+  email                  String          @unique
+  password               String
+  emailVerifiedAt        DateTime?
+  emailVerifyToken       String?         @unique
+  emailVerifyExpiresAt   DateTime?
+  passwordResetToken     String?         @unique
   passwordResetExpiresAt DateTime?
-  role            String     @default("AGENT") // AGENT, ADMIN, CUSTOMER
-  properties      Property[]
-  inquiries       Inquiry[]
-  blogPosts       BlogPost[]
-  favorites       Favorite[]
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  role                   String          @default("AGENT") // AGENT, ADMIN, CUSTOMER
+  properties             Property[]
+  inquiries              Inquiry[]
+  blogPosts              BlogPost[]
+  favorites              Favorite[]
+  contactEvents          ContactEvent[]
+  subscriptions          Subscription[]
+  listingCredits         ListingCredit[]
+  propertyRequests       PropertyRequest[]
+  requestResponses       PropertyRequestResponse[]
+  featurePicksReviewed   FeaturePick[]
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
 }
 
 model Favorite {
@@ -52,7 +63,7 @@ model Favorite {
 }
 
 model Property {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   title           String
   description     String
   location        String
@@ -60,48 +71,173 @@ model Property {
   neighborhood    String?
   address         String?
   price           Float
-  priceUnit       String   // "sale", "monthly", "nightly"
-  type            String   // "Villa", "Apartment", etc.
-  listingType     String   // "Buy", "Rent", "Short Stay"
+  priceUnit       String // "sale", "monthly", "nightly"
+  type            String // "Villa", "Apartment", etc.
+  listingType     String // "Buy", "Rent", "Short Stay"
   bedrooms        Int
   bathrooms       Int
   area            Float
-  rating          Float?   @default(0)
-  reviewCount     Int?     @default(0)
-  views           Int      @default(0)
-  contactClicks   Int      @default(0)
-  viewingClicks   Int      @default(0)
-  isFeatured      Boolean  @default(false)
-  isSuperhost     Boolean  @default(false)
-  isRareFind      Boolean  @default(false)
-  isNew           Boolean  @default(false)
-  isPremium       Boolean  @default(false)
-  isGuestFavorite Boolean  @default(false)
+  rating          Float?    @default(0)
+  reviewCount     Int?      @default(0)
+  views           Int       @default(0)
+  contactClicks   Int       @default(0)
+  viewingClicks   Int       @default(0)
+  isFeatured      Boolean   @default(false)
+  isSuperhost     Boolean   @default(false)
+  isRareFind      Boolean   @default(false)
+  isNew           Boolean   @default(false)
+  isPremium       Boolean   @default(false)
+  isGuestFavorite Boolean   @default(false)
   badge           String?
   amenities       String[]
   images          String[]
-  host            Agent    @relation(fields: [hostId], references: [id])
+  host            Agent     @relation(fields: [hostId], references: [id])
   hostId          String
-  status          String   @default("PENDING") // PENDING, PUBLISHED, REJECTED, SUSPENDED
+  /// DRAFT — written but never published; costs nothing and occupies no slot.
+  /// PENDING — awaiting admin approval. PUBLISHED — live. SUSPENDED — taken
+  /// down by its owner. REJECTED — refused by an admin.
+  ///
+  /// DRAFT exists so a finished listing can outlive the browser tab while the
+  /// agent arranges payment. Without it, an agent who hit their plan limit
+  /// either paid on the spot or lost twenty minutes of typing and eight photo
+  /// uploads — which is the moment most of them simply stop.
+  status          String    @default("PENDING")
   approvedAt      DateTime? // set the first time an admin publishes; lets owners re-publish their own suspended listings
   tags            String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+
+  /// The listing body in English. `description` holds Portuguese, which is the
+  /// primary language of this market and what the page falls back to. Both are
+  /// generated from the same answers at compose time rather than one being
+  /// translated later — a Portuguese page with English headings in the middle
+  /// of it is the clearest tell that a listing was machine-made.
+  descriptionEn String?
+
+  /// The listing headline in Portuguese. `title` holds English.
+  ///
+  /// The site opens in Portuguese, so without this the default visitor met an
+  /// English headline on top of the Portuguese body — on the listing page, on
+  /// every card and in the home hero. Nullable because listings published
+  /// before it existed have none, and listingHeadline() then rebuilds one from
+  /// type/listingType/bedrooms/neighborhood/city — but ONLY when `title` has
+  /// the shape the wizard generates. The listings already here were written by
+  /// hand and pasted out of WhatsApp; they are Portuguese already and are left
+  /// alone.
+  titlePt String?
+
+  /// The meta description, composed in both languages at the same time as the
+  /// body and length-tuned against the 140-160 characters search shows.
+  ///
+  /// Before these, generateMetadata() paired the English title with the first
+  /// 200 characters of the Portuguese body — two languages inside one <head>,
+  /// and a description cut mid-word. The wizard had always SHOWN the agent a
+  /// proper meta under "What search engines will see"; it just never stored it.
+  metaEn String?
+  metaPt String?
+
+  /// The category-specific answers the guided wizard collects: condition,
+  /// furnishing, suites, storeys, floor, plot frontage/depth, zoning, DUAT
+  /// status, road surface, structures, commercial use.
+  ///
+  /// One JSON column rather than a column each, because the set differs per
+  /// category and is still settling — a plot answers six of these and an
+  /// apartment answers four, with almost no overlap. The description is built
+  /// from them at compose time and stored as text, so nothing on the public
+  /// page depends on reading this back; it is kept so a listing can be edited
+  /// later without re-answering, and so the specification table can be built
+  /// from it. Anything that needs FILTERING on should graduate to its own column.
+  details Json?
+
+  /// Which entitlement authorised this listing to exist.
+  ///
+  /// Exactly one of the two is set. A listing covered by a plan points at the
+  /// subscription that was current when it was published; a listing an owner
+  /// bought outright points at the single credit it consumed. Recorded rather
+  /// than inferred, because a subscription that later lapses must not
+  /// retroactively orphan the listings it legitimately paid for.
+  subscription    Subscription?  @relation(fields: [subscriptionId], references: [id])
+  subscriptionId  String?
+  listingCredit   ListingCredit? @relation(fields: [listingCreditId], references: [id])
+  listingCreditId String?        @unique
+
+  /// What it cost before the last change, and when that change happened.
+  ///
+  /// A price reduction is the strongest buying signal a marketplace holds and
+  /// the card had no way to show one, because nothing anywhere remembered the
+  /// previous figure. Two columns rather than a history table: the card shows
+  /// the most recent move and nothing older, and a full audit of pricing is a
+  /// different feature with different requirements.
+  previousPrice   Float?
+  priceChangedAt  DateTime?
+
+  /// The address this listing is known by: "3-bedroom-apartment-for-sale-
+  /// costa-do-sol-maputo".
+  ///
+  /// The wizard has generated exactly this string all along and showed it to
+  /// the agent under "What search engines will see" — while the actual page
+  /// was served from /properties/<cuid>. So the preview promised a readable,
+  /// keyword-bearing URL and the live page delivered a random identifier that
+  /// tells a search engine nothing and a person less.
+  ///
+  /// Nullable because every listing that already exists predates it;
+  /// scripts/backfill-property-slugs.mjs fills them, and the route serves a
+  /// cuid perfectly well until it has.
+  slug String? @unique
+
+  /// Top placement, bought per listing rather than granted by a plan.
+  ///
+  /// `isFeatured` is the admin's editorial choice — what the team wants on the
+  /// homepage. This is the agent's paid one, and the two are kept apart so
+  /// buying a boost can never overwrite an editorial decision, nor look like
+  /// one to whoever is curating the front page.
+  isUrgent Boolean @default(false)
+
+  addons       ListingAddon[]
+  featurePicks FeaturePick[]
+
+  /// When a one-off listing stops being published. Null for plan listings,
+  /// whose lifetime follows the subscription instead.
+  publishedUntil DateTime?
+
+  /// Where the pin goes on the listing's map.
+  ///
+  /// Coordinates previously existed only as a "Coordinates: -25.9, 32.5" line
+  /// inside `description`, parsed back out with a regex and stripped before the
+  /// prose was rendered. Nothing in the guided wizard ever wrote that line, so
+  /// every listing it created showed a grey placeholder where the map should
+  /// be. Real columns instead — the description is prose, not a carrier for
+  /// metadata, and a coordinate in its own column can be queried later for
+  /// map search or distance sorting.
+  ///
+  /// Nullable, and deliberately never defaulted to the city centre: a pin that
+  /// is wrong looks more deliberate than no pin at all.
+  latitude  Float?
+  longitude Float?
+
+  /// How buyers should reach the agent about THIS listing. Asked in the guided
+  /// wizard; blank falls back to the agent's own phone and email, so an agent
+  /// who never fills these in still gets working buttons.
+  contactWhatsapp String?
+  contactPhone    String?
+  contactEmail    String?
+
+  contactEvents ContactEvent[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Inquiry {
-  id          String   @id @default(cuid())
-  name        String
-  email       String
-  subject     String
-  message     String
-  propertyId  String?  
-  agentId     String?  
-  agent       Agent?   @relation(fields: [agentId], references: [id])
-  isRead      Boolean  @default(false)
-  repliedAt   DateTime? // set when an admin answers by email
-  replies     InquiryReply[]
-  createdAt   DateTime @default(now())
+  id         String         @id @default(cuid())
+  name       String
+  email      String
+  subject    String
+  message    String
+  propertyId String?
+  agentId    String?
+  agent      Agent?         @relation(fields: [agentId], references: [id])
+  isRead     Boolean        @default(false)
+  repliedAt  DateTime? // set when an admin answers by email
+  replies    InquiryReply[]
+  createdAt  DateTime       @default(now())
 }
 
 /// An emailed answer to a contact message, kept so the team can see what was said.
@@ -134,46 +270,219 @@ model Subscriber {
 }
 
 model Payment {
-  id              String   @id @default(cuid())
-  orderRef        String   @unique
-  amount          Float
-  currency        String   @default("MZN")
-  method          String   // "mpesa", "emola", "card"
-  planType        String   // "standard", "premium", "pro", "boost"
-  userId          String
-  transactionId   String?
-  customerName    String
-  customerEmail   String
-  customerPhone   String?
-  status          String   @default("PENDING") // PENDING, COMPLETED, FAILED
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String    @id @default(cuid())
+  orderRef      String    @unique
+  /// DEPRECATED — kept so the rows already recorded are not lost. Read
+  /// amountMinor; scripts/backfill-payment-minor.mjs fills it from here.
+  amount        Float
+  /// The amount actually charged, in centavos, copied from the plan at
+  /// checkout rather than accepted from the client.
+  amountMinor   Int       @default(0)
+  /// Which plan this paid for, resolved server-side. `planType` is the legacy
+  /// free-text label and stays for the existing rows.
+  planId        String?
+  /// The listing an ADD-ON was bought for. Null for a plan or a credit, which
+  /// buy capacity rather than attaching to one property.
+  propertyId    String?
+  currency      String    @default("MZN")
+  method        String // "mpesa", "emola", "card"
+  planType      String // "standard", "premium", "pro", "boost"
+  userId        String
+  transactionId String?
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  /// PENDING   — reference issued, nothing received yet.
+  /// SUBMITTED — the payer has sent proof and is waiting on a human.
+  /// COMPLETED — verified (by the gateway webhook, or by an admin).
+  /// REJECTED  — proof was reviewed and did not hold up; the payer may resend.
+  /// CANCELLED — superseded: another reference for the same plan settled, so
+  ///             nobody owes this one. Kept rather than deleted, because a
+  ///             reference that was shown to a payer has to stay explicable.
+  /// FAILED    — the gateway declined it.
+  status        String    @default("PENDING")
+  completedAt   DateTime?
+
+  /*
+   * MANUAL SETTLEMENT — the proof half.
+   *
+   * Most money here does not move through a gateway. It is sent straight to an
+   * M-Pesa number or a bank account, and the only evidence it happened is the
+   * confirmation SMS or a screenshot of it. The webhook path could record a
+   * transaction the provider vouched for; this path has to record a claim the
+   * payer made, keep it reviewable, and keep the review itself auditable —
+   * which is why the fields below separate "what they said" from "what we
+   * decided".
+   */
+
+  /// The confirmation code the payer read off their SMS or bank slip. Distinct
+  /// from `transactionId`, which is the gateway's own id: this one is typed by
+  /// a human and may be wrong, so it must not be mistaken for a settled fact.
+  payerReference String?
+
+  /// The number or account the money came FROM. This is what an admin matches
+  /// against the M-Pesa statement, and it is often not the account holder's own
+  /// number — people pay through a relative's phone.
+  payerMsisdn    String?
+
+  /// Screenshot of the confirmation, on the image host. Optional, because a
+  /// reference alone is enough to find the transaction on a statement, and
+  /// demanding a screenshot from someone on a feature phone excludes them.
+  proofUrl       String?
+
+  /// Anything the payer wanted to add — "paid in two parts", "sent by my
+  /// brother". Free text on purpose; the awkward cases are the ones that need
+  /// explaining.
+  proofNote      String?   @db.Text
+
+  /// When proof was last submitted. Separate from createdAt, which is when the
+  /// reference was issued — the gap between the two is how long the payer took.
+  submittedAt    DateTime?
+
+  /// Who reviewed it, when, and why they decided that. A rejection with no
+  /// reason recorded is one the payer cannot act on and the team cannot defend.
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  reviewNote     String?   @db.Text
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+/// A BUYER saying what they are looking for, instead of an agent saying what
+/// they have.
+///
+/// The whole platform, until now, has run one way: agents publish, buyers
+/// search. houseinrwanda.com runs the other direction as well — a buyer posts
+/// a requirement and it is pushed out to the agents — and that turns out to be
+/// the thing that makes a subscription worth renewing. An agent paying for
+/// listing slots is paying for the chance to be found; an agent receiving
+/// requirements is being handed work.
+///
+/// Free for the buyer, deliberately. The demand side is what makes the supply
+/// side worth paying for, so charging for it would be charging for the reason
+/// anybody pays for anything else here.
+model PropertyRequest {
+  id  String @id @default(cuid())
+  /// Short human reference, quoted in emails and on the phone.
+  ref String @unique
+
+  /// Who wants it. An account is optional: most people posting a requirement
+  /// have not registered and should not have to before asking.
+  requester   Agent?  @relation(fields: [requesterId], references: [id], onDelete: SetNull)
+  requesterId String?
+  name        String
+  email       String
+  phone       String?
+
+  /// Hide the contact details from the agent board and show them only after
+  /// an agent formally responds. Their platform offers this and it is the
+  /// difference between a requirement and a phone number being handed to a
+  /// hundred people at once.
+  anonymous Boolean @default(false)
+
+  /// "rent" | "sale" | "short stay" — the same vocabulary as a listing.
+  intent       String
+  propertyType String?
+  city         String
+  /// Free text: "Costa do Sol ou Sommerschield", not a fixed list.
+  areas        String?
+
+  /// CENTAVOS, like every other money column here.
+  budgetMinMinor Int?
+  budgetMaxMinor Int?
+  currency       String @default("MZN")
+
+  minBeds  Int?
+  minBaths Int?
+  /// When they need to be in by. Null when they are just looking.
+  moveBy   DateTime?
+
+  /// Anything the fields do not cover, in their own words.
+  notes String? @db.Text
+
+  /// PENDING   — submitted, not yet reviewed.
+  /// OPEN      — approved and visible to agents.
+  /// MATCHED   — an agent is on it; kept open but flagged.
+  /// CLOSED    — found, withdrawn, or expired.
+  /// REJECTED  — spam or unusable.
+  status String @default("PENDING")
+
+  /// Two months, matching the window their platform gives a request. A
+  /// requirement older than that is usually already solved and answering it
+  /// wastes the agent's time.
+  expiresAt DateTime?
+
+  /// When it went out to agents, so a second approval cannot send it twice.
+  broadcastAt DateTime?
+  /// How many agents it reached, for the admin to see the fan-out worked.
+  broadcastTo Int @default(0)
+
+  reviewedBy String?
+  reviewedAt DateTime?
+  reviewNote String?
+
+  responses PropertyRequestResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([city, intent])
+  @@index([expiresAt])
+}
+
+/// An agent putting their hand up for a request.
+///
+/// Recorded rather than left to email so the buyer sees who answered, the
+/// admin can tell whether the fan-out is producing anything, and the agent's
+/// contact reveal is auditable — an anonymous request's details are released
+/// by creating one of these, not by asking nicely.
+model PropertyRequestResponse {
+  id        String          @id @default(cuid())
+  request   PropertyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  requestId String
+  agent     Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId   String
+
+  /// What the agent said they have, in their own words.
+  message String? @db.Text
+  /// A listing they are putting forward, when they have one on the platform.
+  propertyId String?
+
+  createdAt DateTime @default(now())
+
+  /// One response per agent per request: a second is an edit, not a new lead.
+  @@unique([requestId, agentId])
+  @@index([agentId, createdAt])
 }
 
 model BlogPost {
-  id            String    @id @default(cuid())
-  title         String
-  slug          String    @unique
-  excerpt       String
-  content       String
-  coverImage    String?
-  category      String    @default("Market Insight")
-  tags          String[]
-  status        String    @default("DRAFT") // DRAFT, PUBLISHED
-  isFeatured    Boolean   @default(false)
-  readTime      Int       @default(4)
-  author        Agent?    @relation(fields: [authorId], references: [id])
-  authorId      String?
-  publishedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String
+  content     String
+  coverImage  String?
+  category    String    @default("Market Insight")
+  tags        String[]
+  status      String    @default("DRAFT") // DRAFT, PUBLISHED
+  isFeatured  Boolean   @default(false)
+  readTime    Int       @default(4)
+  author      Agent?    @relation(fields: [authorId], references: [id])
+  authorId    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model SiteContent {
   id        String   @id @default(cuid())
-  key       String   // dot-path into translations, e.g. "about.heading"
-  lang      String   // "en" | "pt"
+  key       String // dot-path into translations, e.g. "about.heading"
+  lang      String // "en" | "pt"
   value     String   @db.Text
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -190,31 +499,257 @@ model AppSetting {
   createdAt DateTime @default(now())
 }
 
+/// A plan, in both of its jobs: what the /pricing page SAYS, and what the
+/// checkout CHARGES.
+///
+/// Until now this model only did the first. `priceEn` is a free-form display
+/// string so an admin can write "3,000 - 5,000" or "Grátis", which reads well
+/// and cannot be charged — so /api/payments had to take the amount from the
+/// client, and its own comment says as much. The fields below are the
+/// authoritative half: a number the server can bill and a quota it can enforce.
+/// The display strings stay, because "3.000 - 5.000 Mt / mês" is still the
+/// right thing to show a visitor.
 model PricingPlan {
-  id            String   @id @default(cuid())
-  slug          String   @unique // "standard", "premium", "pro", or an admin-defined key
-  sortOrder     Int      @default(0)
-  isActive      Boolean  @default(true)
-  highlighted   Boolean  @default(false)
-  ctaMode       String   @default("checkout") // "checkout" -> /post-property, "contact" -> /contact
-  nameEn        String
-  namePt        String
-  descriptionEn String
-  descriptionPt String
-  priceEn       String // free-form so admins can write "3,000 - 5,000" or "Grátis"
-  pricePt       String
-  unitEn        String
-  unitPt        String
-  badgeEn       String?
-  badgePt       String?
-  ctaEn         String
-  ctaPt         String
-  featuresEn    Json // [{ label: string, included: boolean, star: boolean }]
-  featuresPt    Json
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String @id @default(cuid())
+  slug      String @unique // "standard", "premium", "pro", or an admin-defined key
+  sortOrder Int    @default(0)
+
+  /// "subscription" renews in periods; "one_off" sells a single listing to an
+  /// owner who has no agent and does not want a plan.
+  kind String @default("subscription")
+
+  /// CENTAVOS, never a float. 3500 MZN is 350000 here.
+  ///
+  /// Money in binary floating point cannot represent 0.1 exactly, so sums of
+  /// prices drift by cents and reconciliation against an M-Pesa statement
+  /// stops matching. Payment.amount is still a Float for the 16 rows already
+  /// recorded; Payment.amountMinor below is the column that replaces it.
+  priceMinor Int    @default(0)
+  currency   String @default("MZN")
+
+  /// "month" | "year" for a subscription, null for one_off.
+  interval String?
+
+  /// How many listings this plan may have LIVE at once. -1 is unlimited.
+  ///
+  /// Active rather than lifetime: an owner who sells their house and takes the
+  /// listing down has to be able to list the next one, or the free tier is a
+  /// trap and they simply register a second account.
+  listingQuota  Int @default(1)
+  featuredQuota Int @default(0)
+
+  /// For one_off only: how long the single listing stays published.
+  durationDays Int?
+
+  subscriptions  Subscription[]
+  listingCredits ListingCredit[]
+  listingAddons  ListingAddon[]
+  isActive       Boolean         @default(true)
+  highlighted    Boolean         @default(false)
+  ctaMode        String          @default("checkout") // "checkout" -> /post-property, "contact" -> /contact
+  nameEn         String
+  namePt         String
+  descriptionEn  String
+  descriptionPt  String
+  priceEn        String // free-form so admins can write "3,000 - 5,000" or "Grátis"
+  pricePt        String
+  unitEn         String
+  unitPt         String
+  badgeEn        String?
+  badgePt        String?
+  ctaEn          String
+  ctaPt          String
+  featuresEn     Json // [{ label: string, included: boolean, star: boolean }]
+  featuresPt     Json
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@index([sortOrder])
+}
+
+/// What a paid plan actually grants, for the length of a paid period.
+///
+/// The payments webhook used to record a transaction and grant nothing — its
+/// own comment said the model this replaces was missing. A Payment is a record
+/// that money moved; a Subscription is the permission that money bought, and
+/// the two are separate because permission can also be granted without a
+/// payment (an admin recording a bank transfer, a comped account, a fix after a
+/// failed gateway callback).
+model Subscription {
+  id      String      @id @default(cuid())
+  agent   Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  plan    PricingPlan @relation(fields: [planId], references: [id])
+  planId  String
+
+  /// ACTIVE — inside the paid period.
+  /// GRACE  — period ended, still fully usable, renewal being chased.
+  /// EXPIRED / CANCELLED — no longer grants anything.
+  status String @default("ACTIVE")
+
+  startedAt        DateTime @default(now())
+  currentPeriodEnd DateTime
+
+  /// Listings stay LIVE through the grace window.
+  ///
+  /// A late payment here usually means a network outage, a salary date or an
+  /// M-Pesa top-up, not a customer who left. Taking a paying agency's
+  /// properties off the site the minute a period ends loses the customer over
+  /// something that resolves itself in a few days.
+  graceUntil DateTime?
+
+  cancelAtPeriodEnd Boolean @default(false)
+
+  /// The payment that bought this period, when there was one.
+  paymentId String?
+
+  /// Set when an admin granted or extended this by hand — who, and why. Cash,
+  /// bank transfer and direct M-Pesa all settle outside the gateway, so this
+  /// path is normal rather than exceptional, and it needs to be auditable.
+  grantedBy String?
+  grantNote String?
+
+  properties Property[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([agentId, status])
+  @@index([currentPeriodEnd])
+}
+
+/// One listing, bought outright — the owner selling their own house who does
+/// not want a plan.
+///
+/// Separate from Subscription because it does not renew and is consumed by
+/// exactly one property. Modelling it as a one-listing subscription would mean
+/// every quota check had to special-case a subscription that must never be
+/// counted twice.
+model ListingCredit {
+  id      String      @id @default(cuid())
+  agent   Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  plan    PricingPlan @relation(fields: [planId], references: [id])
+  planId  String
+
+  /// AVAILABLE — bought, not yet used.
+  /// CONSUMED  — attached to a property.
+  /// EXPIRED   — bought and never used within the window.
+  status String @default("AVAILABLE")
+
+  /// The property it was spent on. The foreign key lives on Property
+  /// (`listingCreditId`, unique), which is what makes "one credit, one
+  /// listing" a database constraint rather than a convention.
+  property Property?
+
+  paymentId  String?
+  /// When the LISTING comes down, computed from the plan's durationDays at
+  /// the moment it is consumed rather than at purchase — an owner who buys a
+  /// credit and lists three weeks later gets the full window they paid for.
+  expiresAt  DateTime?
+  consumedAt DateTime?
+
+  grantedBy String?
+  grantNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId, status])
+}
+
+/// A paid boost on ONE listing: featured placement, or top-of-list urgency.
+///
+/// Sold per listing rather than as a balance of credits. A third currency
+/// alongside listing quota and one-off credits would mean an agent has to hold
+/// three different numbers in their head to answer "can I publish this", and
+/// the question they are actually asking at that moment is "do I want to pay
+/// to push this one up".
+///
+/// Modelled against PricingPlan with `kind: "addon"` so the admin prices and
+/// names these on the existing pricing screen, the checkout route charges
+/// PricingPlan.priceMinor exactly as it does for a plan, and the manual
+/// payment machinery — reference, proof, verification — works unchanged.
+model ListingAddon {
+  id         String   @id @default(cuid())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+  plan       PricingPlan @relation(fields: [planId], references: [id])
+  planId     String
+
+  /// "FEATURED" — appears in the featured rail.
+  /// "URGENT"   — sorted to the top of its search results.
+  kind String
+
+  /// PENDING — bought, not yet paid for.
+  /// ACTIVE  — running.
+  /// EXPIRED — its window has closed.
+  status String @default("PENDING")
+
+  /// The payment that bought it. Null for an admin grant.
+  paymentId String?
+  grantedBy String?
+
+  /// Set when the payment settles, not when the add-on is chosen: a boost the
+  /// agent has not paid for must not start running.
+  startsAt  DateTime?
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([propertyId, status])
+  @@index([status, expiresAt])
+}
+
+/// Why a property is in the home page's featured slot.
+///
+/// The slot is the largest single block on the site, so the difference between
+/// "the review team chose this" and "somebody paid for this" has to be a fact
+/// in the database, not a styling decision taken later. Two kinds, and they are
+/// rendered so they can never be mistaken for each other.
+///
+/// EDITOR — a named reviewer chose it and wrote one sentence saying why. That
+/// sentence is the product: its whole value is that a person put their name on
+/// it, so it is the ONE field on the page that must never be machine-written.
+/// Capped at 220 characters because a reason that needs a paragraph is not a
+/// reason.
+///
+/// PAID — a bought placement. Neutral label, no note (there is no reviewer),
+/// and it never outranks an editor's pick. Granted against a settled payment in
+/// the admin console, never by the agent: the moment an agent can tick
+/// "featured" themselves it means nothing and cannot be sold.
+model FeaturePick {
+  id         String   @id @default(cuid())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+
+  /// "EDITOR" | "PAID"
+  kind String @default("EDITOR")
+
+  /// EDITOR only, and never AI-written. Both languages, because the home page
+  /// is served in Portuguese and read in English by part of the market.
+  note   String? @db.VarChar(220)
+  notePt String? @db.VarChar(220)
+
+  /// Who staked their name on it. The note is worth nothing without this.
+  reviewer   Agent?  @relation(fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewerId String?
+
+  /// The add-on that paid for a PAID pick, so the console can show what was
+  /// bought and when it lapses.
+  addonId String?
+
+  startsAt DateTime @default(now())
+  /// EDITOR: fourteen days. A pick nobody refreshed becomes the automatic
+  /// fallback on day fifteen, with an honest label, whether or not anyone
+  /// noticed.
+  endsAt   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kind, startsAt, endsAt])
+  @@index([propertyId])
 }
 
 model Advertisement {
@@ -224,7 +759,7 @@ model Advertisement {
   imageUrl    String?
   linkUrl     String?
   linkText    String?
-  position    String   // "after_featured", "between_cities_1", "between_cities_2", "before_footer", "sidebar_strip"
+  position    String // "after_featured", "between_cities_1", "between_cities_2", "before_footer", "sidebar_strip"
   type        String   @default("banner") // "banner", "card_row", "strip"
   bgColor     String?  @default("#1a3c5e")
   textColor   String?  @default("#ffffff")
@@ -234,4 +769,29 @@ model Advertisement {
   clickCount  Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+/// A buyer pressing a contact button on a listing.
+///
+/// The design package's migration.prisma models this as `Lead`, with a required
+/// `contact` string. That fits an enquiry form, where the buyer types their
+/// address, but not a WhatsApp or call button: the click happens before we know
+/// anything about who clicked. Recording it as a Lead would mean inventing a
+/// contact string for every row, so this stays a click event and the Lead model
+/// remains what it was specified for — enquiries where a real person is captured.
+///
+/// Property.contactClicks keeps incrementing alongside these rows so the
+/// existing aggregate dashboards do not change meaning.
+model ContactEvent {
+  id         String   @id @default(cuid())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId    String
+  channel    String // WHATSAPP | CALL | EMAIL | FORM | VIEWING
+  createdAt  DateTime @default(now())
+
+  @@index([agentId, createdAt])
+  @@index([propertyId, createdAt])
+  @@index([channel, createdAt])
 }

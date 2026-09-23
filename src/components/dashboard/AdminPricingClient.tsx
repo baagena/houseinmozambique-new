@@ -10,6 +10,13 @@ type PlanForm = Omit<PricingPlanRecord, 'id'> & { id?: string };
 const emptyPlan: PlanForm = {
   slug: '',
   sortOrder: 0,
+  kind: 'subscription',
+  priceMinor: 0,
+  currency: 'MZN',
+  interval: 'month',
+  listingQuota: 1,
+  featuredQuota: 0,
+  durationDays: null,
   isActive: true,
   highlighted: false,
   ctaMode: 'checkout',
@@ -27,6 +34,19 @@ const emptyPlan: PlanForm = {
   ctaPt: 'Começar',
   featuresEn: [],
   featuresPt: [],
+};
+
+/**
+ * The form types meticais; the record stores centavos.
+ *
+ * Kept as a pair of one-line converters rather than a separate form field so
+ * there is only ever one number in state — two would drift the moment one of
+ * them was edited and the other was not.
+ */
+const toMajor = (minor: number) => (minor ? String(minor / 100) : '');
+const fromMajor = (text: string) => {
+  const n = Number(text);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : 0;
 };
 
 const inputClass =
@@ -373,6 +393,112 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                     placeholder={pt ? 'Mt / mês' : 'Mt / month'}
                   />
                 </div>
+              </div>
+
+              {/*
+                * WHAT IS CHARGED, as opposed to what is shown.
+                *
+                * The two are deliberately separate fields. The display price
+                * above is free text so a card can read "3,000 - 5,000" or
+                * "Grátis"; the figure here is the one the checkout bills, and
+                * it has to be a single number or it cannot be charged. If they
+                * disagree, the plan is quoting one price and taking another —
+                * so the form says so rather than silently syncing them.
+                */}
+              <div className="rounded-xl border border-[#e0e0e0] bg-[#fafafa] p-4 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#374151]">
+                  Billing — what the checkout actually charges
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelClass}>Plan type</label>
+                    <select
+                      className={inputClass}
+                      value={form.kind}
+                      onChange={(e) => set('kind', e.target.value === 'one_off' ? 'one_off' : 'subscription')}
+                    >
+                      <option value="subscription">Subscription — renews each period</option>
+                      <option value="one_off">Single listing — one property, one payment</option>
+                    </select>
+                    <p className="mt-1 text-[11px] text-[#9aa0a8]">
+                      Single listing is the owner selling one house without an agent.
+                    </p>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Amount charged ({form.currency})</label>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min={0}
+                      step="1"
+                      value={toMajor(form.priceMinor)}
+                      onChange={(e) => set('priceMinor', fromMajor(e.target.value))}
+                      placeholder="3500"
+                    />
+                    <p className="mt-1 text-[11px] text-[#9aa0a8]">
+                      0 makes the plan free — no payment is opened.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelClass}>
+                      {form.kind === 'one_off' ? 'Listing stays up (days)' : 'Billed every'}
+                    </label>
+                    {form.kind === 'one_off' ? (
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min={1}
+                        value={form.durationDays ?? 60}
+                        onChange={(e) => set('durationDays', Math.max(1, Number(e.target.value) || 60))}
+                      />
+                    ) : (
+                      <select
+                        className={inputClass}
+                        value={form.interval ?? 'month'}
+                        onChange={(e) => set('interval', e.target.value === 'year' ? 'year' : 'month')}
+                      >
+                        <option value="month">Month</option>
+                        <option value="year">Year</option>
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <label className={labelClass}>Listings live at once</label>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min={-1}
+                      value={form.listingQuota}
+                      onChange={(e) => set('listingQuota', Number(e.target.value))}
+                    />
+                    <p className="mt-1 text-[11px] text-[#9aa0a8]">−1 = unlimited.</p>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Featured slots</label>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min={0}
+                      value={form.featuredQuota}
+                      onChange={(e) => set('featuredQuota', Math.max(0, Number(e.target.value) || 0))}
+                    />
+                  </div>
+                </div>
+
+                {form.priceMinor > 0 && /free|gr[áa]tis/i.test(form.priceEn + form.pricePt) && (
+                  <p className="text-[11px] font-semibold text-[#b45309]">
+                    The card says free but the checkout charges {toMajor(form.priceMinor)} {form.currency}.
+                  </p>
+                )}
+                {form.priceMinor === 0 && form.kind === 'subscription' && (
+                  <p className="text-[11px] text-[#9aa0a8]">
+                    Free plan — granted immediately, with no payment step.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

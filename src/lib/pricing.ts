@@ -12,6 +12,17 @@ export interface PricingPlanRecord {
   id: string;
   slug: string;
   sortOrder: number;
+  /** Billing half of the plan. See PricingPlan in schema.prisma. */
+  kind: 'subscription' | 'one_off';
+  /** Centavos. 3,500 MZN is 350000. */
+  priceMinor: number;
+  currency: string;
+  interval: 'month' | 'year' | null;
+  /** Listings LIVE at once. -1 is unlimited. */
+  listingQuota: number;
+  featuredQuota: number;
+  /** one_off only: how long the single listing stays published. */
+  durationDays: number | null;
   isActive: boolean;
   highlighted: boolean;
   /** "checkout" sends the visitor to /post-property, "contact" to /contact. */
@@ -59,6 +70,13 @@ const feature = (label: string, included = true, star = false): PlanFeature => (
 export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
   {
     slug: 'standard',
+    kind: 'subscription' as const,
+    priceMinor: 0,
+    currency: 'MZN',
+    interval: null,
+    listingQuota: 1,
+    featuredQuota: 0,
+    durationDays: null,
     sortOrder: 0,
     isActive: true,
     highlighted: false,
@@ -94,6 +112,13 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
   },
   {
     slug: 'premium',
+    kind: 'subscription' as const,
+    priceMinor: 350000,
+    currency: 'MZN',
+    interval: 'month' as const,
+    listingQuota: 10,
+    featuredQuota: 1,
+    durationDays: null,
     sortOrder: 1,
     isActive: true,
     highlighted: true,
@@ -129,6 +154,13 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
   },
   {
     slug: 'pro',
+    kind: 'subscription' as const,
+    priceMinor: 750000,
+    currency: 'MZN',
+    interval: 'month' as const,
+    listingQuota: -1,
+    featuredQuota: 5,
+    durationDays: null,
     sortOrder: 2,
     isActive: true,
     highlighted: false,
@@ -188,6 +220,13 @@ export function toPricingPlanRecord(row: any): PricingPlanRecord {
     ctaMode: row.ctaMode === 'contact' ? 'contact' : 'checkout',
     nameEn: row.nameEn ?? '',
     namePt: row.namePt ?? '',
+    kind: row.kind === 'one_off' ? 'one_off' : 'subscription',
+    priceMinor: Number(row.priceMinor ?? 0),
+    currency: row.currency ?? 'MZN',
+    interval: row.interval === 'year' ? 'year' : row.interval === 'month' ? 'month' : null,
+    listingQuota: Number(row.listingQuota ?? 1),
+    featuredQuota: Number(row.featuredQuota ?? 0),
+    durationDays: row.durationDays == null ? null : Number(row.durationDays),
     descriptionEn: row.descriptionEn ?? '',
     descriptionPt: row.descriptionPt ?? '',
     priceEn: row.priceEn ?? '',

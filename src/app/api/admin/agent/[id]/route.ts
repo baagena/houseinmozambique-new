@@ -59,6 +59,9 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     if (body.isFeatured !== undefined) data.isFeatured = Boolean(body.isFeatured);
     if (body.isVerified !== undefined) data.isVerified = Boolean(body.isVerified);
+    /* Keeps demo, test and store-review accounts out of the public directory
+       without disabling them. Admin-set only — never a self-service field. */
+    if (body.isHidden !== undefined) data.isHidden = Boolean(body.isHidden);
     if (body.specializations !== undefined) data.specializations = toStringArray(body.specializations);
     if (body.role !== undefined && (body.role === 'ADMIN' || body.role === 'AGENT')) data.role = body.role;
 

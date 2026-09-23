@@ -20,6 +20,10 @@ export const FOLDERS = {
   HOUSES: 'houseinmozambique/houses',
   PROFILES: 'houseinmozambique/profiles',
   BLOGS: 'houseinmozambique/blogs',
+  /// Payment confirmation screenshots. Kept in their own folder because these
+  /// are financial records, not site imagery: they are never served from a
+  /// listing page and they want a different retention rule.
+  PAYMENTS: 'houseinmozambique/payments',
 };
 
 /** Which of the three Cloudinary variables are missing in this environment. */

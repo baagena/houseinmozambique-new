@@ -52,6 +52,17 @@ export function LanguageProvider({
     }
   }, []);
 
+  /*
+   * <html lang> has to follow the switch, not just the first render.
+   *
+   * It is what a screen reader picks its pronunciation from and what
+   * translation tools key off, so leaving it on the server's 'pt' after a
+   * visitor chose English announces English copy in a Portuguese voice.
+   */
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   const setLang = (newLang: Language) => {
     setLangState(newLang);
     localStorage.setItem('app_lang', newLang);

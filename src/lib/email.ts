@@ -305,8 +305,17 @@ export async function sendAgentVerificationEmail(agent: {
   name: string;
   email: string;
   token?: string;
+  /**
+   * Where to land them once the link is clicked — normally the page they were
+   * trying to reach when they were asked to register. Someone who set out to
+   * post a house should finish at the listing form, not at a sign-in box.
+   */
+  next?: string;
 }) {
-  const verificationUrl = agent.token ? `${SITE_URL}/api/auth/verify?token=${encodeURIComponent(agent.token)}` : SITE_URL;
+  const verificationUrl = agent.token
+    ? `${SITE_URL}/api/auth/verify?token=${encodeURIComponent(agent.token)}`
+      + (agent.next ? `&next=${encodeURIComponent(agent.next)}` : '')
+    : SITE_URL;
   return sendEmail({
     to: agent.email,
     from: AUTH_FROM_EMAIL,
@@ -317,7 +326,7 @@ export async function sendAgentVerificationEmail(agent: {
         <p style="color: #43474e;">Hello ${agent.name},</p>
         <p style="color: #43474e;">Thanks for registering as an agent on House in Mozambique.</p>
         <p style="color: #43474e;">Please confirm your email address so your account is secure.</p>
-        <p><a href="${verificationUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;">Confirm email address</a></p>
+        <p><a href="${verificationUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;">Confirm and sign in</a></p>
         <p style="color: #43474e;">One of our team members will review your profile and approve your account shortly.</p>
         <p style="color: #74777f;">If you did not sign up, please ignore this email.</p>
       </div>
@@ -478,5 +487,242 @@ export async function sendSubscriberBroadcastEmail(data: {
 You are receiving this because you subscribed to House in Mozambique updates.
 Unsubscribe: ${data.unsubscribeUrl}
 `,
+  });
+}
+
+/** MZN in centavos → "3.500,00 MZN". Money in an email must be unambiguous. */
+function emailMoney(minor: number, currency: string): string {
+  return `${new Intl.NumberFormat('pt-PT', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(minor / 100)} ${currency}`;
+}
+
+/**
+ * A payer has submitted proof of a manual payment — tell the team there is
+ * something in the verify queue.
+ *
+ * Carries the reference and the sending number in the body rather than just a
+ * link, because the person checking this is usually looking at an M-Pesa
+ * statement on their phone and needs the code to search for, not a round trip
+ * through the dashboard.
+ */
+export async function sendPaymentProofSubmittedEmail(data: {
+  orderRef: string;
+  planType: string;
+  amountMinor: number;
+  currency: string;
+  payerName: string;
+  payerEmail: string;
+  payerReference: string | null;
+  payerMsisdn: string | null;
+  proofUrl: string | null;
+  proofNote: string | null;
+}) {
+  const amount = emailMoney(data.amountMinor, data.currency);
+  const verifyUrl = `${SITE_URL}/dashboard/admin/payments/verify`;
+
+  const rows = [
+    ['Order reference', data.orderRef],
+    ['Plan', data.planType],
+    ['Expected', amount],
+    ['Payer', `${data.payerName} (${data.payerEmail})`],
+    ['Their reference', data.payerReference || '— not given —'],
+    ['Sent from', data.payerMsisdn || '— not given —'],
+  ];
+
+  return sendEmail({
+    to: ADMIN_EMAIL,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: data.payerEmail,
+    subject: `Payment to verify: ${amount} — ${data.orderRef}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">A payment is waiting to be verified</h1>
+      <p><strong>${escapeEmailHtml(data.payerName)}</strong> says they have sent ${escapeEmailHtml(amount)}.</p>
+      <table style="border-collapse:collapse;font-size:14px">
+        ${rows
+          .map(
+            ([label, value]) =>
+              `<tr><td style="padding:4px 12px 4px 0;color:#74777f">${escapeEmailHtml(label)}</td><td style="padding:4px 0"><strong>${escapeEmailHtml(String(value))}</strong></td></tr>`,
+          )
+          .join('')}
+      </table>
+      ${data.proofNote ? `<p style="color:#74777f">Their note: ${escapeEmailHtml(data.proofNote)}</p>` : ''}
+      ${data.proofUrl ? `<p><a href="${data.proofUrl}">View the screenshot they attached</a></p>` : '<p style="color:#74777f">No screenshot attached — match the reference against the statement.</p>'}
+      <p><a href="${verifyUrl}">Open the verify queue</a></p>
+    </div>`,
+    text: `A payment is waiting to be verified\n\n${rows.map(([l, v]) => `${l}: ${v}`).join('\n')}\n${data.proofNote ? `\nTheir note: ${data.proofNote}\n` : ''}${data.proofUrl ? `\nScreenshot: ${data.proofUrl}\n` : '\nNo screenshot attached.\n'}\nVerify queue: ${verifyUrl}`,
+  });
+}
+
+/** Their manual payment was verified and the plan is now active. */
+export async function sendPaymentApprovedEmail(data: {
+  name: string;
+  email: string;
+  orderRef: string;
+  planType: string;
+  amountMinor: number;
+  currency: string;
+}) {
+  const amount = emailMoney(data.amountMinor, data.currency);
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: `Payment confirmed — ${data.orderRef}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">Your payment is confirmed</h1>
+      <p>Hello ${escapeEmailHtml(data.name)},</p>
+      <p>We matched your payment of <strong>${escapeEmailHtml(amount)}</strong> (reference ${escapeEmailHtml(data.orderRef)}) and your <strong>${escapeEmailHtml(data.planType)}</strong> plan is now active.</p>
+      <p><a href="${SITE_URL}/dashboard/agent/billing">See your plan and what it includes</a></p>
+    </div>`,
+    text: `Your payment is confirmed\n\nHello ${data.name},\n\nWe matched your payment of ${amount} (reference ${data.orderRef}) and your ${data.planType} plan is now active.\n\nSee your plan: ${SITE_URL}/dashboard/agent/billing`,
+  });
+}
+
+/**
+ * The proof did not hold up. Carries the reason, because without it the payer's
+ * only remaining move is to send the money a second time.
+ */
+export async function sendPaymentRejectedEmail(data: {
+  name: string;
+  email: string;
+  orderRef: string;
+  reason: string;
+}) {
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: `We could not confirm your payment — ${data.orderRef}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">We could not confirm that payment</h1>
+      <p>Hello ${escapeEmailHtml(data.name)},</p>
+      <p>We checked the proof you sent for reference <strong>${escapeEmailHtml(data.orderRef)}</strong> and could not match it:</p>
+      <p style="padding:12px 16px;background:#f7f8f9;border-left:3px solid #845326">${escapeEmailHtml(data.reason)}</p>
+      <p><strong>Your money has not been taken</strong> — if you have already sent it, reply to this email and we will trace it. You can also send the proof again from your billing page.</p>
+      <p><a href="${SITE_URL}/dashboard/agent/billing">Send the proof again</a></p>
+    </div>`,
+    text: `We could not confirm that payment\n\nHello ${data.name},\n\nWe checked the proof you sent for reference ${data.orderRef} and could not match it:\n\n${data.reason}\n\nIf you have already sent the money, reply to this email and we will trace it. You can also send the proof again: ${SITE_URL}/dashboard/agent/billing`,
+  });
+}
+
+/* ── The demand side ────────────────────────────────────────────────────────
+ * A buyer's requirement, its receipt, and the fan-out that puts it in front
+ * of the agents who pay to receive it.
+ */
+
+/** Confirms to the buyer that their requirement landed, and what happens next. */
+export async function sendRequestReceivedEmail(data: {
+  name: string;
+  email: string;
+  ref: string;
+}) {
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: `We have your property request — ${data.ref}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">We have your request</h1>
+      <p>Hello ${escapeEmailHtml(data.name)},</p>
+      <p>Your reference is <strong>${escapeEmailHtml(data.ref)}</strong>. We check every request by hand before it goes out, so that agents only receive real enquiries — that usually takes a few hours.</p>
+      <p>Once it is released, agents with matching properties will contact you directly. You do not need to do anything else.</p>
+      <p style="color:#74777f;font-size:13px">If you would rather withdraw it, reply to this email with your reference.</p>
+    </div>`,
+    text: `We have your request\n\nHello ${data.name},\n\nYour reference is ${data.ref}. We check every request by hand before it goes out to agents — usually a few hours.\n\nOnce released, agents with matching properties will contact you directly.\n\nTo withdraw it, reply to this email with your reference.`,
+  });
+}
+
+/** Tells the team there is a requirement waiting to be released. */
+export async function sendNewRequestAdminEmail(data: {
+  ref: string;
+  name: string;
+  email: string;
+  city: string;
+  intent: string;
+}) {
+  const url = `${SITE_URL}/dashboard/admin/requests`;
+  return sendEmail({
+    to: ADMIN_EMAIL,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: data.email,
+    subject: `Property request to review: ${data.city} — ${data.ref}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">A buyer has posted a requirement</h1>
+      <p><strong>${escapeEmailHtml(data.name)}</strong> is looking to <strong>${escapeEmailHtml(data.intent)}</strong> in <strong>${escapeEmailHtml(data.city)}</strong>.</p>
+      <p>Reference ${escapeEmailHtml(data.ref)}. It stays hidden from agents until you release it.</p>
+      <p><a href="${url}">Open the requests queue</a></p>
+    </div>`,
+    text: `A buyer has posted a requirement\n\n${data.name} is looking to ${data.intent} in ${data.city}.\nReference ${data.ref}. It stays hidden from agents until you release it.\n\n${url}`,
+  });
+}
+
+/**
+ * Pushes a released requirement to one agent.
+ *
+ * Sent per agent rather than as one bulk message so each carries the agent's
+ * own name and so a bounce is attributable. Callers send these in sequence and
+ * swallow individual failures — one dead address must not stop the fan-out.
+ */
+export async function sendRequestToAgentEmail(data: {
+  agentName: string;
+  agentEmail: string;
+  ref: string;
+  intent: string;
+  city: string;
+  areas: string | null;
+  budget: string | null;
+  beds: number | null;
+  notes: string | null;
+}) {
+  const url = `${SITE_URL}/dashboard/agent/requests`;
+  const rows = [
+    ['Looking to', data.intent],
+    ['Where', [data.areas, data.city].filter(Boolean).join(', ')],
+    ...(data.budget ? [['Budget', data.budget]] : []),
+    ...(data.beds ? [['Bedrooms', `${data.beds}+`]] : []),
+  ];
+
+  return sendEmail({
+    to: data.agentEmail,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: `New buyer looking in ${data.city} — ${data.ref}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">A buyer is looking in ${escapeEmailHtml(data.city)}</h1>
+      <p>Hello ${escapeEmailHtml(data.agentName)},</p>
+      <table style="border-collapse:collapse;font-size:14px;margin:10px 0">
+        ${rows.map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#74777f">${escapeEmailHtml(k)}</td><td style="padding:4px 0"><strong>${escapeEmailHtml(String(v))}</strong></td></tr>`).join('')}
+      </table>
+      ${data.notes ? `<p style="color:#43474e">“${escapeEmailHtml(data.notes)}”</p>` : ''}
+      <p><a href="${url}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;">See the request and respond</a></p>
+      <p style="color:#74777f;font-size:12.5px">You receive these because your plan is active. Reference ${escapeEmailHtml(data.ref)}.</p>
+    </div>`,
+    text: `A buyer is looking in ${data.city}\n\nHello ${data.agentName},\n\n${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n${data.notes ? `\n"${data.notes}"\n` : ''}\nRespond: ${url}\n\nYou receive these because your plan is active. Reference ${data.ref}.`,
+  });
+}
+
+/** Tells the buyer that an agent has answered. */
+export async function sendRequestAnsweredEmail(data: {
+  name: string;
+  email: string;
+  ref: string;
+  agentName: string;
+  message: string | null;
+}) {
+  return sendEmail({
+    to: data.email,
+    from: NOTIFICATION_FROM_EMAIL,
+    reply_to: CONTACT_EMAIL,
+    subject: `An agent has answered your request — ${data.ref}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+      <h1 style="color:#002045;font-size:20px">An agent has something for you</h1>
+      <p>Hello ${escapeEmailHtml(data.name)},</p>
+      <p><strong>${escapeEmailHtml(data.agentName)}</strong> has responded to request ${escapeEmailHtml(data.ref)} and will be in touch directly.</p>
+      ${data.message ? `<p style="padding:12px 16px;background:#f7f8f9;border-left:3px solid #845326">${escapeEmailHtml(data.message)}</p>` : ''}
+      <p><a href="${SITE_URL}/properties">Browse what is listed while you wait</a></p>
+    </div>`,
+    text: `An agent has something for you\n\nHello ${data.name},\n\n${data.agentName} has responded to request ${data.ref} and will be in touch directly.\n${data.message ? `\n"${data.message}"\n` : ''}`,
   });
 }

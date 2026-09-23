@@ -39,4 +39,6 @@ export const AGENT_ADMIN_LIST = {
   ...AGENT_PUBLIC,
   email: true,
   emailVerifiedAt: true,
+  // Admins need to see, and set, which accounts are kept out of the directory.
+  isHidden: true,
 } as const;

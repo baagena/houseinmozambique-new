@@ -3,6 +3,7 @@ import {
   getProperties,
   getFeaturedAgents,
 } from '@/lib/data';
+import { featuredSlot } from '@/lib/featured-slot';
 import { prisma } from '@/lib/db';
 import HomeClient, { type CategoryCount, type CityCount } from '@/components/home/HomeClient';
 import JsonLd from '@/components/seo/JsonLd';
@@ -29,13 +30,25 @@ const FALLBACK_CITY_IMAGE =
 
 export default async function HomePage() {
   const featured = await getFeaturedProperties();
+  /*
+   * The featured SLOT is chosen separately from the featured GRID.
+   *
+   * `isFeatured` is an editorial flag on many properties; the slot is one
+   * property with a reason attached. featuredSlot() applies the eligibility
+   * and fallback rules and returns null when nothing clears the bar, in which
+   * case the block is removed from the page rather than rendered empty.
+   */
+  const slot = await featuredSlot();
   const featuredAgents = await getFeaturedAgents();
   const allProperties = await getProperties();
 
   const rentProps = allProperties.filter((p) => p.listingType === 'Rent').slice(0, 6);
   const buyProps = allProperties.filter((p) => p.listingType === 'Buy').slice(0, 6);
   const shortStayProps = allProperties.filter((p) => p.listingType === 'Short Stay').slice(0, 6);
-  const latest = allProperties.slice(0, 6);
+  /* Eight: the grid is four across at full width, so six left a half-empty
+     second row. Two complete rows read as a selection; one and a half reads
+     as a page that ran out. */
+  const latest = allProperties.slice(0, 8);
 
   // Chip counts come from the live listings, never hardcoded.
   const countBy = (predicate: (p: (typeof allProperties)[number]) => boolean) =>
@@ -85,7 +98,13 @@ export default async function HomePage() {
     <>
       <JsonLd data={faqJsonLd(HOME_FAQS)} />
       <HomeClient
-        featured={sanitizeProperties(featured) as any}
+        slot={slot && {
+          property: sanitizeProperties([slot.property as never])[0] as never,
+          kind: slot.kind,
+          note: slot.note,
+          notePt: slot.notePt,
+          reviewerName: slot.reviewerName,
+        }}
         featuredAgents={featuredAgents as any}
         latest={sanitizeProperties(latest) as any}
         cities={cities}

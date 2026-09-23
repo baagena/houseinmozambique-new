@@ -21,6 +21,8 @@ export interface AdminAgent {
   reviewCount: number;
   isFeatured: boolean;
   isVerified: boolean;
+  /** Kept out of the public /agents directory: demo, test, internal. */
+  isHidden: boolean;
   specializations: string[];
   email: string;
   role: string;
@@ -32,7 +34,7 @@ type Draft = Partial<AdminAgent> & { password?: string };
 const EMPTY_DRAFT: Draft = {
   name: '', email: '', password: '', title: 'Agent', location: 'Mozambique', phone: '',
   bio: '', avatar: '', yearsExperience: 0, specializations: [], isFeatured: false,
-  isVerified: true, role: 'AGENT',
+  isVerified: true, isHidden: false, role: 'AGENT',
 };
 
 export default function AdminAgentsClient({ initialAgents }: { initialAgents: AdminAgent[] }) {
@@ -87,6 +89,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
         specializations: draft.specializations,
         isFeatured: draft.isFeatured,
         isVerified: draft.isVerified,
+        isHidden: draft.isHidden,
         role: draft.role,
       };
       if (draft.password) payload.password = draft.password;
@@ -244,6 +247,14 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     {agent.isFeatured && (
                       <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">Featured</span>
                     )}
+                    {agent.isHidden && (
+                      <span
+                        className="rounded-md bg-[#f1f3f5] px-1.5 py-0.5 text-[11px] font-medium text-[#5b616b]"
+                        title="Not shown in the public agent directory"
+                      >
+                        Hidden
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-5 py-3">
@@ -346,6 +357,10 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             <div className="mt-5 flex flex-wrap items-center gap-5">
               <Toggle label="Verified" checked={!!draft.isVerified} onChange={(v) => set('isVerified', v)} />
               <Toggle label="Featured" checked={!!draft.isFeatured} onChange={(v) => set('isFeatured', v)} />
+              {/* For demo, test and store-review accounts. The account keeps
+                  every ability it has; it is only removed from the public
+                  directory, where a visitor would read it as a real agency. */}
+              <Toggle label="Hide from directory" checked={!!draft.isHidden} onChange={(v) => set('isHidden', v)} />
               <div className="flex items-center gap-2">
                 <label className="text-[12px] font-medium text-[#5b616b]">Role</label>
                 <select

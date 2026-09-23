@@ -2,12 +2,11 @@
 
 import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
+import FeaturedSlot, { type FeaturedSlotProps } from '@/components/home/FeaturedSlot';
 import PropertyCard from '@/components/properties/PropertyCard';
 import HomeHero from '@/components/home/HomeHero';
 import AdBanner from '@/components/ads/AdBanner';
-import { formatPrice, formatListingSentence } from '@/lib/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { useState } from 'react';
 import Icon from '@/components/ui/Icon';
 
 interface Ad {
@@ -38,7 +37,8 @@ export interface CityCount {
 }
 
 interface HomeClientProps {
-  featured: any[];
+  /** The one property in the featured slot, with the reason it is there. */
+  slot?: FeaturedSlotProps | null;
   featuredAgents: any[];
   latest: any[];
   cities: CityCount[];
@@ -69,7 +69,7 @@ const initials = (name: string) =>
     .toUpperCase();
 
 export default function HomeClient({
-  featured,
+  slot,
   featuredAgents,
   latest,
   cities,
@@ -80,29 +80,6 @@ export default function HomeClient({
   ads,
 }: HomeClientProps) {
   const { t } = useLanguage();
-  const hero = featured[0];
-  const [showAllCities, setShowAllCities] = useState(false);
-  const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
-  const [featuredShared, setFeaturedShared] = useState(false);
-
-  const featuredImages = hero?.images?.filter(Boolean) ?? [];
-  const featuredImage = featuredImages[featuredImageIndex] || featuredImages[0];
-
-  async function shareFeatured() {
-    if (!hero) return;
-    const url = `${window.location.origin}/properties/${hero.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: formatListingSentence(hero.title), url });
-      } else {
-        await navigator.clipboard.writeText(url);
-      }
-      setFeaturedShared(true);
-      window.setTimeout(() => setFeaturedShared(false), 1800);
-    } catch {
-      // Sharing can be cancelled by the browser without requiring user feedback.
-    }
-  }
 
   const quickLists = [
     { title: t.nav.forRent, items: rentProps, href: '/properties?type=Rent' },
@@ -127,88 +104,22 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* ── Featured estate ── */}
-      {hero && (
+      {/*
+        * ── The featured slot ──
+        *
+        * Removed from the page entirely when nothing clears the eligibility
+        * bar, rather than rendered as an empty frame. featured-slot/README.md
+        * is explicit: a slot that breaks, empties or silently shows last
+        * month's pick is worse than not having one.
+        */}
+      {slot && (
         <section className="section pt0">
           <div className="wrap">
             <div className="section-head">
               <span className="eyebrow">{t.home.featuredEyebrow}</span>
               <h2>{t.home.featuredTitle}</h2>
             </div>
-            <article className="feature">
-              <div className="feature__media">
-                <SafeImage
-                  src={featuredImage}
-                  alt={formatListingSentence(hero.title)}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1000px) 100vw, 55vw"
-                />
-                {featuredImages.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      className="feature__arrow feature__arrow--prev"
-                      onClick={() => setFeaturedImageIndex((current) => (current - 1 + featuredImages.length) % featuredImages.length)}
-                      aria-label="Show previous featured property image"
-                      title="Previous image"
-                    >
-                      <Icon name="chevron_left" />
-                    </button>
-                    <button
-                      type="button"
-                      className="feature__arrow feature__arrow--next"
-                      onClick={() => setFeaturedImageIndex((current) => (current + 1) % featuredImages.length)}
-                      aria-label="Show next featured property image"
-                      title="Next image"
-                    >
-                      <Icon name="chevron_right" />
-                    </button>
-                    <span className="feature__counter">{featuredImageIndex + 1} / {featuredImages.length}</span>
-                  </>
-                )}
-                <button
-                  type="button"
-                  className={`feature__share${featuredShared ? ' is-shared' : ''}`}
-                  onClick={() => void shareFeatured()}
-                  aria-label={featuredShared ? 'Featured property link copied' : 'Share featured property'}
-                  title={featuredShared ? 'Link copied' : 'Share property'}
-                >
-                  <Icon name={featuredShared ? 'check' : 'share'} />
-                </button>
-              </div>
-              <div className="feature__body">
-                <span className="eyebrow">
-                  {hero.listingType} · {hero.location}
-                </span>
-                <h2 className="feature__title">{formatListingSentence(hero.title)}</h2>
-                <p className="feature__description">{hero.description}</p>
-                <div className="feature__specs">
-                  {[
-                    hero.bedrooms > 0 ? `${hero.bedrooms} ${t.property.beds}` : null,
-                    hero.bathrooms > 0 ? `${hero.bathrooms} ${t.property.baths}` : null,
-                    hero.area > 0 ? `${hero.area} ${t.property.area}` : null,
-                    hero.type,
-                  ]
-                    .filter(Boolean)
-                    .map((spec, i, all) => (
-                      <span key={spec as string}>
-                        {spec}
-                        {i < all.length - 1 ? ' ·' : ''}
-                      </span>
-                    ))}
-                </div>
-                <div className="feature__price">
-                  {formatPrice(hero.price, hero.priceUnit)}
-                  {hero.priceUnit === 'monthly' && <small className="ml-1 text-[0.8rem]">{t.property.perMonth}</small>}
-                  {hero.priceUnit === 'nightly' && <small className="ml-1 text-[0.8rem]">{t.property.perNight}</small>}
-                </div>
-                <Link href={`/properties/${hero.id}`} className="btn btn--dark self-start">
-                  {t.home.viewEstate}
-                  <Icon name="arrow_forward" size={18} />
-                </Link>
-              </div>
-            </article>
+            <FeaturedSlot {...slot} />
           </div>
         </section>
       )}
@@ -292,7 +203,7 @@ export default function HomeClient({
               <h2>{t.home.agentCtaTitle}</h2>
               <p>{t.home.agentCtaDesc}</p>
             </div>
-            <Link href="/pricing" className="btn btn--gold">
+            <Link href="/post-listing" className="btn btn--gold">
               {t.home.listPropertyBtn} →
             </Link>
           </div>
@@ -308,14 +219,14 @@ export default function HomeClient({
               <h2>{t.home.exploreTitle}</h2>
             </div>
             <div className="cities">
-              {(showAllCities ? cities : cities.slice(0, 6)).map((city) => (
+              {cities.map((city) => (
                 <Link key={city.name} href={city.href} className={`city${city.count === 0 ? ' city--empty' : ''}`}>
                   <SafeImage
                     src={city.image}
                     alt={city.name}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 680px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                    sizes="(max-width: 680px) 100vw, (max-width: 1320px) 33vw, 25vw"
                   />
                   <span className="city__label">
                     <b>{city.name}</b>
@@ -326,12 +237,6 @@ export default function HomeClient({
                 </Link>
               ))}
             </div>
-            {cities.length > 6 && (
-              <button type="button" className="city-more" onClick={() => setShowAllCities((visible) => !visible)}>
-                <span>{showAllCities ? 'Show fewer cities' : `View more cities (${cities.length - 6})`}</span>
-                <Icon name={showAllCities ? 'expand_less' : 'expand_more'} />
-              </button>
-            )}
           </div>
         </section>
       )}
@@ -388,7 +293,7 @@ export default function HomeClient({
               <p>{t.home.agentCtaDesc}</p>
             </div>
             <div className="band__cta">
-              <Link href="/pricing" className="btn btn--gold">
+              <Link href="/post-listing" className="btn btn--gold">
                 {t.home.listPropertyBtn}
               </Link>
               <Link href="/agents" className="btn btn--light">

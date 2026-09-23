@@ -28,6 +28,7 @@ export default async function AdminAgentsPage() {
     reviewCount: agent.reviewCount ?? 0,
     isFeatured: agent.isFeatured,
     isVerified: agent.isVerified,
+    isHidden: agent.isHidden,
     specializations: agent.specializations ?? [],
     email: agent.email,
     role: agent.role,

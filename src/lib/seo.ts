@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hostIdentity } from '@/lib/host-identity';
 
 /**
  * Central SEO/AEO configuration and JSON-LD builders.
@@ -78,7 +79,10 @@ export function buildMetadata({
       title: title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — ${SITE_TAGLINE}`,
       description,
       images: ogImages.map((u) => ({ url: u, width: 1200, height: 630, alt: title || SITE_NAME })),
-      locale: 'en_US',
+      // Matches <html lang>: the served page is Portuguese, and a share card
+      // that claims en_US gets previewed and ranked as the wrong language.
+      locale: 'pt_MZ',
+      alternateLocale: ['en_US'],
       ...(type === 'article' ? { publishedTime, modifiedTime } : {}),
     },
     twitter: {
@@ -159,11 +163,15 @@ interface ListingInput {
   bathrooms: number;
   area: number;
   images: string[];
-  host?: { name: string } | null;
+  host?: { name: string; role?: string | null } | null;
 }
 
 export function realEstateListingJsonLd(p: ListingInput) {
   const url = absoluteUrl(`/properties/${p.id}`);
+  /* The seller Google prints in a rich result. A staff-posted listing is sold
+     by the platform, so it must not carry the internal account name — that
+     string is what appears in search results, not just on our own page. */
+  const sellerName = hostIdentity(p.host)?.name ?? null;
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -180,7 +188,7 @@ export function realEstateListingJsonLd(p: ListingInput) {
       priceCurrency: PRICE_CURRENCY,
       availability: 'https://schema.org/InStock',
       url,
-      ...(p.host?.name ? { seller: { '@type': 'Organization', name: p.host.name } } : {}),
+      ...(sellerName ? { seller: { '@type': 'Organization', name: sellerName } } : {}),
     },
     additionalProperty: [
       { '@type': 'PropertyValue', name: 'Bedrooms', value: p.bedrooms },

@@ -1,0 +1,150 @@
+
+> app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.7:3000
+- Environments: .env
+✓ Ready in 10.3s
+⚠ Slow filesystem detected. The benchmark took 2040ms. If E:\Bagena\Clients\stitch_mozambique_property_hub\houseinmozambique-new\.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+○ Compiling proxy ...
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling / ...
+ GET /agents 200 in 68s (next.js: 63s, application-code: 5.0s)
+○ Compiling /properties/[id] ...
+ GET / 200 in 80s (next.js: 57s, application-code: 23.3s)
+ GET /manifest.webmanifest 200 in 1477ms (next.js: 1441ms, application-code: 36ms)
+ GET /api/ads 200 in 2.8s (next.js: 307ms, application-code: 2.5s)
+ GET /api/auth/me 200 in 3.2s (next.js: 235ms, application-code: 3.0s)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 23.0s (next.js: 16.4s, application-code: 6.6s)
+ GET / 200 in 7.5s (next.js: 1010ms, application-code: 6.4s)
+ GET / 200 in 6.8s (next.js: 8ms, application-code: 6.8s)
+ GET /manifest.webmanifest 200 in 87ms (next.js: 74ms, application-code: 13ms)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 2.6s (next.js: 75ms, application-code: 2.5s)
+ GET / 200 in 29.1s (next.js: 20.0s, application-code: 9.1s)
+ GET / 200 in 9.4s (next.js: 10ms, application-code: 9.4s)
+ GET /properties 200 in 1695ms (next.js: 47ms, application-code: 1649ms)
+✓ Finished writing to filesystem cache in 10.3s
+✓ Finished filesystem cache database compaction in 24.7s
+ GET /properties?type=Buy 200 in 6.1s (next.js: 10ms, application-code: 6.1s)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /manifest.webmanifest 200 in 23ms (next.js: 11ms, application-code: 12ms)
+ GET /api/auth/me 200 in 747ms (next.js: 114ms, application-code: 633ms)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.1s (next.js: 17ms, application-code: 5.0s)
+ GET /manifest.webmanifest 200 in 18ms (next.js: 7ms, application-code: 11ms)
+ GET /api/auth/me 200 in 661ms (next.js: 7ms, application-code: 654ms)
+Error [TimeoutError]: The operation was aborted due to timeout
+    at ignore-listed frames {
+  code: 23,
+  INDEX_SIZE_ERR: 1,
+  DOMSTRING_SIZE_ERR: 2,
+  HIERARCHY_REQUEST_ERR: 3,
+  WRONG_DOCUMENT_ERR: 4,
+  INVALID_CHARACTER_ERR: 5,
+  NO_DATA_ALLOWED_ERR: 6,
+  NO_MODIFICATION_ALLOWED_ERR: 7,
+  NOT_FOUND_ERR: 8,
+  NOT_SUPPORTED_ERR: 9,
+  INUSE_ATTRIBUTE_ERR: 10,
+  INVALID_STATE_ERR: 11,
+  SYNTAX_ERR: 12,
+  INVALID_MODIFICATION_ERR: 13,
+  NAMESPACE_ERR: 14,
+  INVALID_ACCESS_ERR: 15,
+  VALIDATION_ERR: 16,
+  TYPE_MISMATCH_ERR: 17,
+  SECURITY_ERR: 18,
+  NETWORK_ERR: 19,
+  ABORT_ERR: 20,
+  URL_MISMATCH_ERR: 21,
+  QUOTA_EXCEEDED_ERR: 22,
+  TIMEOUT_ERR: 23,
+  INVALID_NODE_TYPE_ERR: 24,
+  DATA_CLONE_ERR: 25
+}
+✓ Finished filesystem cache database compaction in 28.2s
+ GET /_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdcauevdfw%2Fimage%2Fupload%2Fv1787738516%2Fhouseinmozambique%2Fhouses%2Fnbc98prrqxkypmt8elfa.jpg&w=640&q=75 500 in 11.9s (next.js: 11.8s, application-code: 55ms)
+ GET /_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdcauevdfw%2Fimage%2Fupload%2Fv1787738516%2Fhouseinmozambique%2Fhouses%2Fnbc98prrqxkypmt8elfa.jpg&w=640&q=75 500 in 11.9s (next.js: 11.8s, application-code: 56ms)
+✓ Compiled in 5.8s
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 9.7s (next.js: 1453ms, application-code: 8.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.0s (next.js: 140ms, application-code: 4.9s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.3s (next.js: 174ms, application-code: 5.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.0s (next.js: 12ms, application-code: 5.0s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.0s (next.js: 73ms, application-code: 5.0s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.5s (next.js: 200ms, application-code: 5.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 84ms, application-code: 2.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.5s (next.js: 21ms, application-code: 2.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.9s (next.js: 14ms, application-code: 2.9s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.6s (next.js: 143ms, application-code: 2.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.5s (next.js: 7ms, application-code: 2.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.8s (next.js: 202ms, application-code: 2.6s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 7ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 57ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.9s (next.js: 15ms, application-code: 2.9s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.9s (next.js: 10ms, application-code: 2.8s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.7s (next.js: 8ms, application-code: 2.7s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.9s (next.js: 7ms, application-code: 2.9s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 23ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 9ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 8ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.5s (next.js: 7ms, application-code: 2.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 6ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.8s (next.js: 6ms, application-code: 2.8s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.2s (next.js: 23ms, application-code: 2.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.2s (next.js: 9ms, application-code: 2.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.7s (next.js: 9ms, application-code: 2.7s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.2s (next.js: 7ms, application-code: 2.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 11ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.8s (next.js: 7ms, application-code: 2.8s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.1s (next.js: 15ms, application-code: 2.1s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.1s (next.js: 7ms, application-code: 2.1s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.1s (next.js: 9ms, application-code: 2.1s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.3s (next.js: 15ms, application-code: 2.3s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.2s (next.js: 8ms, application-code: 2.2s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.9s (next.js: 8ms, application-code: 2.9s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.0s (next.js: 26ms, application-code: 1995ms)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 2.1s (next.js: 7ms, application-code: 2.1s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 1854ms (next.js: 8ms, application-code: 1846ms)
+ GET /manifest.webmanifest 200 in 117ms (next.js: 90ms, application-code: 26ms)
+ GET /agents 200 in 8.9s (next.js: 711ms, application-code: 8.2s)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 3.8s (next.js: 15ms, application-code: 3.8s)
+ GET / 200 in 5.4s (next.js: 571ms, application-code: 4.8s)
+ GET /properties 200 in 3.1s (next.js: 401ms, application-code: 2.7s)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 3.1s (next.js: 14ms, application-code: 3.1s)
+✓ Compiled in 2.7s
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.6s (next.js: 7ms, application-code: 4.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.4s (next.js: 730ms, application-code: 4.7s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.7s (next.js: 19ms, application-code: 4.7s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.8s (next.js: 104ms, application-code: 4.7s)
+ GET /manifest.webmanifest 200 in 23ms (next.js: 7ms, application-code: 17ms)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.1s (next.js: 50ms, application-code: 4.0s)
+ GET /manifest.webmanifest 200 in 18ms (next.js: 7ms, application-code: 12ms)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.9s (next.js: 279ms, application-code: 4.7s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 4.5s (next.js: 7ms, application-code: 4.5s)
+ GET /properties/4-bedroom-house-for-sale-proximo-a-rotunda-maputo 200 in 5.2s (next.js: 8ms, application-code: 5.2s)
+ GET /agents 200 in 981ms (next.js: 214ms, application-code: 768ms)
+ GET /manifest.webmanifest 200 in 42ms (next.js: 26ms, application-code: 16ms)
+ GET /api/auth/me 200 in 1421ms (next.js: 735ms, application-code: 686ms)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 7.0s (next.js: 16ms, application-code: 7.0s)
+ GET / 200 in 4.4s (next.js: 154ms, application-code: 4.3s)
+ GET /properties 200 in 1968ms (next.js: 173ms, application-code: 1795ms)
+ GET /agents 200 in 805ms (next.js: 7ms, application-code: 798ms)
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 3.2s (next.js: 14ms, application-code: 3.2s)
+ GET / 200 in 4.6s (next.js: 6ms, application-code: 4.6s)
+ GET /properties 200 in 1624ms (next.js: 7ms, application-code: 1617ms)
+ GET /agents 200 in 625ms (next.js: 6ms, application-code: 619ms)
+○ Compiling /auth/agent-register ...
+ GET /properties/2-bedroom-house-for-sale-maputo 200 in 3.9s (next.js: 19ms, application-code: 3.9s)
+ GET /agents 200 in 615ms (next.js: 30ms, application-code: 586ms)
+ GET /auth/agent-register 200 in 23.0s (next.js: 23.0s, application-code: 34ms)
+ GET /manifest.webmanifest 200 in 23ms (next.js: 5ms, application-code: 18ms)
+ GET /dashboard/admin/agents 200 in 4.8s (next.js: 2.1s, application-code: 2.8s)
+○ Compiling /dashboard/admin/properties ...
+ GET /dashboard/admin/properties 200 in 7.5s (next.js: 6.0s, application-code: 1446ms)
+[browser] Image with src "https://lh3.googleusercontent.com/aida-public/AB6AXuApliVjyyP7V3JSXWkyUmWNm0NvNNaNRvsd05QEZGmJbD2-rgbKrTamqcBP-5jVVtr5DwqtZYW2X1-bJC2cxS6JKPnlu6NYwPMBz0z2EJVfcNFJ6wM38SQa0pdX94TFKtExtWQwnmj69Pzt_KzgUkkboWYLoD51clkFy-MATWkGPE25UA2vIi6XQrNru_7zyZ5-QqAIMg1mt2eEKDPgu7m-A0vpAlYAKceo2QNXQkRD6sHTg5Jf2Kn5a1XBVcOrVkJbtHM4HvcW-Gw" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+✓ Finished filesystem cache database compaction in 12.5s
+ GET /dashboard/admin/agents 200 in 2.8s (next.js: 6ms, application-code: 2.8s)

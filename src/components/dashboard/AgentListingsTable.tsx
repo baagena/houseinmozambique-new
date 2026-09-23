@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   deleteAgentProperty,
+  publishDraft,
   republishAgentProperty,
   suspendAgentProperty,
 } from '@/actions/properties';
@@ -35,6 +36,10 @@ const STATUS_LABELS: Record<string, { label: string; dot: string; text: string }
   REJECTED: { label: 'Rejected', dot: 'bg-red-500', text: 'text-red-500' },
   SUSPENDED: { label: 'Suspended', dot: 'bg-[#9aa0a8]', text: 'text-[#74777f]' },
   PENDING: { label: 'Awaiting Review', dot: 'bg-[#fab983]', text: 'text-[#845326]' },
+  // A draft is the agent's own, unpublished and unmetered — it is not a
+  // lesser version of "live", so it gets its own neutral colour rather than
+  // borrowing the warning amber of something that needs attention.
+  DRAFT: { label: 'Draft', dot: 'bg-[#9aa0a8]', text: 'text-[#5b6472]' },
 };
 
 export default function AgentListingsTable({ properties }: AgentListingsTableProps) {
@@ -71,6 +76,9 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
   };
 
   const handleReactivate = (id: string) => run(id, () => republishAgentProperty(id));
+  /* Publishing a draft runs the same quota check as creating a listing — it is
+   * the same act as far as the plan is concerned. */
+  const handlePublishDraft = (id: string) => run(id, () => publishDraft(id));
 
   return (
     <div className="space-y-3">
@@ -103,6 +111,7 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
             {properties.map((property) => {
               const status = STATUS_LABELS[property.status] ?? STATUS_LABELS.PENDING;
               const isSuspended = property.status === 'SUSPENDED';
+              const isDraft = property.status === 'DRAFT';
               const isBusy = busyId === property.id;
 
               return (
@@ -160,7 +169,26 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                       >
                         Edit
                       </Link>
-                      {isSuspended ? (
+                      {/* Visibility is the thing an agent wants to buy once a
+                          listing is live and they can see how it is doing. */}
+                      {!isDraft && !isSuspended && (
+                        <Link
+                          href={`/dashboard/agent/boost/${property.id}`}
+                          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#845326] uppercase hover:bg-[#faf5ed] hover:text-[#002045] transition-colors"
+                        >
+                          Boost
+                        </Link>
+                      )}
+                      {isDraft ? (
+                        <button
+                          type="button"
+                          disabled={isBusy}
+                          onClick={() => handlePublishDraft(property.id)}
+                          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-emerald-600 uppercase hover:bg-emerald-50 hover:text-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Publish
+                        </button>
+                      ) : isSuspended ? (
                         <button
                           type="button"
                           disabled={isBusy}

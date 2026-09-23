@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAdminAgent } from '@/lib/admin-guard';
 import { prisma } from '@/lib/db';
+import {
+  getPaymentInstructions,
+  savePaymentInstructions,
+  type PaymentInstructions,
+} from '@/lib/payment-instructions';
 
 const defaults = {
   adminName: 'Dev Admin',
@@ -10,6 +15,25 @@ const defaults = {
   agentApprovalAlerts: true,
   weeklyReport: false,
 };
+
+/*
+ * The payment destination is read and written here rather than on its own
+ * endpoint so the admin saves it with the same button as everything else.
+ * It lives in its own module because the billing page and the checkout route
+ * read it too, and none of them should know the AppSetting key names.
+ */
+/**
+ * The rent below which a private owner may list for nothing, in MAJOR units
+ * for the form. Stored in centavos, like every other figure here.
+ */
+async function readFreeRentalCeiling(): Promise<string> {
+  const row = await prisma.appSetting.findUnique({
+    where: { key: 'freeRentalCeilingMinor' },
+    select: { value: true },
+  });
+  const minor = Number.parseInt(row?.value ?? '0', 10);
+  return Number.isFinite(minor) && minor > 0 ? String(Math.round(minor / 100)) : '';
+}
 
 async function readSettings() {
   const rows = await prisma.appSetting.findMany({ where: { key: { in: Object.keys(defaults) } } });
@@ -27,7 +51,12 @@ async function readSettings() {
 export async function GET() {
   try {
     if (!(await requireAdminAgent())) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    return NextResponse.json({ settings: await readSettings() });
+    const [settings, paymentInstructions, freeRentalCeiling] = await Promise.all([
+      readSettings(),
+      getPaymentInstructions(),
+      readFreeRentalCeiling(),
+    ]);
+    return NextResponse.json({ settings, paymentInstructions, freeRentalCeiling });
   } catch (error) {
     console.error('Admin settings load error:', error);
     return NextResponse.json({ error: 'Could not load admin settings.' }, { status: 500 });
@@ -63,7 +92,39 @@ export async function PATCH(request: Request) {
       ),
     );
 
-    return NextResponse.json({ settings });
+    /*
+     * Saved only when the key is present in the body.
+     *
+     * An older client that does not know about these fields must not be able
+     * to blank the M-Pesa number by omitting it — agents would be shown a
+     * reference with nowhere to send it.
+     */
+    if (body.paymentInstructions && typeof body.paymentInstructions === 'object') {
+      await savePaymentInstructions(body.paymentInstructions as Partial<PaymentInstructions>);
+    }
+
+    /*
+     * Only written when the key is present, so an older client cannot switch
+     * the exemption off by omitting it. An empty string is a deliberate
+     * "switch it off"; undefined is "I have nothing to say about this".
+     */
+    if (body.freeRentalCeiling !== undefined) {
+      const major = Number(String(body.freeRentalCeiling).replace(/[^\d.]/g, ''));
+      const minor = Number.isFinite(major) && major > 0 ? Math.round(major * 100) : 0;
+      await prisma.appSetting.upsert({
+        where: { key: 'freeRentalCeilingMinor' },
+        update: { value: String(minor) },
+        create: { key: 'freeRentalCeilingMinor', value: String(minor) },
+      });
+    }
+
+    // Read back rather than echo, so the client shows what was actually stored
+    // (trimmed) instead of what it sent.
+    return NextResponse.json({
+      settings,
+      paymentInstructions: await getPaymentInstructions(),
+      freeRentalCeiling: await readFreeRentalCeiling(),
+    });
   } catch (error) {
     console.error('Admin settings save error:', error);
     const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
