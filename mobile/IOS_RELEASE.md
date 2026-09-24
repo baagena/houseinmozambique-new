@@ -25,17 +25,22 @@ browser from Windows.
 3. **Create the app** - appstoreconnect.apple.com -> Apps -> "+" -> New App.
    Platform iOS, bundle ID above, SKU e.g. `houseinmozambique-ios`.
    Then open App Information and copy the **Apple ID** (a number).
+   Done: the Apple ID is `6815702309` and is set in `codemagic.yaml`.
 4. **Create an API key** - App Store Connect -> Users and Access ->
-   Integrations -> App Store Connect API -> "+". Role **App Manager**.
-   Download the `.p8` file (only downloadable once) and note the
-   **Issuer ID** and **Key ID**.
+   Integrations tab -> App Store Connect API -> Team Keys. The first time,
+   click "Request Access" (Account Holder only). Then "+", any name, role
+   **App Manager** -> Generate. Download the `.p8` file (only downloadable
+   once). Two values on that page are needed:
+   - **Issuer ID** - one ID for the whole Apple account, shown above the
+     keys table (looks like `57246542-96fe-1a63-e053-0824d011072a`).
+   - **Key ID** - the ID of the key just created, in its row of the table
+     (10 characters, e.g. `2X9R4HXF34`).
+   The `.p8` is a password: never commit it or send it by chat.
 5. **Codemagic** - sign up at codemagic.io with GitHub and add the
-   `baagena/houseinmozambique-new` repository.
-   - Team settings -> Integrations -> Developer Portal -> Manage keys ->
-     add the key: name it exactly `HouseInMozambique ASC key`, paste the
-     Issuer ID, Key ID and upload the `.p8`.
-   - In `codemagic.yaml`, replace `REPLACE_WITH_APPLE_ID` with the number
-     from step 3 and push.
+   `baagena/houseinmozambique-new` repository (project type Flutter App).
+   - Settings -> Integrations -> Developer Portal -> Manage keys -> add
+     the key: name it exactly `HouseInMozambique ASC key`, paste the
+     Issuer ID and Key ID and upload the `.p8`.
 
 ## Each release
 
