@@ -138,11 +138,12 @@ Info.plist): the app only uses standard HTTPS. App Store Connect will not ask.
 
 ## App Review information
 
-**Sign-in required**: Yes. Create a demo account **on the live site** before
-submitting (sign up in the app as *Agente*, or reuse
-`play.review@houseinmozambique.com` if it exists in production), then put
-its e-mail and password here. Mark it as hidden from the agent directory in
-the admin console (Agents → edit → "Hide from directory").
+**Sign-in required**: Yes. The review account already exists on the live
+site and is hidden from the public agent directory:
+
+- User name: `app.review@houseinmozambique.com`
+- Password: kept out of this repository — it was handed over separately. To
+  reset it: `REVIEW_EMAIL=app.review@houseinmozambique.com REVIEW_PASSWORD='…' node scripts/create-review-account.mjs`
 
 **Contact**: your name, phone number and e-mail.
 
@@ -151,7 +152,7 @@ the admin console (Agents → edit → "Hide from directory").
 ```
 House in Mozambique is a real-estate marketplace for Mozambique. Anyone can browse listings without an account. Agents and property owners sign in to post listings.
 
-Demo account (agent): <EMAIL> / <PASSWORD>
+Demo account (agent): app.review@houseinmozambique.com / <PASSWORD>
 
 - Sign-up: Profile > "Criar conta". The account cannot be created until the Terms of Service and Privacy Policy checkbox is ticked; both are linked and open in the app.
 - Account deletion: Profile > "Eliminar conta" (asks for the password, then permanently deletes the account, its favourites and its listings).
@@ -163,10 +164,8 @@ Demo account (agent): <EMAIL> / <PASSWORD>
 
 ## Before you press "Submit for Review"
 
-1. The live website (`www.houseinmozambique.com`) is deployed from the
-   `security/phase-0-hardening` branch, and production has had
-   `npx prisma db push` (new column `Agent.termsAcceptedAt`). Without this,
-   sign-up, account deletion and the listing wizard fail in review.
-2. The demo account above works on the live site.
+1. Done 2026-09-24: the live site runs this code (master, deployed by Vercel)
+   and the production database has `Agent.termsAcceptedAt`.
+2. Done: the review account above signs in on the live site.
 3. The TestFlight build has been installed on a real iPhone and you have:
    created an account, posted a listing, reported a listing, deleted an account.
