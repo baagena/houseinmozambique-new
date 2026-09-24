@@ -36,6 +36,9 @@ model Agent {
   emailVerifyExpiresAt   DateTime?
   passwordResetToken     String?         @unique
   passwordResetExpiresAt DateTime?
+  // When the account holder ticked the Terms of Service and Privacy Policy
+  // box at sign-up. Null for accounts created before the box existed.
+  termsAcceptedAt        DateTime?
   role                   String          @default("AGENT") // AGENT, ADMIN, CUSTOMER
   properties             Property[]
   inquiries              Inquiry[]

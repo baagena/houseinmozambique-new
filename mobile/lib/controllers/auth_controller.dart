@@ -47,6 +47,7 @@ class AuthController extends Notifier<AuthState> {
     required String password,
     required String name,
     String role = 'AGENT',
+    required bool acceptedTerms,
     String? phone,
     String? title,
     String? location,
@@ -59,6 +60,7 @@ class AuthController extends Notifier<AuthState> {
           password: password,
           name: name,
           role: role,
+          acceptedTerms: acceptedTerms,
           phone: phone,
           title: title,
           location: location,
@@ -81,6 +83,12 @@ class AuthController extends Notifier<AuthState> {
 
   void updateAgent(Agent agent) {
     state = state.copyWith(agent: agent);
+  }
+
+  /// Permanently deletes the signed-in account on the server, then signs out.
+  Future<void> deleteAccount(String password) async {
+    await ref.read(authRepositoryProvider).deleteAccount(password);
+    await logout();
   }
 
   Future<void> logout() async {

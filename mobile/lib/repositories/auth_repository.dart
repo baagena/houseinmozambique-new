@@ -17,6 +17,7 @@ class AuthRepository {
     required String password,
     required String name,
     String role = 'AGENT',
+    required bool acceptedTerms,
     String? phone,
     String? title,
     String? location,
@@ -29,6 +30,7 @@ class AuthRepository {
       'password': password,
       'name': name,
       'role': role,
+      'acceptedTerms': acceptedTerms,
       if (phone != null) 'phone': phone,
       if (title != null) 'title': title,
       if (location != null) 'location': location,
@@ -43,6 +45,10 @@ class AuthRepository {
   Future<Agent> me() async {
     final res = await _client.dio.get('/auth/me');
     return Agent.fromJson((res.data as Map<String, dynamic>)['agent'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteAccount(String password) async {
+    await _client.dio.delete('/auth/me', data: {'password': password});
   }
 }
 

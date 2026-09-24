@@ -153,7 +153,16 @@
     "editProfile": "Edit profile",
     "adminConsole": "Admin Console",
     "agentBadge": "Agent",
-    "adminBadge": "Admin"
+    "adminBadge": "Admin",
+    "legal": "Legal",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "deleteAccount": "Delete account",
+    "deleteAccountTitle": "Delete your account?",
+    "deleteAccountBody": "This permanently deletes your account, your saved favorites and any listings you posted. It cannot be undone. Enter your password to confirm.",
+    "deleteAccountConfirm": "Delete permanently",
+    "accountDeleted": "Your account has been deleted.",
+    "cancel": "Cancel"
   },
   "auth": {
     "loginTitle": "Sign In",
@@ -175,7 +184,12 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "signUp": "Sign up",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "agreePrefix": "I have read and agree to the",
+    "terms": "Terms of Service",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "mustAcceptTerms": "Please accept the Terms of Service and Privacy Policy to continue."
   },
   "dashboard": {
     "title": "Dashboard",

@@ -20,6 +20,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // Current app builds send acceptedTerms: true from a required checkbox.
+    // Builds already installed from before the checkbox don't send it, so a
+    // missing flag is recorded as "not captured" rather than refused.
+    if (body.acceptedTerms !== undefined && body.acceptedTerms !== true) {
+      return NextResponse.json(
+        { error: 'You must accept the Terms of Service and Privacy Policy' },
+        { status: 400 }
+      );
+    }
+
     if (password.length < 8) {
       return NextResponse.json(
         { error: 'Password must be at least 8 characters' },
@@ -55,6 +65,7 @@ export async function POST(request: Request) {
         role,
         emailVerifyToken: verificationToken,
         emailVerifyExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        termsAcceptedAt: body.acceptedTerms === true ? new Date() : null,
       },
       select: AGENT_SELF_SELECT,
     });

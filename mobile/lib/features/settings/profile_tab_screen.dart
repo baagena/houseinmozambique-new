@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../controllers/favorites_controller.dart';
+import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/agent.dart';
 
@@ -210,6 +211,7 @@ class ProfileTabScreen extends ConsumerWidget {
       ),
       const SizedBox(height: 20),
       _SignOutTile(onTap: () => ref.read(authControllerProvider.notifier).logout()),
+      if (!agent.isAdmin) _DeleteAccountTile(onTap: () => _confirmDeleteAccount(context)),
     ];
   }
 
@@ -236,7 +238,108 @@ class ProfileTabScreen extends ConsumerWidget {
         ),
       const SizedBox(height: 20),
       _SignOutTile(onTap: () => ref.read(authControllerProvider.notifier).logout()),
+      if (!agent.isAdmin) _DeleteAccountTile(onTap: () => _confirmDeleteAccount(context)),
     ];
+  }
+}
+
+Future<void> _confirmDeleteAccount(BuildContext context) async {
+  final deleted = await showDialog<bool>(
+    context: context,
+    builder: (_) => const _DeleteAccountDialog(),
+  );
+  if (deleted == true && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('settings.accountDeleted'.tr())));
+  }
+}
+
+class _DeleteAccountTile extends StatelessWidget {
+  final VoidCallback onTap;
+  const _DeleteAccountTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.delete_forever_outlined, color: AppColors.error),
+      title: Text('settings.deleteAccount'.tr(), style: const TextStyle(color: AppColors.error)),
+      onTap: onTap,
+    );
+  }
+}
+
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  final _passwordController = TextEditingController();
+  bool _deleting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _delete() async {
+    if (_passwordController.text.isEmpty) {
+      setState(() => _error = 'auth.passwordRequired'.tr());
+      return;
+    }
+    setState(() {
+      _deleting = true;
+      _error = null;
+    });
+    try {
+      await ref.read(authControllerProvider.notifier).deleteAccount(_passwordController.text);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _deleting = false;
+          _error = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('settings.deleteAccountTitle'.tr()),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('settings.deleteAccountBody'.tr(), style: const TextStyle(fontSize: 13.5, color: AppColors.onSurfaceVariant)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            enabled: !_deleting,
+            decoration: InputDecoration(labelText: 'auth.password'.tr(), errorText: _error),
+            onSubmitted: (_) => _delete(),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _deleting ? null : () => Navigator.of(context).pop(false),
+          child: Text('settings.cancel'.tr()),
+        ),
+        TextButton(
+          onPressed: _deleting ? null : _delete,
+          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+          child: _deleting
+              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text('settings.deleteAccountConfirm'.tr()),
+        ),
+      ],
+    );
   }
 }
 

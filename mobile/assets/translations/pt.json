@@ -153,7 +153,16 @@
     "editProfile": "Editar perfil",
     "adminConsole": "Consola de Administração",
     "agentBadge": "Agente",
-    "adminBadge": "Admin"
+    "adminBadge": "Admin",
+    "legal": "Legal",
+    "termsOfService": "Termos de Serviço",
+    "privacyPolicy": "Política de Privacidade",
+    "deleteAccount": "Eliminar conta",
+    "deleteAccountTitle": "Eliminar a sua conta?",
+    "deleteAccountBody": "Isto elimina permanentemente a sua conta, os seus favoritos guardados e os anúncios que publicou. Não pode ser desfeito. Introduza a sua palavra-passe para confirmar.",
+    "deleteAccountConfirm": "Eliminar permanentemente",
+    "accountDeleted": "A sua conta foi eliminada.",
+    "cancel": "Cancelar"
   },
   "auth": {
     "loginTitle": "Iniciar Sessão",
@@ -175,7 +184,12 @@
     "noAccount": "Não tem uma conta?",
     "haveAccount": "Já tem uma conta?",
     "signUp": "Registar",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "agreePrefix": "Li e aceito os",
+    "terms": "Termos de Serviço",
+    "and": "e a",
+    "privacy": "Política de Privacidade",
+    "mustAcceptTerms": "Aceite os Termos de Serviço e a Política de Privacidade para continuar."
   },
   "dashboard": {
     "title": "Painel",

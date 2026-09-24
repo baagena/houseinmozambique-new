@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/legal_links.dart';
 
 const _agentSteps = ['Personal', 'Professional', 'Expertise'];
 const _customerSteps = ['Personal'];
@@ -37,11 +38,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   late String _accountType = widget.initialAccountType;
   int _step = 0;
+  bool _acceptedTerms = false;
   bool _submitting = false;
   String? _error;
 
   List<String> get _steps => _accountType == 'CUSTOMER' ? _customerSteps : _agentSteps;
   bool get _isCustomer => _accountType == 'CUSTOMER';
+  bool get _onLastStep => _step == _steps.length - 1;
 
   void _setAccountType(String type) {
     if (_accountType == type) return;
@@ -80,6 +83,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _goNext() async {
     if (!_formKeys[_step].currentState!.validate()) return;
+    if (_onLastStep && !_acceptedTerms) {
+      setState(() => _error = 'auth.mustAcceptTerms'.tr());
+      return;
+    }
     if (_step < _steps.length - 1) {
       setState(() => _step++);
       _pageController.animateToPage(_step, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
@@ -105,6 +112,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             password: _passwordController.text,
             name: _nameController.text.trim(),
             role: _accountType,
+            acceptedTerms: _acceptedTerms,
             phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
             title: _isCustomer || _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
             location: _isCustomer || _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
@@ -304,8 +312,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ],
             ),
           ),
+          if (_onLastStep)
+            _TermsCheckbox(
+              value: _acceptedTerms,
+              onChanged: (v) => setState(() {
+                _acceptedTerms = v;
+                if (v && _error == 'auth.mustAcceptTerms'.tr()) _error = null;
+              }),
+            ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.fromLTRB(24, _onLastStep ? 8 : 24, 24, 24),
             child: Row(
               children: [
                 if (_step > 0)
@@ -319,7 +335,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: _submitting ? null : _goNext,
+                    onPressed: _submitting || (_onLastStep && !_acceptedTerms) ? null : _goNext,
                     child: _submitting
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : Text(_step == _steps.length - 1 ? (_isCustomer ? 'Create account' : 'Complete application') : 'Continue'),
@@ -358,6 +374,48 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ...children,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TermsCheckbox extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _TermsCheckbox({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    const linkStyle = TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, decoration: TextDecoration.underline);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 24, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Checkbox(value: value, onChanged: (v) => onChanged(v ?? false)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Wrap(
+                children: [
+                  GestureDetector(
+                    onTap: () => onChanged(!value),
+                    child: Text('${'auth.agreePrefix'.tr()} ', style: const TextStyle(fontSize: 13)),
+                  ),
+                  GestureDetector(
+                    onTap: openTermsOfService,
+                    child: Text('auth.terms'.tr(), style: linkStyle.copyWith(fontSize: 13)),
+                  ),
+                  Text(' ${'auth.and'.tr()} ', style: const TextStyle(fontSize: 13)),
+                  GestureDetector(
+                    onTap: openPrivacyPolicy,
+                    child: Text('auth.privacy'.tr(), style: linkStyle.copyWith(fontSize: 13)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
