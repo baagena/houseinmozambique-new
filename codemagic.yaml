@@ -1,0 +1,44 @@
+# Builds the Flutter app in mobile/ for iOS on Codemagic's macOS machines and
+# uploads it to App Store Connect / TestFlight. No local Mac is needed: code
+# signing certificates and provisioning profiles are created automatically
+# through the App Store Connect API key named in `integrations` below.
+#
+# One-time setup is described in mobile/IOS_RELEASE.md.
+workflows:
+  ios-release:
+    name: iOS release (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Must match the name given to the API key in Codemagic:
+      # Team settings -> Integrations -> Developer Portal -> Manage keys.
+      app_store_connect: HouseInMozambique ASC key
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.houseinmozambique.mobile
+      vars:
+        # App Store Connect -> the app -> App Information -> "Apple ID" (a number).
+        APP_STORE_APPLE_ID: "REPLACE_WITH_APPLE_ID"
+    scripts:
+      - name: Get Flutter packages
+        script: cd mobile && flutter pub get
+      - name: Apply signing profiles
+        script: xcode-project use-profiles
+      - name: Build signed .ipa
+        script: |
+          cd mobile
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          flutter build ipa --release \
+            --build-number=$((LATEST + 1)) \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - mobile/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/store_policy.dart';
 import '../../models/property.dart';
 import '../../repositories/agent_dashboard_repository.dart';
 import '../../repositories/payment_repository.dart';
@@ -69,7 +70,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   bool _loading = false;
   bool _submitting = false;
 
-  late _Phase _phase = widget.isEditing ? _Phase.details : _Phase.plan;
+  late _Phase _phase = widget.isEditing || !showsPaidPlans ? _Phase.details : _Phase.plan;
   String _selectedPlan = 'standard';
   String _paymentTab = 'mobile';
   bool _agreedToTerms = false;
@@ -373,7 +374,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           _sheetHandle(),
           Row(
             children: [
-              if (!widget.isEditing)
+              if (!widget.isEditing && showsPaidPlans)
                 IconButton(
                   onPressed: () => setState(() => _phase = _Phase.plan),
                   icon: const Icon(Icons.arrow_back),

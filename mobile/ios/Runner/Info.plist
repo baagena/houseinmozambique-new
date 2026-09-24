@@ -4,6 +4,12 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos of your property to add to your listing or profile.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take photos of your property to add to your listing or profile.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleDisplayName</key>
 	<string>HouseInMoz</string>
 	<key>CFBundleExecutable</key>
