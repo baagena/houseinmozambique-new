@@ -42,7 +42,7 @@ browser from Windows.
 1. Make sure the backend is deployed (the app calls
    `DELETE /api/mobile/v1/auth/me` for account deletion, and production needs
    `npx prisma db push` for `Agent.termsAcceptedAt`).
-2. Bump `version:` in `mobile/pubspec.yaml` (e.g. `1.2.0+3` -> `1.2.1+4`).
+2. Bump `version:` in `mobile/pubspec.yaml` (e.g. `1.2.1+4` -> `1.2.2+5`).
    The build number is set automatically; the version name is what users see.
 3. Codemagic -> the app -> Start new build -> workflow **iOS release
    (TestFlight)** -> branch.
@@ -51,6 +51,20 @@ browser from Windows.
    posting a listing, and deleting an account.
 5. App Store Connect -> the app -> the version -> choose the build ->
    **Add for Review** -> **Submit to App Review**.
+
+## App Store listing
+
+Everything to paste into App Store Connect — name, subtitle, description,
+keywords, URLs, age rating, App Privacy answers and the review notes — is in
+[app-store/APP_STORE_LISTING.md](app-store/APP_STORE_LISTING.md). The six
+store screenshots (iPhone 6.9", 1320 × 2868) are in
+`app-store/screenshots/iphone-6.9/`.
+
+The iOS target is iPhone-only (`TARGETED_DEVICE_FAMILY = 1`), so no iPad
+screenshots are needed.
+
+To see the iOS behaviour without an iPhone, run the app with
+`--dart-define=SIMULATE_IOS=true` (e.g. in Chrome).
 
 ## App Store listing checklist
 
