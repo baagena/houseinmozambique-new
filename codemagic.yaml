@@ -22,7 +22,7 @@ workflows:
         bundle_identifier: com.houseinmozambique.mobile
       vars:
         # App Store Connect -> the app -> App Information -> "Apple ID" (a number).
-        APP_STORE_APPLE_ID: "REPLACE_WITH_APPLE_ID"
+        APP_STORE_APPLE_ID: "6815702309"
     scripts:
       - name: Get Flutter packages
         script: cd mobile && flutter pub get
