@@ -10,11 +10,13 @@ import 'package:image_picker/image_picker.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/labels.dart';
 import '../../core/utils/store_policy.dart';
 import '../../models/property.dart';
 import '../../repositories/agent_dashboard_repository.dart';
 import '../../repositories/payment_repository.dart';
 import '../../repositories/property_repository.dart';
+import 'listing_wizard.dart';
 
 // Kept identical to the website's post-property form (src/app/post-property/page.tsx)
 // so listings created from either app end up structured the same way.
@@ -74,6 +76,8 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   String _selectedPlan = 'standard';
   String _paymentTab = 'mobile';
   bool _agreedToTerms = false;
+  /// A new listing's answers, held while the agent pays for a paid plan.
+  WizardSubmission? _wizardSubmission;
 
   int get _planAmount => _planTiers.firstWhere((p) => p.id == _selectedPlan).amount;
 
@@ -203,6 +207,15 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     });
   }
 
+  Future<void> _onWizardComplete(WizardSubmission submission) async {
+    _wizardSubmission = submission;
+    if (_planAmount == 0) {
+      await _submit();
+    } else {
+      setState(() => _phase = _Phase.payment);
+    }
+  }
+
   void _onDetailsContinue() {
     if (!_formKey.currentState!.validate()) return;
     if (_planAmount == 0) {
@@ -258,7 +271,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_wizardSubmission == null && !_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     final formData = {
       'title': _titleController.text.trim(),
@@ -278,8 +291,11 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     try {
       final repo = ref.read(agentDashboardRepositoryProvider);
       Property result;
+      final wizard = _wizardSubmission;
       if (widget.isEditing) {
         result = await repo.updateProperty(widget.propertyId!, formData, _images);
+      } else if (wizard != null) {
+        result = await repo.createListingFromWizard(wizard.lang, wizard.answers, wizard.imageUrls, wizard.contact);
       } else {
         result = await repo.createProperty(formData, _images);
       }
@@ -325,6 +341,13 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : switch (_phase) {
                     _Phase.plan => _buildPlanPhase(scrollController),
+                    _Phase.details when !widget.isEditing => ListingWizard(
+                        scrollController: scrollController,
+                        submitLabel: _planAmount == 0 ? 'dashboard.submit'.tr() : 'dashboard.continueToPayment'.tr(),
+                        onExit: showsPaidPlans ? () => setState(() => _phase = _Phase.plan) : null,
+                        onComplete: _onWizardComplete,
+                        initial: _wizardSubmission,
+                      ),
                     _Phase.details => _buildDetailsPhase(scrollController),
                     _Phase.payment => _buildPaymentPhase(scrollController),
                   },
@@ -428,8 +451,8 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   initialValue: _listingType,
-                  decoration: const InputDecoration(labelText: 'Listing Type'),
-                  items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  decoration: InputDecoration(labelText: 'listingForm.listingType'.tr()),
+                  items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(listingTypeLabel(t)))).toList(),
                   onChanged: (v) => setState(() => _listingType = v!),
                 ),
               ),
@@ -437,8 +460,8 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   initialValue: _propertyType,
-                  decoration: const InputDecoration(labelText: 'Property Type'),
-                  items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  decoration: InputDecoration(labelText: 'listingForm.propertyType'.tr()),
+                  items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(propertyTypeLabel(t)))).toList(),
                   onChanged: (v) => setState(() => _propertyType = v!),
                 ),
               ),
@@ -447,9 +470,9 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           const SizedBox(height: 12),
           TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'dashboard.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
           const SizedBox(height: 12),
-          TextFormField(controller: _neighborhoodController, decoration: const InputDecoration(labelText: 'Neighborhood')),
+          TextFormField(controller: _neighborhoodController, decoration: InputDecoration(labelText: 'listingForm.neighborhood'.tr())),
           const SizedBox(height: 12),
-          TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address')),
+          TextFormField(controller: _addressController, decoration: InputDecoration(labelText: 'listingForm.address'.tr())),
           const SizedBox(height: 12),
           TextFormField(
             controller: _priceController,
@@ -460,19 +483,19 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bedrooms'))),
+              Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.bedrooms'.tr()))),
               const SizedBox(width: 12),
-              Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bathrooms'))),
+              Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.bathrooms'.tr()))),
             ],
           ),
           const SizedBox(height: 12),
-          TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (m²)')),
+          TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.area'.tr())),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: TextFormField(controller: _latitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: const InputDecoration(labelText: 'Latitude'))),
+              Expanded(child: TextFormField(controller: _latitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: InputDecoration(labelText: 'listingForm.latitude'.tr()))),
               const SizedBox(width: 12),
-              Expanded(child: TextFormField(controller: _longitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: const InputDecoration(labelText: 'Longitude'))),
+              Expanded(child: TextFormField(controller: _longitudeController, keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true), decoration: InputDecoration(labelText: 'listingForm.longitude'.tr()))),
             ],
           ),
           const SizedBox(height: 20),
@@ -484,7 +507,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
             children: _amenitiesList.map((amenity) {
               final selected = _selectedAmenities.contains(amenity);
               return FilterChip(
-                label: Text(amenity),
+                label: Text(amenityLabel(amenity)),
                 selected: selected,
                 onSelected: (v) => setState(() => v ? _selectedAmenities.add(amenity) : _selectedAmenities.remove(amenity)),
               );
@@ -493,13 +516,13 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           const SizedBox(height: 20),
           Text('dashboard.agentContactLabel'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 10),
-          TextFormField(controller: _agentPhoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Agent phone number')),
+          TextFormField(controller: _agentPhoneController, keyboardType: TextInputType.phone, decoration: InputDecoration(labelText: 'listingForm.agentPhone'.tr())),
           const SizedBox(height: 12),
-          TextFormField(controller: _whatsappController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'WhatsApp number')),
+          TextFormField(controller: _whatsappController, keyboardType: TextInputType.phone, decoration: InputDecoration(labelText: 'listingForm.whatsapp'.tr())),
           const SizedBox(height: 12),
-          TextFormField(controller: _contactEmailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Contact email')),
+          TextFormField(controller: _contactEmailController, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(labelText: 'listingForm.contactEmail'.tr())),
           const SizedBox(height: 12),
-          TextFormField(controller: _responseTimeController, decoration: const InputDecoration(labelText: 'Preferred response time', hintText: '09:00 - 18:00')),
+          TextFormField(controller: _responseTimeController, decoration: InputDecoration(labelText: 'listingForm.responseTime'.tr(), hintText: '09:00 - 18:00')),
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _submitting ? null : (widget.isEditing ? _submit : _onDetailsContinue),

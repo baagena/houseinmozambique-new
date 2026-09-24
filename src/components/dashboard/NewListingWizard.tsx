@@ -15,9 +15,10 @@ import {
   parseLatLng,
 } from '@/lib/geo';
 import { createProperty, uploadSingleImage } from '@/actions/properties';
+import { wizardPropertyFields } from '@/lib/listing-wizard-payload';
 import {
   CITIES, PROPERTY_TYPES, PT_TYPE,
-  featureGroupsFor, featuresInScope, generateListing, publishBlockers, slugify,
+  featureGroupsFor, generateListing, publishBlockers, slugify,
   AREA_SANITY, CATEGORY_QUESTIONS, CHOICES, EMPTY_CATEGORY_ANSWERS,
   NUMERIC_FIELDS, isBuilt,
   type CategoryKey,
@@ -302,59 +303,7 @@ export default function NewListingWizard({
       setProgress(mode === 'draft' ? 'Saving your draft…' : 'Submitting for review…');
 
       const result = await createProperty(
-        {
-          title: g.title,
-          titlePt: g.titlePt,
-          description: g.ptDesc,
-          descriptionEn: g.enDesc,
-          metaEn: g.meta,
-          metaPt: g.metaPt,
-          city: answers.city,
-          neighborhood: answers.bairro,
-          latitude: answers.lat,
-          longitude: answers.lng,
-          address: answers.bairro,
-          price: answers.price,
-          priceUnit:
-            answers.listingType === 'sale' ? 'sale' : answers.listingType === 'rent' ? 'monthly' : 'nightly',
-          propertyType: answers.propertyType,
-          listingType:
-            answers.listingType === 'sale' ? 'Buy' : answers.listingType === 'rent' ? 'Rent' : 'Short Stay',
-          bedrooms: answers.beds,
-          bathrooms: answers.baths,
-          area: answers.buildingSize || answers.landSize,
-          /*
-           * Furnishing left the chip list and became a three-way question, but
-           * "Furnished" is still the amenity every furnishing filter matches
-           * on — so it is derived back here rather than lost. Chips belonging
-           * to another category are dropped at the same time, in case the
-           * agent ticked some and then changed the property type.
-           */
-          amenities: [
-            ...featuresInScope(answers),
-            ...(answers.furnishing === 'full' ? ['Furnished']
-              : answers.furnishing === 'semi' ? ['Semi-furnished']
-              : []),
-          ],
-          /* The category answers, kept so the listing can be edited later
-           * without the agent re-answering every question. */
-          details: {
-            condition: answers.condition, furnishing: answers.furnishing,
-            suites: answers.suites, storeys: answers.storeys, floor: answers.floor,
-            /* Collected on step 2 and, until now, discarded — which is why the
-               commercial spec row had no parking figure to print. */
-            parking: answers.parking,
-            frontage: answers.frontage, depth: answers.depth,
-            zoning: answers.zoning, duat: answers.duat,
-            roadSurface: answers.roadSurface, structures: answers.structures,
-            commercialUse: answers.commercialUse,
-          },
-          tags: [],
-          asDraft: mode === 'draft',
-          contactWhatsapp: contact.whatsapp.trim() || null,
-          contactPhone: contact.phone.trim() || null,
-          contactEmail: contact.email.trim() || null,
-        },
+        { ...wizardPropertyFields(answers, g, contact), asDraft: mode === 'draft' },
         urls,
       );
 

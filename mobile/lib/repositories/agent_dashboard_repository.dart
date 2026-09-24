@@ -45,6 +45,37 @@ class AgentDashboardRepository {
     return Property.fromJson((res.data as Map<String, dynamic>)['property'] as Map<String, dynamic>);
   }
 
+  // Guided listing wizard: the server holds the questions and writes the
+  // listing from the answers (src/app/api/mobile/v1/agent/listing-wizard).
+  Future<Map<String, dynamic>> getListingWizard(String lang) async {
+    final res = await _client.dio.get('/agent/listing-wizard', queryParameters: {'lang': lang});
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> previewListing(String lang, Map<String, dynamic> answers, {String? mapLink}) async {
+    final res = await _client.dio.post('/agent/listing-wizard/preview', data: {
+      'lang': lang,
+      'answers': answers,
+      if (mapLink != null) 'mapLink': mapLink,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Property> createListingFromWizard(
+    String lang,
+    Map<String, dynamic> answers,
+    List<String> imageUrls,
+    Map<String, String> contact,
+  ) async {
+    final res = await _client.dio.post('/agent/listing-wizard', data: {
+      'lang': lang,
+      'answers': answers,
+      'imageUrls': imageUrls,
+      'contact': contact,
+    });
+    return Property.fromJson((res.data as Map<String, dynamic>)['property'] as Map<String, dynamic>);
+  }
+
   Future<Property> updateProperty(String id, Map<String, dynamic> formData, List<String> imageUrls) async {
     final res = await _client.dio.patch('/agent/properties/$id', data: {
       'formData': formData,
@@ -69,6 +100,10 @@ final agentDashboardRepositoryProvider =
 
 final myPropertiesProvider = FutureProvider.autoDispose<List<Property>>((ref) {
   return ref.watch(agentDashboardRepositoryProvider).getMyProperties();
+});
+
+final listingWizardProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, lang) {
+  return ref.watch(agentDashboardRepositoryProvider).getListingWizard(lang);
 });
 
 final myLeadsProvider = FutureProvider.autoDispose<(List<Lead>, int)>((ref) {
