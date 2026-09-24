@@ -14,6 +14,7 @@ import '../../repositories/property_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/favorites_fab.dart';
 import '../../widgets/property_card.dart';
+import '../../core/utils/labels.dart';
 
 final propertyDetailProvider =
     FutureProvider.autoDispose.family<(Property, List<Property>), String>((ref, id) {
@@ -75,7 +76,7 @@ class _PropertyDetailBody extends ConsumerStatefulWidget {
 class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
   final _pageController = PageController();
   int _currentImage = 0;
-  late final AgentContact _contact = AgentContact.fromProperty(widget.property);
+  late final AgentContact _contact = AgentContact.fromProperty(widget.property, lang: context.locale.languageCode);
 
   Property get property => widget.property;
 
@@ -89,7 +90,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
     context.push('/contact', extra: {
       'propertyId': property.id,
       'agentId': property.hostId,
-      'subject': 'Inquiry about ${property.title}',
+      'subject': 'property.inquirySubject'.tr(args: [property.localizedTitle(context.locale.languageCode)]),
     });
   }
 
@@ -146,6 +147,27 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                 _AnimatedFavoriteButton(
                   isFavorite: widget.isFavorite,
                   onTap: () => ref.read(favoritesControllerProvider.notifier).toggle(property.id),
+                ),
+                // Listings are posted by agents, so anyone viewing one can flag
+                // it to the House in Mozambique team (App Store guideline 1.2).
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (_) => context.push('/contact', extra: {
+                    'propertyId': property.id,
+                    'subject': 'property.reportSubject'.tr(args: [property.localizedTitle(context.locale.languageCode)]),
+                  }),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.flag_outlined, size: 20),
+                          const SizedBox(width: 10),
+                          Text('property.report'.tr()),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
@@ -252,7 +274,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(property.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                          child: Text(property.localizedTitle(context.locale.languageCode), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                         ),
                         if (property.isFeatured)
                           Container(
@@ -285,7 +307,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                     const Divider(height: 32),
                     Text('property.aboutThisPlace'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Text(_contact.description.isEmpty ? property.description : _contact.description,
+                    Text(_contact.description.isEmpty ? property.localizedDescription(context.locale.languageCode) : _contact.description,
                         style: const TextStyle(height: 1.5)),
                     if (property.amenities.isNotEmpty) ...[
                       const Divider(height: 32),
@@ -294,7 +316,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: property.amenities.map((a) => Chip(label: Text(a))).toList(),
+                        children: property.amenities.map((a) => Chip(label: Text(amenityLabel(a)))).toList(),
                       ),
                     ],
                     if (property.address != null || _contact.coordinates != null) ...[

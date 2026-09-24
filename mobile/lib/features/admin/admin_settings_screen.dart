@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,7 +23,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings updated successfully')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('admin.settingsUpdated'.tr())));
   }
 
   @override
@@ -30,11 +31,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     final agent = ref.watch(authControllerProvider).agent;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Platform settings')),
+      appBar: AppBar(title: Text('admin.platformSettings'.tr())),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Administrative profile', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          Text('admin.adminProfile'.tr(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -42,7 +43,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(agent?.name ?? 'Admin', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(agent?.name ?? 'status.ADMIN'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(agent?.email ?? '', style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
                 ],
@@ -50,28 +51,28 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Notification controls', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          Text('admin.notificationControls'.tr(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           const SizedBox(height: 12),
           Card(
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Push notifications'),
-                  subtitle: const Text('Real-time alerts for platform activity'),
+                  title: Text('admin.pushNotifications'.tr()),
+                  subtitle: Text('admin.pushNotificationsDesc'.tr()),
                   value: _globalNotifications,
                   onChanged: (v) => setState(() => _globalNotifications = v),
                 ),
                 const Divider(height: 1),
                 SwitchListTile(
-                  title: const Text('Agent verification alerts'),
-                  subtitle: const Text('Notify immediately when a new agent applies'),
+                  title: Text('admin.verificationAlerts'.tr()),
+                  subtitle: Text('admin.verificationAlertsDesc'.tr()),
                   value: _agentApprovalAlerts,
                   onChanged: (v) => setState(() => _agentApprovalAlerts = v),
                 ),
                 const Divider(height: 1),
                 SwitchListTile(
-                  title: const Text('Executive weekly digest'),
-                  subtitle: const Text('Automated growth and revenue report'),
+                  title: Text('admin.weeklyDigest'.tr()),
+                  subtitle: Text('admin.weeklyDigestDesc'.tr()),
                   value: _weeklyReport,
                   onChanged: (v) => setState(() => _weeklyReport = v),
                 ),
@@ -83,7 +84,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             onPressed: _saving ? null : _save,
             child: _saving
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Save changes'),
+                : Text('common.saveChanges'.tr()),
           ),
         ],
       ),

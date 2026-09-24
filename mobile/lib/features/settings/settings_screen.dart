@@ -46,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text('settings.about'.tr()),
-            subtitle: const Text('House in Mozambique · v1.2.0'),
+            subtitle: const Text('House in Mozambique · v1.2.1'),
           ),
         ],
       ),

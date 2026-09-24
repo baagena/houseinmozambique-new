@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,19 +22,19 @@ class AdminApprovalsScreen extends ConsumerWidget {
         ref.invalidate(adminPendingPropertiesProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(status == 'PUBLISHED' ? 'Listing approved' : 'Listing rejected')),
+            SnackBar(content: Text(status == 'PUBLISHED' ? 'admin.listingApproved'.tr() : 'admin.listingRejected'.tr())),
           );
         }
       } catch (e) {
         if (context.mounted) {
-          final message = e.asApiException?.message ?? 'Something went wrong';
+          final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
         }
       }
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Approvals')),
+      appBar: AppBar(title: Text('admin.approvals'.tr())),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(adminPendingPropertiesProvider.future),
         child: pendingAsync.when(
@@ -44,10 +45,10 @@ class AdminApprovalsScreen extends ConsumerWidget {
           ),
           data: (properties) {
             if (properties.isEmpty) {
-              return const EmptyView(
+              return EmptyView(
                 icon: Icons.fact_check_outlined,
-                title: 'All caught up',
-                body: 'No listings are waiting for review.',
+                title: 'admin.allCaughtUp'.tr(),
+                body: 'admin.noPending'.tr(),
               );
             }
             return ListView.separated(
@@ -76,7 +77,7 @@ class AdminApprovalsScreen extends ConsumerWidget {
                             Text(p.location, style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12)),
                             const SizedBox(height: 2),
                             Text(
-                              'Listed by ${p.host?.name ?? 'Unknown agent'}',
+                              'admin.listedBy'.tr(args: [p.host?.name ?? '—']),
                               style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12),
                             ),
                             const SizedBox(height: 12),
@@ -86,7 +87,7 @@ class AdminApprovalsScreen extends ConsumerWidget {
                                   child: OutlinedButton.icon(
                                     style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
                                     icon: const Icon(Icons.close, size: 18),
-                                    label: const Text('Reject'),
+                                    label: Text('common.reject'.tr()),
                                     onPressed: () => act(p.id, 'REJECTED'),
                                   ),
                                 ),
@@ -94,7 +95,7 @@ class AdminApprovalsScreen extends ConsumerWidget {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     icon: const Icon(Icons.check, size: 18),
-                                    label: const Text('Approve'),
+                                    label: Text('common.approve'.tr()),
                                     onPressed: () => act(p.id, 'PUBLISHED'),
                                   ),
                                 ),

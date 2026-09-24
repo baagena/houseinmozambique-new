@@ -26,10 +26,13 @@ class AgentContact {
     this.coordinates,
   });
 
-  factory AgentContact.fromProperty(Property property) {
+  /// [lang] picks which body is shown. Listings from the guided wizard keep
+  /// their contact buttons in dedicated fields; older ones folded them into
+  /// the description, which is parsed out here.
+  factory AgentContact.fromProperty(Property property, {String lang = 'pt'}) {
     String? phone, whatsapp, email, responseTime, coordinates;
     final kept = <String>[];
-    for (final line in property.description.split('\n')) {
+    for (final line in property.localizedDescription(lang).split('\n')) {
       final t = line.trim();
       final lower = t.toLowerCase();
       String value(String prefix) => t.substring(prefix.length).trim();
@@ -52,9 +55,9 @@ class AgentContact {
     String? orNull(String? v) => (v == null || v.isEmpty) ? null : v;
     return AgentContact._(
       description: kept.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim(),
-      phone: orNull(phone) ?? orNull(property.host?.phone),
-      whatsapp: orNull(whatsapp),
-      email: orNull(email),
+      phone: orNull(property.contactPhone) ?? orNull(phone) ?? orNull(property.host?.phone),
+      whatsapp: orNull(property.contactWhatsapp) ?? orNull(whatsapp),
+      email: orNull(property.contactEmail) ?? orNull(email),
       responseTime: orNull(responseTime),
       coordinates: orNull(coordinates),
     );
@@ -90,7 +93,7 @@ Future<void> launchWhatsApp(String number, Property property) async {
 }
 
 Future<void> launchEmail(String address, Property property) async {
-  final subject = Uri.encodeComponent('Inquiry about ${property.title}');
-  final body = Uri.encodeComponent('Hello,\n\nI am interested in "${property.title}" (${propertyUrl(property)}).\n');
+  final subject = Uri.encodeComponent('property.inquirySubject'.tr(args: [property.title]));
+  final body = Uri.encodeComponent('property.emailBody'.tr(args: [property.title, propertyUrl(property)]));
   await launchUrl(Uri.parse('mailto:$address?subject=$subject&body=$body'), mode: LaunchMode.externalApplication);
 }

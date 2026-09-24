@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,58 +18,58 @@ class AdminDashboardScreen extends ConsumerWidget {
     final sections = <_AdminSection>[
       _AdminSection(
         icon: Icons.fact_check_outlined,
-        label: 'Approvals',
-        subtitle: 'Review pending listings',
+        label: 'admin.approvals'.tr(),
+        subtitle: 'admin.approvalsDesc'.tr(),
         badge: pendingAsync.maybeWhen(data: (p) => p.isNotEmpty ? '${p.length}' : null, orElse: () => null),
         color: AppColors.tertiary,
         onTap: () => context.push('/admin/approvals'),
       ),
       _AdminSection(
         icon: Icons.groups_outlined,
-        label: 'Agents',
-        subtitle: 'Manage agent accounts',
+        label: 'admin.agents'.tr(),
+        subtitle: 'admin.agentsDesc'.tr(),
         color: AppColors.primary,
         onTap: () => context.push('/admin/agents'),
       ),
       _AdminSection(
         icon: Icons.home_work_outlined,
-        label: 'Properties',
-        subtitle: 'All platform listings',
+        label: 'admin.properties'.tr(),
+        subtitle: 'admin.propertiesDesc'.tr(),
         color: AppColors.primary,
         onTap: () => context.push('/admin/properties'),
       ),
       _AdminSection(
         icon: Icons.campaign_outlined,
-        label: 'Ads',
-        subtitle: 'Sponsored placements',
+        label: 'admin.ads'.tr(),
+        subtitle: 'admin.adsDesc'.tr(),
         color: AppColors.secondary,
         onTap: () => context.push('/admin/ads'),
       ),
       _AdminSection(
         icon: Icons.article_outlined,
-        label: 'Blog',
-        subtitle: 'Articles & news',
+        label: 'admin.blog'.tr(),
+        subtitle: 'admin.blogDesc'.tr(),
         color: AppColors.secondary,
         onTap: () => context.push('/admin/blog'),
       ),
       _AdminSection(
         icon: Icons.notifications_active_outlined,
-        label: 'Activity',
-        subtitle: 'Messages & signups',
+        label: 'admin.activity'.tr(),
+        subtitle: 'admin.activityDesc'.tr(),
         color: AppColors.tertiary,
         onTap: () => context.push('/admin/activities'),
       ),
       _AdminSection(
         icon: Icons.settings_outlined,
-        label: 'Settings',
-        subtitle: 'Platform preferences',
+        label: 'admin.settings'.tr(),
+        subtitle: 'admin.settingsDesc'.tr(),
         color: AppColors.onSurfaceVariant,
         onTap: () => context.push('/admin/settings'),
       ),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Console')),
+      appBar: AppBar(title: Text('admin.console'.tr())),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(adminPendingPropertiesProvider),
         child: ListView(
@@ -78,7 +79,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
-                  'Welcome back, ${agent.name}',
+                  'admin.welcome'.tr(args: [agent.name]),
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),

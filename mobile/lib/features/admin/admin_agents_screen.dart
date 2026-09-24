@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,7 +20,7 @@ class AdminAgentsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agents'),
+        title: Text('admin.agents'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_alt_1_outlined),
@@ -42,7 +43,7 @@ class AdminAgentsScreen extends ConsumerWidget {
           ),
           data: (agents) {
             if (agents.isEmpty) {
-              return const EmptyView(icon: Icons.groups_outlined, title: 'No agents yet');
+              return EmptyView(icon: Icons.groups_outlined, title: 'admin.noAgents'.tr());
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
@@ -72,7 +73,7 @@ class _AgentTile extends ConsumerWidget {
           child: agent.avatar == null ? Text(agent.initials, style: const TextStyle(color: Colors.white)) : null,
         ),
         title: Text(agent.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${agent.title} · ${agent.propertyCount} listing(s)'),
+        subtitle: Text('${agent.title} · ${'admin.listingsCount'.tr(args: ['${agent.propertyCount}'])}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -94,11 +95,11 @@ class _AgentTile extends ConsumerWidget {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Delete agent?'),
-                      content: Text('This will permanently remove ${agent.name}.'),
+                      title: Text('admin.deleteAgentTitle'.tr()),
+                      content: Text('admin.deleteAgentBody'.tr(args: [agent.name])),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('common.cancel'.tr())),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('common.delete'.tr())),
                       ],
                     ),
                   );
@@ -108,7 +109,7 @@ class _AgentTile extends ConsumerWidget {
                       ref.invalidate(adminAgentsProvider);
                     } catch (e) {
                       if (context.mounted) {
-                        final message = e.asApiException?.message ?? 'Failed to delete agent';
+                        final message = e.asApiException?.message ?? 'admin.deleteAgentFailed'.tr();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
                       }
                     }
@@ -116,9 +117,9 @@ class _AgentTile extends ConsumerWidget {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                if (agent.role != 'REVOKED') const PopupMenuItem(value: 'revoke', child: Text('Revoke access')),
-                const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                PopupMenuItem(value: 'edit', child: Text('common.edit'.tr())),
+                if (agent.role != 'REVOKED') PopupMenuItem(value: 'revoke', child: Text('admin.revokeAccess'.tr())),
+                PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
               ],
             ),
           ],

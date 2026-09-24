@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/utils/labels.dart';
 
 /// Consistent status/role pill used across the admin screens. Soft tinted
 /// background with a dark, readable text shade of the same hue.
@@ -33,7 +34,7 @@ class StatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
       child: Text(
-        status.toUpperCase(),
+        statusLabel(status).toUpperCase(),
         style: TextStyle(color: fg, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.6),
       ),
     );

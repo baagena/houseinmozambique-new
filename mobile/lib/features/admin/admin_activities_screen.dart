@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +16,7 @@ class AdminActivitiesScreen extends ConsumerWidget {
     final activitiesAsync = ref.watch(adminActivitiesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Activity')),
+      appBar: AppBar(title: Text('admin.activity'.tr())),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(adminActivitiesProvider.future),
         child: activitiesAsync.when(
@@ -26,7 +27,7 @@ class AdminActivitiesScreen extends ConsumerWidget {
           ),
           data: (activities) {
             if (activities.isEmpty) {
-              return const EmptyView(icon: Icons.notifications_none, title: 'No activity yet');
+              return EmptyView(icon: Icons.notifications_none, title: 'admin.noActivity'.tr());
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16),

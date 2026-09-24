@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,7 +60,7 @@ class _AdminBlogFormScreenState extends ConsumerState<AdminBlogFormScreen> {
       }
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Something went wrong';
+      final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -69,7 +70,7 @@ class _AdminBlogFormScreenState extends ConsumerState<AdminBlogFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit article' : 'New article')),
+      appBar: AppBar(title: Text(_isEditing ? 'admin.editArticle'.tr() : 'admin.newArticle'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -79,40 +80,40 @@ class _AdminBlogFormScreenState extends ConsumerState<AdminBlogFormScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'admin.title'.tr()),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _excerptController,
                 maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Excerpt'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'admin.excerpt'.tr()),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _contentController,
                 maxLines: 8,
-                decoration: const InputDecoration(labelText: 'Content', alignLabelWithHint: true),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'admin.content'.tr(), alignLabelWithHint: true),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(controller: _coverImageController, decoration: const InputDecoration(labelText: 'Cover image URL (optional)')),
+              TextFormField(controller: _coverImageController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.coverImageUrl'.tr()]))),
               const SizedBox(height: 12),
-              TextFormField(controller: _categoryController, decoration: const InputDecoration(labelText: 'Category')),
+              TextFormField(controller: _categoryController, decoration: InputDecoration(labelText: 'admin.category'.tr())),
               const SizedBox(height: 12),
-              TextFormField(controller: _tagsController, decoration: const InputDecoration(labelText: 'Tags (comma separated)')),
+              TextFormField(controller: _tagsController, decoration: InputDecoration(labelText: 'admin.tagsCsv'.tr())),
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Featured'),
+                title: Text('admin.featured'.tr()),
                 value: _isFeatured,
                 onChanged: (v) => setState(() => _isFeatured = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Published'),
-                subtitle: const Text('Off saves as a draft'),
+                title: Text('admin.published'.tr()),
+                subtitle: Text('admin.draftHint'.tr()),
                 value: _isPublished,
                 onChanged: (v) => setState(() => _isPublished = v),
               ),
@@ -121,7 +122,7 @@ class _AdminBlogFormScreenState extends ConsumerState<AdminBlogFormScreen> {
                 onPressed: _submitting ? null : _submit,
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(_isEditing ? 'Save changes' : 'Create article'),
+                    : Text(_isEditing ? 'common.saveChanges'.tr() : 'admin.createArticle'.tr()),
               ),
             ],
           ),

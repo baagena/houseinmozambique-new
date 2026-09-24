@@ -10,6 +10,7 @@ import '../../widgets/error_view.dart';
 import '../../widgets/favorites_fab.dart';
 import '../../widgets/property_card.dart';
 import '../../widgets/shimmer_loaders.dart';
+import '../../core/utils/labels.dart';
 
 const _propertyTypes = ['Villa', 'Apartment', 'House', 'Land', 'Commercial'];
 const _cities = ['Maputo', 'Matola', 'Inhambane', 'Beira', 'Nampula', 'Tete', 'Pemba', 'Vilanculos'];
@@ -210,7 +211,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
               runSpacing: 8,
               children: _propertyTypes.map((t) {
                 return FilterChip(
-                  label: Text(t),
+                  label: Text(propertyTypeLabel(t)),
                   selected: propertyTypes.contains(t),
                   onSelected: (sel) => setState(() => sel ? propertyTypes.add(t) : propertyTypes.remove(t)),
                 );

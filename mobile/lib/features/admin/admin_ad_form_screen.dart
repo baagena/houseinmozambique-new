@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,7 +69,7 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
       }
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Something went wrong';
+      final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -78,7 +79,7 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit ad' : 'New ad')),
+      appBar: AppBar(title: Text(_isEditing ? 'admin.editAd'.tr() : 'admin.newAd'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -88,43 +89,43 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'admin.title'.tr()),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Description (optional)')),
+              TextFormField(controller: _descriptionController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.description'.tr()]))),
               const SizedBox(height: 12),
-              TextFormField(controller: _imageUrlController, decoration: const InputDecoration(labelText: 'Image URL (optional)')),
+              TextFormField(controller: _imageUrlController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.imageUrl'.tr()]))),
               const SizedBox(height: 12),
-              TextFormField(controller: _linkUrlController, decoration: const InputDecoration(labelText: 'Link URL (optional)')),
+              TextFormField(controller: _linkUrlController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.linkUrl'.tr()]))),
               const SizedBox(height: 12),
-              TextFormField(controller: _linkTextController, decoration: const InputDecoration(labelText: 'Link text (optional)')),
+              TextFormField(controller: _linkTextController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.linkText'.tr()]))),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _position,
-                decoration: const InputDecoration(labelText: 'Position'),
+                decoration: InputDecoration(labelText: 'admin.position'.tr()),
                 items: _positions.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
                 onChanged: (v) => setState(() => _position = v!),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _type,
-                decoration: const InputDecoration(labelText: 'Type'),
+                decoration: InputDecoration(labelText: 'admin.type'.tr()),
                 items: _types.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                 onChanged: (v) => setState(() => _type = v!),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: TextFormField(controller: _bgColorController, decoration: const InputDecoration(labelText: 'Background color'))),
+                  Expanded(child: TextFormField(controller: _bgColorController, decoration: InputDecoration(labelText: 'admin.bgColor'.tr()))),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _textColorController, decoration: const InputDecoration(labelText: 'Text color'))),
+                  Expanded(child: TextFormField(controller: _textColorController, decoration: InputDecoration(labelText: 'admin.textColor'.tr()))),
                 ],
               ),
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+                title: Text('admin.active'.tr()),
                 value: _isActive,
                 onChanged: (v) => setState(() => _isActive = v),
               ),
@@ -133,7 +134,7 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
                 onPressed: _submitting ? null : _submit,
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(_isEditing ? 'Save changes' : 'Create ad'),
+                    : Text(_isEditing ? 'common.saveChanges'.tr() : 'admin.createAd'.tr()),
               ),
             ],
           ),

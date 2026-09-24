@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +18,7 @@ class AdminAdsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ads'),
+        title: Text('admin.ads'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -40,7 +41,7 @@ class AdminAdsScreen extends ConsumerWidget {
           ),
           data: (ads) {
             if (ads.isEmpty) {
-              return const EmptyView(icon: Icons.campaign_outlined, title: 'No ads configured');
+              return EmptyView(icon: Icons.campaign_outlined, title: 'admin.noAds'.tr());
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
@@ -61,7 +62,7 @@ class AdminAdsScreen extends ConsumerWidget {
                       child: const Icon(Icons.campaign, color: Colors.white, size: 20),
                     ),
                     title: Text(ad.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('${ad.position} · ${ad.clickCount} clicks'),
+                    subtitle: Text('${ad.position} · ${'admin.clicks'.tr(args: ['${ad.clickCount}'])}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

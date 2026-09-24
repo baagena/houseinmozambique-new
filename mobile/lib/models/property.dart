@@ -1,9 +1,19 @@
+import 'package:easy_localization/easy_localization.dart';
+
 import 'agent.dart';
 
 class Property {
   final String id;
   final String title;
   final String description;
+  /// Portuguese headline written by the listing wizard; null on older listings.
+  final String? titlePt;
+  /// English body written by the listing wizard; `description` is Portuguese.
+  final String? descriptionEn;
+  /// Per-listing contact buttons; null falls back to the agent's own details.
+  final String? contactWhatsapp;
+  final String? contactPhone;
+  final String? contactEmail;
   final String location;
   final String city;
   final String? neighborhood;
@@ -32,6 +42,11 @@ class Property {
     required this.id,
     required this.title,
     required this.description,
+    this.titlePt,
+    this.descriptionEn,
+    this.contactWhatsapp,
+    this.contactPhone,
+    this.contactEmail,
     required this.location,
     required this.city,
     this.neighborhood,
@@ -59,14 +74,31 @@ class Property {
 
   String get coverImage => images.isNotEmpty ? images.first : '';
 
+  /// The headline in the app's language, as the website's listingHeadline().
+  String localizedTitle(String lang) {
+    if (lang == 'pt') {
+      final pt = titlePt?.trim();
+      if (pt != null && pt.isNotEmpty) return pt;
+    }
+    return title;
+  }
+
+  String localizedDescription(String lang) {
+    if (lang == 'en') {
+      final en = descriptionEn?.trim();
+      if (en != null && en.isNotEmpty) return en;
+    }
+    return description;
+  }
+
   /// e.g. "1,800 MT/month", "85,000 MT", "180 MT/night"
   String priceLabel(String currencySymbol) {
     final formatted = _formatNumber(price);
     switch (priceUnit) {
       case 'monthly':
-        return '$currencySymbol$formatted/mo';
+        return '$currencySymbol$formatted${'property.perMonth'.tr()}';
       case 'nightly':
-        return '$currencySymbol$formatted/night';
+        return '$currencySymbol$formatted${'property.perNight'.tr()}';
       default:
         return '$currencySymbol$formatted';
     }
@@ -87,6 +119,11 @@ class Property {
       id: json['id'] as String,
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
+      titlePt: json['titlePt'] as String?,
+      descriptionEn: json['descriptionEn'] as String?,
+      contactWhatsapp: json['contactWhatsapp'] as String?,
+      contactPhone: json['contactPhone'] as String?,
+      contactEmail: json['contactEmail'] as String?,
       location: json['location'] as String? ?? '',
       city: json['city'] as String? ?? '',
       neighborhood: json['neighborhood'] as String?,

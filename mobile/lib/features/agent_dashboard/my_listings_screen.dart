@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../repositories/agent_dashboard_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
+import '../../core/utils/labels.dart';
 
 class MyListingsScreen extends ConsumerWidget {
   const MyListingsScreen({super.key});
@@ -51,8 +52,8 @@ class MyListingsScreen extends ConsumerWidget {
                           ? Container(width: 56, height: 56, color: AppColors.surfaceVariant)
                           : CachedNetworkImage(imageUrl: property.coverImage, width: 56, height: 56, fit: BoxFit.cover),
                     ),
-                    title: Text(property.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(property.status),
+                    title: Text(property.localizedTitle(context.locale.languageCode), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(statusLabel(property.status)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

@@ -79,13 +79,13 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
         children: [
           TextField(controller: _nameController, decoration: InputDecoration(labelText: 'auth.fullName'.tr())),
           const SizedBox(height: 12),
-          TextField(controller: _titleController, decoration: const InputDecoration(labelText: 'Title')),
+          TextField(controller: _titleController, decoration: InputDecoration(labelText: 'profileForm.title'.tr())),
           const SizedBox(height: 12),
-          TextField(controller: _locationController, decoration: const InputDecoration(labelText: 'Location')),
+          TextField(controller: _locationController, decoration: InputDecoration(labelText: 'profileForm.location'.tr())),
           const SizedBox(height: 12),
-          TextField(controller: _phoneController, decoration: const InputDecoration(labelText: 'Phone'), keyboardType: TextInputType.phone),
+          TextField(controller: _phoneController, decoration: InputDecoration(labelText: 'profileForm.phone'.tr()), keyboardType: TextInputType.phone),
           const SizedBox(height: 12),
-          TextField(controller: _bioController, maxLines: 4, decoration: const InputDecoration(labelText: 'Bio')),
+          TextField(controller: _bioController, maxLines: 4, decoration: InputDecoration(labelText: 'profileForm.bio'.tr())),
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _saving ? null : _save,

@@ -156,7 +156,7 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
             ),
             const SizedBox(height: 8),
             Text(
-              property.title,
+              property.localizedTitle(context.locale.languageCode),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),

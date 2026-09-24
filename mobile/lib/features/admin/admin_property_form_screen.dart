@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +6,7 @@ import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/property.dart';
 import '../../repositories/admin_repository.dart';
+import '../../core/utils/labels.dart';
 
 const _propertyTypes = ['Villa', 'Apartment', 'House', 'Land', 'Commercial'];
 const _listingTypes = ['Buy', 'Rent', 'Short Stay'];
@@ -68,7 +70,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
       await ref.read(adminRepositoryProvider).updateProperty(widget.property.id, fields);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Something went wrong';
+      final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -79,11 +81,11 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete listing?'),
-        content: Text('This permanently removes "${widget.property.title}".'),
+        title: Text('admin.deleteListingTitle'.tr()),
+        content: Text('admin.deleteListingBody'.tr(args: [widget.property.title])),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('common.cancel'.tr())),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('common.delete'.tr())),
         ],
       ),
     );
@@ -92,7 +94,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
       await ref.read(adminRepositoryProvider).deleteProperty(widget.property.id);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Failed to delete';
+      final message = e.asApiException?.message ?? 'admin.deleteFailed'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }
@@ -102,7 +104,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
       await ref.read(adminRepositoryProvider).setPropertyStatus(widget.property.id, status);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Failed to update status';
+      final message = e.asApiException?.message ?? 'admin.statusFailed'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }
@@ -111,7 +113,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit property'),
+        title: Text('admin.editProperty'.tr()),
         actions: [
           IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
@@ -132,7 +134,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
                           icon: const Icon(Icons.close, size: 18),
-                          label: const Text('Reject'),
+                          label: Text('common.reject'.tr()),
                           onPressed: () => _setStatus('REJECTED'),
                         ),
                       ),
@@ -140,7 +142,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.check, size: 18),
-                          label: const Text('Approve'),
+                          label: Text('common.approve'.tr()),
                           onPressed: () => _setStatus('PUBLISHED'),
                         ),
                       ),
@@ -149,14 +151,14 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                 ),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
+                decoration: InputDecoration(labelText: 'admin.title'.tr()),
                 validator: (v) => v == null || v.isEmpty ? ' ' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: InputDecoration(labelText: 'admin.description'.tr()),
                 validator: (v) => v == null || v.isEmpty ? ' ' : null,
               ),
               const SizedBox(height: 12),
@@ -165,8 +167,8 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _listingType,
-                      decoration: const InputDecoration(labelText: 'Listing type'),
-                      items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      decoration: InputDecoration(labelText: 'listingForm.listingType'.tr()),
+                      items: _listingTypes.map((t) => DropdownMenuItem(value: t, child: Text(listingTypeLabel(t)))).toList(),
                       onChanged: (v) => setState(() => _listingType = v!),
                     ),
                   ),
@@ -174,40 +176,40 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _propertyType,
-                      decoration: const InputDecoration(labelText: 'Property type'),
-                      items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      decoration: InputDecoration(labelText: 'listingForm.propertyType'.tr()),
+                      items: _propertyTypes.map((t) => DropdownMenuItem(value: t, child: Text(propertyTypeLabel(t)))).toList(),
                       onChanged: (v) => setState(() => _propertyType = v!),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              TextFormField(controller: _cityController, decoration: const InputDecoration(labelText: 'City'), validator: (v) => v == null || v.isEmpty ? ' ' : null),
+              TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'listingForm.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
               const SizedBox(height: 12),
-              TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address')),
+              TextFormField(controller: _addressController, decoration: InputDecoration(labelText: 'listingForm.address'.tr())),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _priceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Price'),
+                decoration: InputDecoration(labelText: 'listingForm.price'.tr()),
                 validator: (v) => v == null || double.tryParse(v) == null ? ' ' : null,
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bedrooms'))),
+                  Expanded(child: TextFormField(controller: _bedroomsController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.bedrooms'.tr()))),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bathrooms'))),
+                  Expanded(child: TextFormField(controller: _bathroomsController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.bathrooms'.tr()))),
                 ],
               ),
               const SizedBox(height: 12),
-              TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (m²)')),
+              TextFormField(controller: _areaController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'listingForm.area'.tr())),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitting ? null : _submit,
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Save changes'),
+                    : Text('common.saveChanges'.tr()),
               ),
             ],
           ),

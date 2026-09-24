@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,13 +26,13 @@ class _AdminPropertiesScreenState extends ConsumerState<AdminPropertiesScreen> {
     final propertiesAsync = ref.watch(adminAllPropertiesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Properties')),
+      appBar: AppBar(title: Text('admin.properties'.tr())),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: FilterPills(
-              options: const [('All', null), ('Pending', 'PENDING'), ('Published', 'PUBLISHED'), ('Rejected', 'REJECTED')],
+              options: [('common.all'.tr(), null), ('status.PENDING'.tr(), 'PENDING'), ('admin.published'.tr(), 'PUBLISHED'), ('status.REJECTED'.tr(), 'REJECTED')],
               selected: _filter,
               onSelected: (v) => setState(() => _filter = v),
             ),
@@ -48,7 +49,7 @@ class _AdminPropertiesScreenState extends ConsumerState<AdminPropertiesScreen> {
                 data: (properties) {
                   final filtered = _filter == null ? properties : properties.where((p) => p.status == _filter).toList();
                   if (filtered.isEmpty) {
-                    return const EmptyView(icon: Icons.home_work_outlined, title: 'No properties found');
+                    return EmptyView(icon: Icons.home_work_outlined, title: 'admin.noProperties'.tr());
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

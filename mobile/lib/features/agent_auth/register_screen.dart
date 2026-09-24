@@ -8,8 +8,9 @@ import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/legal_links.dart';
 
-const _agentSteps = ['Personal', 'Professional', 'Expertise'];
-const _customerSteps = ['Personal'];
+// Translation keys; the step labels are looked up when drawn.
+const _agentSteps = ['auth.stepPersonal', 'auth.stepProfessional', 'auth.stepExpertise'];
+const _customerSteps = ['auth.stepPersonal'];
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? redirectTo;
@@ -168,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          _steps[i],
+                          _steps[i].tr(),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -194,10 +195,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 _buildStep(
                   formKey: _formKeys[0],
-                  title: _isCustomer ? 'Create your account' : 'Start your journey',
-                  subtitle: _isCustomer
-                      ? 'Save favorites and message agents faster across all your devices.'
-                      : 'Create your account to join our verified partner network.',
+                  title: _isCustomer ? 'auth.customerHeading'.tr() : 'auth.agentHeading'.tr(),
+                  subtitle: _isCustomer ? 'auth.customerSubtitle'.tr() : 'auth.agentSubtitle'.tr(),
                   children: [
                     TextFormField(
                       controller: _nameController,
@@ -239,41 +238,41 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 _buildStep(
                   formKey: _formKeys[1],
-                  title: 'Professional profile',
-                  subtitle: 'Tell us about your experience and where you operate.',
+                  title: 'auth.professionalProfile'.tr(),
+                  subtitle: 'auth.professionalProfileSubtitle'.tr(),
                   children: [
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Professional title',
-                        hintText: 'e.g. Senior Partner',
-                        prefixIcon: Icon(Icons.badge_outlined),
+                      decoration: InputDecoration(
+                        labelText: 'auth.professionalTitle'.tr(),
+                        hintText: 'auth.professionalTitleHint'.tr(),
+                        prefixIcon: const Icon(Icons.badge_outlined),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _yearsController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Years of experience', prefixIcon: Icon(Icons.timeline_outlined)),
+                      decoration: InputDecoration(labelText: 'auth.yearsExperience'.tr(), prefixIcon: const Icon(Icons.timeline_outlined)),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _locationController,
-                      decoration: const InputDecoration(labelText: 'Office location / address', prefixIcon: Icon(Icons.location_on_outlined)),
+                      decoration: InputDecoration(labelText: 'auth.officeLocation'.tr(), prefixIcon: const Icon(Icons.location_on_outlined)),
                     ),
                   ],
                 ),
                 _buildStep(
                   formKey: _formKeys[2],
-                  title: 'Showcase your expertise',
-                  subtitle: 'Last step to build your presence on the platform.',
+                  title: 'auth.showcaseExpertise'.tr(),
+                  subtitle: 'auth.showcaseSubtitle'.tr(),
                   children: [
                     TextFormField(
                       controller: _bioController,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Professional bio',
-                        hintText: 'Describe your expertise and unique approach…',
+                      decoration: InputDecoration(
+                        labelText: 'auth.bio'.tr(),
+                        hintText: 'auth.bioHint'.tr(),
                         alignLabelWithHint: true,
                       ),
                     ),
@@ -299,7 +298,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _specInputController,
-                            decoration: const InputDecoration(labelText: 'Specializations', hintText: 'e.g. Coastal Villas'),
+                            decoration: InputDecoration(labelText: 'auth.specializations'.tr(), hintText: 'auth.specializationsHint'.tr()),
                             onFieldSubmitted: (_) => _addSpecialization(),
                           ),
                         ),
@@ -328,7 +327,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _submitting ? null : _goBack,
-                      child: const Text('Back'),
+                      child: Text('common.back'.tr()),
                     ),
                   ),
                 if (_step > 0) const SizedBox(width: 12),
@@ -338,7 +337,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onPressed: _submitting || (_onLastStep && !_acceptedTerms) ? null : _goNext,
                     child: _submitting
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text(_step == _steps.length - 1 ? (_isCustomer ? 'Create account' : 'Complete application') : 'Continue'),
+                        : Text(_step == _steps.length - 1 ? (_isCustomer ? 'auth.register'.tr() : 'auth.completeApplication'.tr()) : 'common.continue'.tr()),
                   ),
                 ),
               ],
@@ -436,8 +435,8 @@ class _AccountTypeToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _segment(label: 'Customer', value: 'CUSTOMER')),
-          Expanded(child: _segment(label: 'Agent', value: 'AGENT')),
+          Expanded(child: _segment(label: 'auth.accountCustomer'.tr(), value: 'CUSTOMER')),
+          Expanded(child: _segment(label: 'auth.accountAgent'.tr(), value: 'AGENT')),
         ],
       ),
     );

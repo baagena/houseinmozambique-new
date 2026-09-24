@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../storage/token_storage.dart';
 import 'api_config.dart';
 import 'isrg_root_x1.dart';
+import '../utils/labels.dart';
 
 const _networkErrorTypes = {
   DioExceptionType.connectionError,
@@ -73,8 +74,10 @@ class ApiClient {
         final message = isNetworkError
             ? 'common.noInternet'.tr()
             : (data is Map && data['error'] != null)
-                ? data['error'].toString()
-                : error.message ?? 'common.somethingWentWrong'.tr();
+                ? localizeServerError(data['error'].toString())
+                // Dio's own message is a technical English sentence, never
+                // something to show a user.
+                : 'common.somethingWentWrong'.tr();
         handler.next(DioException(
           requestOptions: error.requestOptions,
           error: ApiException(message, statusCode: error.response?.statusCode, isNetworkError: isNetworkError),

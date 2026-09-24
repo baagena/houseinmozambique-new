@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,7 +69,7 @@ class _AdminAgentFormScreenState extends ConsumerState<AdminAgentFormScreen> {
       }
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      final message = e.asApiException?.message ?? 'Something went wrong';
+      final message = e.asApiException?.message ?? 'common.somethingWentWrong'.tr();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -78,7 +79,7 @@ class _AdminAgentFormScreenState extends ConsumerState<AdminAgentFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit agent' : 'New agent')),
+      appBar: AppBar(title: Text(_isEditing ? 'admin.editAgent'.tr() : 'admin.newAgent'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -88,71 +89,71 @@ class _AdminAgentFormScreenState extends ConsumerState<AdminAgentFormScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full name'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'admin.fullName'.tr()),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _emailController,
                 enabled: !_isEditing,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => (v == null || !v.contains('@')) ? 'Valid email required' : null,
+                decoration: InputDecoration(labelText: 'admin.email'.tr()),
+                validator: (v) => (v == null || !v.contains('@')) ? 'admin.validEmail'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(labelText: _isEditing ? 'New password (optional)' : 'Password'),
+                decoration: InputDecoration(labelText: _isEditing ? 'admin.newPasswordOptional'.tr() : 'admin.password'.tr()),
                 validator: (v) {
                   if (_isEditing) return null;
-                  return (v == null || v.length < 6) ? 'Min 6 characters' : null;
+                  return (v == null || v.length < 6) ? 'admin.min6'.tr() : null;
                 },
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Professional title'),
+                decoration: InputDecoration(labelText: 'admin.professionalTitle'.tr()),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Location'),
+                decoration: InputDecoration(labelText: 'admin.location'.tr()),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Phone (optional)'),
+                decoration: InputDecoration(labelText: 'admin.phoneOptional'.tr()),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _yearsController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Years of experience'),
+                decoration: InputDecoration(labelText: 'admin.yearsExperience'.tr()),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _specController,
-                decoration: const InputDecoration(labelText: 'Specializations (comma separated)'),
+                decoration: InputDecoration(labelText: 'admin.specializationsCsv'.tr()),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _bioController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Bio'),
+                decoration: InputDecoration(labelText: 'admin.bio'.tr()),
               ),
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Verified agent'),
+                title: Text('admin.verifiedAgent'.tr()),
                 value: _isVerified,
                 onChanged: (v) => setState(() => _isVerified = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Admin role'),
-                subtitle: const Text('Grants full platform administration access'),
+                title: Text('admin.adminRole'.tr()),
+                subtitle: Text('admin.adminRoleDesc'.tr()),
                 value: _isAdmin,
                 onChanged: (v) => setState(() => _isAdmin = v),
               ),
@@ -161,7 +162,7 @@ class _AdminAgentFormScreenState extends ConsumerState<AdminAgentFormScreen> {
                 onPressed: _submitting ? null : _submit,
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(_isEditing ? 'Save changes' : 'Create agent'),
+                    : Text(_isEditing ? 'common.saveChanges'.tr() : 'admin.createAgent'.tr()),
               ),
             ],
           ),

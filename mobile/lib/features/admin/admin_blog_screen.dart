@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +18,7 @@ class AdminBlogScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Blog'),
+        title: Text('admin.blog'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -40,7 +41,7 @@ class AdminBlogScreen extends ConsumerWidget {
           ),
           data: (posts) {
             if (posts.isEmpty) {
-              return const EmptyView(icon: Icons.article_outlined, title: 'No articles yet');
+              return EmptyView(icon: Icons.article_outlined, title: 'admin.noArticles'.tr());
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
