@@ -131,6 +131,10 @@ class _AdCard extends StatelessWidget {
     final accent = _hex(ad.accentColor, AppColors.secondaryContainer);
     final hasLink = ad.linkUrl != null && ad.linkUrl!.isNotEmpty;
 
+    if (ad.imageUrl != null && ad.imageUrl!.isNotEmpty) {
+      return _ImageAdCard(ad: ad, fallback: bg, accent: accent, hasLink: hasLink, onTap: onTap);
+    }
+
     return Material(
       color: bg,
       borderRadius: BorderRadius.circular(16),
@@ -141,19 +145,6 @@ class _AdCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              if (ad.imageUrl != null && ad.imageUrl!.isNotEmpty) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: ad.imageUrl!,
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,6 +174,99 @@ class _AdCard extends StatelessWidget {
                 ),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// An ad with artwork: the image fills the whole card, and the text sits on a
+/// dark fade at the bottom so it stays readable over any picture.
+class _ImageAdCard extends StatelessWidget {
+  final Ad ad;
+  final Color fallback;
+  final Color accent;
+  final bool hasLink;
+  final VoidCallback onTap;
+  const _ImageAdCard({required this.ad, required this.fallback, required this.accent, required this.hasLink, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: AspectRatio(
+        aspectRatio: 2.2,
+        child: Material(
+          color: fallback,
+          child: InkWell(
+            onTap: hasLink ? onTap : null,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: ad.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.35, 1],
+                      colors: [Color(0x00000000), Color(0xCC000000)],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(20)),
+                    child: Text(
+                      'ads.sponsored'.tr().toUpperCase(),
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: Colors.white),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  bottom: 12,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(ad.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                            if (ad.description != null && ad.description!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(ad.description!, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (hasLink) ...[
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(10)),
+                          child: Text(
+                            ad.linkText ?? 'ads.learnMore'.tr(),
+                            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A)),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
