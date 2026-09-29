@@ -4,6 +4,9 @@ import Image from 'next/image';
 import { getAgentById } from '@/lib/data';
 import { requireAdmin } from '@/lib/session';
 import Icon from '@/components/ui/Icon';
+import AdminGrantPlan from '@/components/dashboard/AdminGrantPlan';
+import { prisma } from '@/lib/db';
+import { getEntitlementState } from '@/lib/entitlements';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -22,6 +25,16 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
   if (!agent) {
     notFound();
   }
+
+  // Plans the team can sell by hand: everything except the free tier.
+  const [plans, entitlement] = await Promise.all([
+    prisma.pricingPlan.findMany({
+      where: { isActive: true, kind: { not: 'addon' }, NOT: { priceMinor: 0, ctaMode: 'checkout' } },
+      orderBy: { sortOrder: 'asc' },
+      select: { slug: true, namePt: true, nameEn: true, kind: true, pricePt: true, unitPt: true },
+    }),
+    getEntitlementState(agent.id, agent.role),
+  ]);
 
   const totalProperties = agent.properties?.length || 0;
   const liveCount = agent.properties?.filter((p) => p.status === 'PUBLISHED').length || 0;
@@ -59,6 +72,13 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
           <p className="text-5xl font-black text-[#002045]">{pendingCount}</p>
         </div>
       </div>
+
+      <AdminGrantPlan
+        agentId={agent.id}
+        plans={plans.map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn, kind: p.kind, price: `${p.pricePt} ${p.unitPt}`.trim() }))}
+        currentPlan={entitlement.planName}
+        credits={entitlement.credits}
+      />
 
       {agent.avatar && (
         <div className="flex items-center gap-5 rounded-3xl border border-[#f2f4f6] bg-white p-6 shadow-sm">

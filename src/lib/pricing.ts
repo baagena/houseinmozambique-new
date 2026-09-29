@@ -80,6 +80,11 @@ const feature = (label: string, included = true, star = false): PlanFeature => (
  * places left is put on the homepage for the plan's run (see
  * featureFromPlan in lib/listing-addons.ts). In feature labels, **text** is
  * rendered bold.
+ *
+ * The paid plans are ctaMode "contact" for now: online payment is not set up
+ * yet, so "Pedir este plano" opens the contact form with the plan in the
+ * subject and the team grants it by hand (Admin → Payments). Switch them back
+ * to "checkout" once the payment details are filled in under Admin → Settings.
  */
 export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
   {
@@ -130,7 +135,7 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     sortOrder: 1,
     isActive: true,
     highlighted: false,
-    ctaMode: 'checkout',
+    ctaMode: 'contact', // until payments are set up — see note above
     nameEn: 'Featured',
     namePt: 'Destaque',
     descriptionEn: 'Take control: sell or rent your own property.',
@@ -141,8 +146,8 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     unitPt: 'MZN',
     badgeEn: null,
     badgePt: null,
-    ctaEn: 'Choose',
-    ctaPt: 'Escolher',
+    ctaEn: 'Request this plan',
+    ctaPt: 'Pedir este plano',
     featuresEn: [
       feature('**Take control**, sell or rent your own property'),
       feature('Your listing is published **online quickly**'),
@@ -174,7 +179,7 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     sortOrder: 2,
     isActive: true,
     highlighted: true,
-    ctaMode: 'checkout',
+    ctaMode: 'contact', // until payments are set up — see note above
     nameEn: 'Super Featured',
     namePt: 'Super Destaque',
     descriptionEn: 'Looking for a quick sale or rental?',
@@ -185,8 +190,8 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     unitPt: 'MZN',
     badgeEn: 'Most visible',
     badgePt: 'Mais visível',
-    ctaEn: 'Choose',
-    ctaPt: 'Escolher',
+    ctaEn: 'Request this plan',
+    ctaPt: 'Pedir este plano',
     featuresEn: [
       feature('Looking for a **quick sale or rental**?'),
       feature('We take **professional photos** on request'),
@@ -218,7 +223,7 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     sortOrder: 3,
     isActive: true,
     highlighted: false,
-    ctaMode: 'checkout',
+    ctaMode: 'contact', // until payments are set up — see note above
     nameEn: 'Brokers Subscription',
     namePt: 'Subscrição de Agentes',
     descriptionEn: 'Reserved for real estate brokers and agencies.',
@@ -229,8 +234,8 @@ export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
     unitPt: 'MZN/mês',
     badgeEn: null,
     badgePt: null,
-    ctaEn: 'Choose',
-    ctaPt: 'Escolher',
+    ctaEn: 'Request this plan',
+    ctaPt: 'Pedir este plano',
     featuresEn: [
       feature('Reserved for **real estate brokers**'),
       feature('Up to **40 listings** online at a time'),

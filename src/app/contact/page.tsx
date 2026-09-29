@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -40,6 +40,14 @@ const SOCIALS = [
 export default function ContactPage() {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+
+  /* ?subject= pre-fills the form, e.g. "Plano: Destaque" from the pricing page
+     while plans are arranged by hand. Read after mount so the page can still be
+     prerendered without a Suspense boundary. */
+  useEffect(() => {
+    const subject = new URLSearchParams(window.location.search).get('subject');
+    if (subject) setFormData((f) => (f.subject ? f : { ...f, subject: subject.slice(0, 150) }));
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 

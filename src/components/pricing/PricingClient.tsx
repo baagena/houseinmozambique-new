@@ -116,7 +116,12 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
 
                 <div className="plan__cta">
                   {plan.ctaMode === 'contact' ? (
-                    <Link href="/contact" className="btn btn--full btn--gold">{plan.cta}</Link>
+                    <Link
+                      href={`/contact?subject=${encodeURIComponent(`${pt ? 'Plano' : 'Plan'}: ${plan.name}`)}`}
+                      className="btn btn--full btn--gold"
+                    >
+                      {plan.cta}
+                    </Link>
                   ) : (
                     <button onClick={() => handlePlanSelect(plan.slug)} className="btn btn--full btn--gold">
                       {plan.cta}

@@ -376,10 +376,10 @@ export default function AgentBillingClient({
                 {current && <div className="bp-current">{pt ? 'O seu plano' : 'Your plan'}</div>}
                 <div className="bp-name">{pt ? p.namePt : p.nameEn}</div>
                 <div className="bp-price">
-                  {p.ctaMode === 'contact'
-                    ? (pt ? 'Sob consulta' : 'Price on request')
-                    : p.priceMinor === 0 ? (pt ? 'Grátis' : 'Free') : money(p.priceMinor, p.currency, lang)}
-                  {p.priceMinor > 0 && p.ctaMode !== 'contact' && (
+                  {p.priceMinor > 0
+                    ? money(p.priceMinor, p.currency, lang)
+                    : p.ctaMode === 'contact' ? (pt ? 'Sob consulta' : 'Price on request') : (pt ? 'Grátis' : 'Free')}
+                  {p.priceMinor > 0 && (
                     <span>
                       {oneOff
                         ? (pt ? ' / anúncio' : ' / listing')
@@ -413,7 +413,11 @@ export default function AgentBillingClient({
                 </ul>
 
                 {p.ctaMode === 'contact' && !current ? (
-                  <a className="btn" href="/contact" style={{ marginTop: 12, width: '100%', textAlign: 'center' }}>
+                  <a
+                    className="btn"
+                    href={`/contact?subject=${encodeURIComponent(`${pt ? 'Plano' : 'Plan'}: ${pt ? p.namePt : p.nameEn}`)}`}
+                    style={{ marginTop: 12, width: '100%', textAlign: 'center' }}
+                  >
                     {pt ? 'Contacte-nos' : 'Contact us'}
                   </a>
                 ) : (
