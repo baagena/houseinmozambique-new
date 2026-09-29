@@ -195,7 +195,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p className="mono">{t.footer.copyright}</p>
+          <p className="mono">{t.footer.copyright.replace('{year}', String(new Date().getFullYear()))}</p>
           <div className="flinks">
             <Link href="/privacy">{t.footer.privacy}</Link>
             <Link href="/terms">{t.footer.terms}</Link>

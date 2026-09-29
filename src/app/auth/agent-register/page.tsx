@@ -359,7 +359,7 @@ export default function AgentRegisterPage() {
 
         {/* Footer */}
         <footer className="px-8 lg:px-12 py-6 bg-white border-t border-[#eceef1] flex flex-col md:flex-row justify-between items-center gap-3">
-          <p className="text-[12px] font-medium text-[#9aa0a8]">© 2024 House in Mozambique · Agent network</p>
+          <p className="text-[12px] font-medium text-[#9aa0a8]">© {new Date().getFullYear()} House in Mozambique · Agent network</p>
           <div className="flex gap-6">
             <Link href="/" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Home</Link>
             <Link href="/support" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Support</Link>

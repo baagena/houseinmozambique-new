@@ -366,12 +366,13 @@ function AuthForm() {
       {/* Right: Modern Multi-step Form */}
       <section className="flex-1 flex flex-col bg-white overflow-y-auto">
         <header className="flex justify-between items-center px-8 lg:px-12 py-6">
-          <Link href="/" className="md:hidden font-semibold text-[#13233F] text-xl tracking-tight [font-family:var(--serif)]">
-             HIM.
+          {/* Logo only: the full name does not fit beside the links on a phone. */}
+          <Link href="/" className="md:hidden relative block h-10 w-10 flex-none" aria-label="House in Mozambique">
+            <Image src="/logo.png" alt="House in Mozambique" fill className="object-contain" sizes="40px" />
           </Link>
           <nav className="flex gap-6 ml-auto items-center">
-            <Link href="/" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Home</Link>
-            <Link href="/agents" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Agents</Link>
+            <Link href="/" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">{t.nav.home}</Link>
+            <Link href="/agents" className="text-[13px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">{t.nav.agents}</Link>
           </nav>
         </header>
 
@@ -725,10 +726,10 @@ function AuthForm() {
         </div>
 
         <footer className="px-8 lg:px-12 py-6 border-t border-[#eceef1] flex flex-col lg:flex-row justify-between items-center gap-3">
-           <p className="text-[12px] font-medium text-[#9aa0a8]">© 2024 House in Mozambique</p>
+           <p className="text-[12px] font-medium text-[#9aa0a8]">© {new Date().getFullYear()} House in Mozambique</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Privacy</a>
-            <a href="/terms" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">Terms</a>
+            <a href="/privacy" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">{t.footer.privacy}</a>
+            <a href="/terms" className="text-[12px] font-medium text-[#5E6B7A] hover:text-[#13233F] transition-colors">{t.footer.terms}</a>
           </div>
         </footer>
       </section>

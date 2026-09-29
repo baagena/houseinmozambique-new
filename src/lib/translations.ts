@@ -57,7 +57,7 @@ export const translations = {
       newsletterSuccess: 'Thanks. You are on the update list.',
       newsletterAlreadySubscribed: 'You are already on the update list.',
       newsletterError: 'Unable to subscribe right now. Please try again shortly.',
-      copyright: '© 2026 House in Mozambique. The Modern Estate Agent.',
+      copyright: '© {year} House in Mozambique. The Modern Estate Agent.',
       privacy: 'Privacy',
       terms: 'Terms',
       getInTouch: 'Get in touch'
@@ -858,7 +858,7 @@ export const translations = {
       newsletterSuccess: 'Obrigado. Está na lista de atualizações.',
       newsletterAlreadySubscribed: 'Já está na lista de atualizações.',
       newsletterError: 'Não foi possível subscrever agora. Tente novamente em breve.',
-      copyright: '© 2026 HouseinMozambique. O Agente Imobiliário Moderno.',
+      copyright: '© {year} House in Mozambique. O Agente Imobiliário Moderno.',
       privacy: 'Privacidade',
       terms: 'Termos',
       getInTouch: 'Entre em contacto'
