@@ -34,6 +34,8 @@ const en = {
   back: 'Back',
   continue: 'Continue',
   submit: 'Submit for review',
+  /** Staff listings skip review, so the button says what actually happens. */
+  publishNow: 'Publish',
   submitting: 'Submitting…',
   stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
   couldNotSubmit: 'Could not submit',
@@ -255,6 +257,7 @@ const pt: typeof en = {
   back: 'Voltar',
   continue: 'Continuar',
   submit: 'Enviar para revisão',
+  publishNow: 'Publicar',
   submitting: 'A enviar…',
   stepOf: (n, total) => `Passo ${n} de ${total}`,
   couldNotSubmit: 'Não foi possível enviar',

@@ -152,7 +152,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
           <p>Every listing across every agent and market, regardless of status.</p>
         </div>
         <Link
-          href="/post-property?as=admin"
+          href="/dashboard/admin/properties/new"
           className="chip on"
           style={{ textDecoration: 'none' }}
         >

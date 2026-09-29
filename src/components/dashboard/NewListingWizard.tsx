@@ -156,10 +156,16 @@ const NO_CONTACT: ContactDetails = { whatsapp: '', phone: '', email: '' };
 export default function NewListingWizard({
   needsVerification = false,
   email,
+  staff = false,
+  doneHref = '/dashboard/agent/listings',
 }: {
   /** True when this account cannot publish yet — createProperty would refuse. */
   needsVerification?: boolean;
   email?: string;
+  /** Admin console: the listing publishes immediately and no plan applies. */
+  staff?: boolean;
+  /** Where to go once the listing is saved. */
+  doneHref?: string;
 } = {}) {
   const router = useRouter();
   /* The agent's own language, not the preview's. The preview below has its own
@@ -326,7 +332,7 @@ export default function NewListingWizard({
         }
         return;
       }
-      router.push('/dashboard/agent/listings');
+      router.push(doneHref);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit the listing.');
     } finally {
@@ -375,7 +381,7 @@ export default function NewListingWizard({
           </div>
 
           <div style={{ padding: 18 }}>
-            {ent && !ent.state.canPublish && (
+            {!staff && ent && !ent.state.canPublish && (
               <div className="alert warn" style={{ marginBottom: 14 }}>
                 <Icon name="info" size={18} />
                 <div>
@@ -394,7 +400,7 @@ export default function NewListingWizard({
               * this listing was going to cost them. Saying it every time is
               * what removes the need for a pricing step in the ordinary case.
               */}
-            {ent && ent.state.canPublish && ent.state.credits === 0 && (
+            {!staff && ent && ent.state.canPublish && ent.state.credits === 0 && (
               <div className="alert" style={{ marginBottom: 14 }}>
                 <Icon name={ent.state.remaining === 1 ? 'info' : 'check_circle'} size={18} />
                 <div>
@@ -460,7 +466,7 @@ export default function NewListingWizard({
               disabled={busy || (step === LAST && blockers.length > 0)}
               onClick={() => (step === LAST ? submit() : setStep((s) => s + 1))}
             >
-              {busy ? w.submitting : step === LAST ? w.submit : w.continue}
+              {busy ? w.submitting : step === LAST ? (staff ? w.publishNow : w.submit) : w.continue}
             </button>
           </div>
         </div>
