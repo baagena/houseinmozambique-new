@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { requireBearerAgent } from '@/lib/mobile-auth';
 import { sendPropertySubmissionNotification } from '@/lib/email';
+import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
 
 export async function GET(request: Request) {
   const auth = await requireBearerAgent(request);
@@ -27,8 +28,22 @@ export async function POST(request: Request) {
   try {
     const { formData, imageUrls } = await request.json();
 
+    // Readable URL, as every other create path does. Listings made here had
+    // none and were served (and put in the sitemap) under their raw id.
+    const slug = await uniquePropertySlug(
+      buildPropertySlug({
+        bedrooms: Number(formData.bedrooms ?? 0),
+        type: formData.propertyType ?? null,
+        listingType: formData.listingType ?? null,
+        neighborhood: formData.neighborhood ?? null,
+        city: formData.city ?? null,
+        title: formData.title ?? null,
+      }),
+    );
+
     const property = await prisma.property.create({
       data: {
+        slug,
         title: formData.title,
         description: formData.description,
         location: formData.address || formData.neighborhood || formData.city,
