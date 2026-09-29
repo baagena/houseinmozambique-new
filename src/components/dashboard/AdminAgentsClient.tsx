@@ -166,8 +166,8 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-60">
           <h2 className="text-xl font-semibold tracking-tight text-[#002045]">Manage agents</h2>
           <p className="mt-1 text-sm text-[#74777f]">Create, edit, and manage every agent profile.</p>
         </div>
@@ -175,7 +175,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
           <span className="hidden text-[13px] font-medium text-[#9aa0a8] sm:inline">{agents.length} agents</span>
           <button
             onClick={openCreate}
-            className="flex items-center gap-1.5 rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
+            className="flex flex-none items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
           >
             <Icon name="person_add" size={18} />
             Add agent

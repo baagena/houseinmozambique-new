@@ -1,11 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PlanFeature, PricingPlanRecord } from '@/lib/pricing';
 import Icon from '@/components/ui/Icon';
 
 type PlanForm = Omit<PricingPlanRecord, 'id'> & { id?: string };
+
+/** Same **bold** rendering as the public pricing page, so the preview is honest. */
+function Rich({ text }: { text: string }) {
+  return (
+    <>
+      {text.split('**').map((part, i) => (
+        <Fragment key={i}>{i % 2 === 1 ? <b>{part}</b> : part}</Fragment>
+      ))}
+    </>
+  );
+}
 
 const emptyPlan: PlanForm = {
   slug: '',
@@ -98,7 +109,7 @@ function PlanPreview({ form, lang }: { form: PlanForm; lang: 'en' | 'pt' }) {
             className={`flex items-start gap-3 text-xs leading-relaxed ${!f.included ? 'opacity-40' : ''}`}
           >
             <Icon name={f.included ? (f.star ? 'stars' : 'check_circle') : 'do_not_disturb_on'} size={16} className={`flex-shrink-0 ${ f.included ? (form.highlighted ? 'text-[#fab983]' : 'text-[#845326]') : 'text-[#74777f]' }`} />
-            <span>{f.label}</span>
+            <span><Rich text={f.label} /></span>
           </li>
         ))}
       </ul>
@@ -175,6 +186,9 @@ function FeatureEditor({
         <Icon name="add" size={18} />
         Add feature
       </button>
+      <p className="text-[11px] text-[#9aa0a8]">
+        Tip: wrap words in <code>**double stars**</code> to show them in bold, e.g. <code>Appears on our **homepage**</code>.
+      </p>
     </div>
   );
 }
@@ -280,8 +294,8 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
   return (
     <div className="max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-60">
           <h1 className="text-xl font-semibold text-[#002045] tracking-tight">Pricing plans</h1>
           <p className="text-sm text-[#74777f] mt-1">
             Edit the plans and prices shown on the public pricing page, in English and Portuguese.
@@ -289,7 +303,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
         </div>
         <button
           onClick={openNew}
-          className="flex items-center gap-1.5 bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
+          className="flex flex-none items-center gap-1.5 whitespace-nowrap bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
         >
           <Icon name="add" size={18} />
           New plan
@@ -297,16 +311,16 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
       </div>
 
       {/* Stats strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: 'Total plans', value: plans.length, icon: 'sell' },
           { label: 'Live on site', value: plans.filter((p) => p.isActive).length, icon: 'check_circle', color: 'text-emerald-600' },
           { label: 'Hidden', value: plans.filter((p) => !p.isActive).length, icon: 'visibility_off', color: 'text-amber-500' },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl px-5 py-4 border border-[#eceef1]">
-            <div className="flex items-center gap-2 mb-1.5">
+          <div key={s.label} className="bg-white rounded-xl px-3 py-3 sm:px-5 sm:py-4 border border-[#eceef1]">
+            <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2 mb-1.5">
               <Icon name={s.icon} className={`${s.color ?? 'text-[#002045]'}`} />
-              <span className="text-[13px] text-[#74777f] font-medium">{s.label}</span>
+              <span className="text-[12px] sm:text-[13px] leading-tight text-[#74777f] font-medium">{s.label}</span>
             </div>
             <p className="text-2xl font-semibold text-[#002045] tabular-nums">{s.value}</p>
           </div>
@@ -442,7 +456,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className={labelClass}>
                       {form.kind === 'one_off' ? 'Listing stays up (days)' : 'Billed every'}
@@ -486,6 +500,7 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                       value={form.featuredQuota}
                       onChange={(e) => set('featuredQuota', Math.max(0, Number(e.target.value) || 0))}
                     />
+                    <p className="mt-1 text-[11px] text-[#9aa0a8]">Listings put on the homepage for the plan&apos;s run. 0 = none.</p>
                   </div>
                 </div>
 

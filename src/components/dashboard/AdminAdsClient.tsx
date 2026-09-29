@@ -247,14 +247,14 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
     <div className="max-w-5xl space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 basis-60">
             <h1 className="text-xl font-semibold text-[#002045] tracking-tight">Advertisements</h1>
             <p className="text-sm text-[#74777f] mt-1">Manage ads displayed on the home page.</p>
           </div>
           <button
             onClick={openNew}
-            className="flex items-center gap-1.5 bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
+            className="flex flex-none items-center gap-1.5 whitespace-nowrap bg-[#002045] text-white px-3.5 py-2 rounded-lg font-medium text-[13px] hover:bg-[#0a2f5c] transition-colors"
           >
             <Icon name="add" size={18} />
             New ad
@@ -474,12 +474,14 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
           const group = grouped[pos.value] ?? [];
           return (
             <div key={pos.value} className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
-              <div className="flex items-center justify-between px-5 h-12 border-b border-[#eceef1]">
-                <div>
+              {/* Not a fixed height: on a phone the description wraps, and a
+                  fixed 48px header let it spill over the first row. */}
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5 min-h-12 border-b border-[#eceef1]">
+                <div className="min-w-0">
                   <p className="font-semibold text-[#002045] text-[13px]">{pos.label}</p>
-                  <p className="text-[12px] text-[#9aa0a8]">{pos.desc}</p>
+                  <p className="text-[12px] leading-snug text-[#9aa0a8]">{pos.desc}</p>
                 </div>
-                <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-medium ${group.length > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f1f3f5] text-[#9aa0a8]'}`}>
+                <span className={`shrink-0 whitespace-nowrap text-[11px] px-1.5 py-0.5 rounded-md font-medium ${group.length > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f1f3f5] text-[#9aa0a8]'}`}>
                   {group.length} ad{group.length !== 1 ? 's' : ''}
                 </span>
               </div>
@@ -497,15 +499,15 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
               ) : (
                 <div className="divide-y divide-[#f2f4f6]">
                   {group.map((ad) => (
-                    <div key={ad.id} className="px-5 py-3.5 flex items-center gap-3">
-                      {/* Type badge */}
-                      <span className="text-[11px] font-medium px-1.5 py-0.5 bg-[#f1f3f5] text-[#5b616b] rounded-md shrink-0">
+                    <div key={ad.id} className="px-4 sm:px-5 py-3.5 flex items-center gap-2 sm:gap-3">
+                      {/* Type badge — on a phone the title needs the room more. */}
+                      <span className="hidden sm:inline-block text-[11px] font-medium px-1.5 py-0.5 bg-[#f1f3f5] text-[#5b616b] rounded-md shrink-0">
                         {typeLabel(ad.type)}
                       </span>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-[13px] text-[#002045] truncate">{ad.title}</p>
+                        <p className="font-medium text-[13px] text-[#002045] line-clamp-2 sm:truncate">{ad.title}</p>
                         {ad.description && <p className="text-[12px] text-[#74777f] truncate">{ad.description}</p>}
                         {ad.linkUrl && <p className="text-[11px] text-[#b4b9c0] truncate">{ad.linkUrl}</p>}
                       </div>
