@@ -48,7 +48,16 @@ export default async function HomePage() {
   /* Eight: the grid is four across at full width, so six left a half-empty
      second row. Two complete rows read as a selection; one and a half reads
      as a page that ran out. */
-  const latest = allProperties.slice(0, 8);
+  /*
+   * Featured listings lead the grid. They are what the Destaque plans sell
+   * ("appears on our homepage"), and before this `featured` was only used for
+   * a chip count, so a paid feature was never actually seen here.
+   */
+  const featuredIds = new Set(featured.map((p) => p.id));
+  const latest = [
+    ...allProperties.filter((p) => featuredIds.has(p.id)),
+    ...allProperties.filter((p) => !featuredIds.has(p.id)),
+  ].slice(0, 8);
 
   // Chip counts come from the live listings, never hardcoded.
   const countBy = (predicate: (p: (typeof allProperties)[number]) => boolean) =>

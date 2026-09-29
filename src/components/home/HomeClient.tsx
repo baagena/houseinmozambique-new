@@ -143,7 +143,7 @@ export default function HomeClient({
             </div>
             <div className="grid-cards">
               {latest.map((p) => (
-                <PropertyCard key={p.id} property={p} />
+                <PropertyCard key={p.id} property={p} sponsored={Boolean(p.isFeatured)} />
               ))}
             </div>
           </div>

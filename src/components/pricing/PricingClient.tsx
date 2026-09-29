@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { afterAuth } from '@/lib/after-auth';
 import { getAuth } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -11,48 +12,57 @@ import Icon from '@/components/ui/Icon';
 
 const VILLA_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuWSUXLzid2u3OTERtIK6qJpnQlbOOhtVc8LqRxn7Hrx7ruVHxYBf8--9D8l6yM3GhgeRVipuoE11QCFta8tp1kWWb90aRa29GOMGpZxetULhNqwHN9tg4DZJDQxxvHeC-Bc3s1qnnRU9xhJbqMu-ghY4452JCSdw7aDslq4hnlZFFAWHbV07Uq3tveepD8WDCZTmpWuIOLlG2eJpCcRD1tC_uwEg4ED4mP7Gc4i8hoQXD_vB7MunEBhDwdlvRjJzo8dR2NdGnUEs';
 
+/** Feature labels mark their key words as **bold**, as the plan editor writes them. */
+function Rich({ text }: { text: string }) {
+  const parts = text.split('**');
+  return (
+    <>
+      {parts.map((part, i) => (
+        <Fragment key={i}>{i % 2 === 1 ? <b>{part}</b> : part}</Fragment>
+      ))}
+    </>
+  );
+}
+
 export default function PricingClient({ plans }: { plans: PricingPlanRecord[] }) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const router = useRouter();
   const { lang, t } = useLanguage();
+  const pt = lang === 'pt';
 
   // Plans are authored bilingually in the admin console; render the active language.
   const localizedPlans = plans.map((plan) => toPlanView(plan, lang));
+  // The free tier is a note under the cards, as on houseinrwanda.com: it is a
+  // courtesy for owners, not a product to compare against the paid ones.
+  const paidPlans = localizedPlans.filter((p) => !p.isFree);
+  const freePlan = localizedPlans.find((p) => p.isFree);
 
-  const faqs = [
-    {
-      q: lang === 'en' ? 'What payment methods do you accept?' : 'Quais métodos de pagamento vocês aceitam?',
-      a: lang === 'en' ? 'We accept M-Pesa, e-Mola, debit cards, credit cards, and bank transfers. All payments are processed in local currency (MZN) with direct conversion from foreign currencies.' : 'Aceitamos M-Pesa, e-Mola, cartões de débito e crédito, e transferências bancárias. Todos os pagamentos são processados em moeda local (MZN) com conversão direta de moedas estrangeiras.',
-    },
-    {
-      q: lang === 'en' ? 'Can I cancel my subscription anytime?' : 'Posso cancelar minha subscrição a qualquer momento?',
-      a: lang === 'en' ? 'Yes, you can cancel your subscription at any time from your dashboard. Premium and Agency Pro subscriptions will remain active until the end of the billing period.' : 'Sim, você pode cancelar sua subscrição a qualquer momento. A subscrição permanecerá ativa até o final do período de faturamento.',
-    },
-    {
-      q: lang === 'en' ? 'Do I need to pay for the Standard (Free) tier?' : 'Preciso pagar pela categoria Standard (Grátis)?',
-      a: lang === 'en' ? 'No! The Standard tier is completely free. You can list 1 property for free. Upgrade anytime to access more listings and features.' : 'Não! A categoria Standard é completamente grátis. Você pode publicar 1 imóvel gratuitamente. Atualize sua conta a qualquer momento para acessar mais recursos.',
-    },
-    {
-      q: lang === 'en' ? 'How do Premium Ad Boosts work?' : 'Como funcionam os Anúncios Premium?',
-      a: lang === 'en' ? 'Premium Ad Boosts give your property top placement on our platform for 7 days. You pay 2,000 MZN per week to gain immediate visibility on the homepage and across our social media channels.' : 'Os Anúncios Premium colocam seu imóvel em destaque por 7 dias. Você paga 2.000 MZN por semana para ganhar visibilidade imediata na página inicial e em nossas redes sociais.',
-    },
-    {
-      q: lang === 'en' ? 'Is there a transaction fee?' : 'Existe uma taxa de transação?',
-      a: lang === 'en' ? 'Payment processing fees vary by method. M-Pesa and e-Mola have minimal fees. Please contact our support team for detailed information about fees for your chosen payment method.' : 'As taxas de processamento variam por método. M-Pesa e e-Mola têm taxas mínimas. Entre em contato com nossa equipe de suporte para mais detalhes.',
-    },
-    {
-      q: lang === 'en' ? 'What is the curation process?' : 'Qual é o processo de curadoria?',
-      a: lang === 'en' ? 'Every listing submitted goes through a quality review to ensure accuracy and protect our community. Listings are verified within 24 hours.' : 'Cada listagem passa por uma revisão de qualidade. As listagens são verificadas dentro de 24 horas.',
-    },
-  ];
+  const faqs = pt
+    ? [
+        { q: 'Qual é a diferença entre Destaque e Super Destaque?', a: 'Ambos publicam um anúncio e colocam-no na página inicial. O Destaque fica publicado 1 mês; o Super Destaque fica 3 meses no topo da página inicial, com banner, relatório mensal de visualizações e fotografias profissionais a pedido.' },
+        { q: 'Como pago?', a: 'Escolha o plano e publique o anúncio. No seu painel aparecem as instruções de pagamento por M-Pesa, e-Mola ou transferência bancária. Depois de pagar, envie a referência; a nossa equipa confirma e o plano fica activo.' },
+        { q: 'Posso anunciar grátis?', a: 'Sim. Cada conta tem 1 anúncio grátis online de cada vez. Os anúncios grátis não aparecem na página inicial e são revistos antes de serem publicados.' },
+        { q: 'A Subscrição de Agentes renova sozinha?', a: 'Não. Cada mês é pago separadamente. Se não renovar, os seus anúncios continuam visíveis durante um curto período de tolerância e depois deixam de ser publicados até renovar.' },
+        { q: 'Os anúncios são verificados?', a: 'Sim. Cada anúncio é revisto pela nossa equipa antes de aparecer online, para confirmar que o imóvel está realmente à venda ou para arrendar.' },
+      ]
+    : [
+        { q: 'What is the difference between Featured and Super Featured?', a: 'Both publish one listing and put it on the homepage. Featured stays published for 1 month; Super Featured stays at the top of the homepage for 3 months, with a banner, a monthly views report and professional photos on request.' },
+        { q: 'How do I pay?', a: 'Choose a plan and publish your listing. Your dashboard shows how to pay by M-Pesa, e-Mola or bank transfer. Once you have paid, send the reference; our team confirms it and the plan becomes active.' },
+        { q: 'Can I list for free?', a: 'Yes. Every account has 1 free listing online at a time. Free listings do not appear on the homepage and are reviewed before they are published.' },
+        { q: 'Does the Brokers Subscription renew automatically?', a: 'No. Each month is paid separately. If you do not renew, your listings stay visible for a short grace period and then stop being published until you renew.' },
+        { q: 'Are listings checked?', a: 'Yes. Every listing is reviewed by our team before it appears online, to confirm the property really is for sale or rent.' },
+      ];
 
-  function handlePlanSelect(planSlug: string) {
+  function handlePlanSelect(planSlug: string, free = false) {
     /*
-     * Both branches aim at the same place: the guided form, carrying the plan.
-     * This used to point at /post-property, which is now only the EDIT form —
-     * so choosing a plan started you in the wrong one.
+     * A paid plan goes to billing with that plan picked, where it is bought;
+     * sending it to the listing wizard (as before) published the listing on
+     * the free slot and the plan was never paid for or applied. The free
+     * option goes straight to the wizard.
      */
-    const target = afterAuth('/post-property', { plan: planSlug });
+    const target = free
+      ? afterAuth('/post-property', { plan: planSlug })
+      : `/dashboard/agent/billing?plan=${encodeURIComponent(planSlug)}`;
     const auth = getAuth();
     router.push(
       auth.isLoggedIn ? target : `/auth?redirect=${encodeURIComponent(target)}`,
@@ -76,45 +86,76 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
       {/* ── Plans ── */}
       <section className="section">
         <div className="wrap">
-          <div className="tiers">
-            {localizedPlans.map((plan) => (
-              <div key={plan.slug} className={`tier${plan.highlighted ? ' tier--pop' : ''}`}>
-                {plan.badge && <span className="pop-badge">{plan.badge}</span>}
+          <p className="plans-intro">
+            {pt
+              ? 'Leia com atenção a descrição dos nossos planos e escolha o que corresponde às suas necessidades.'
+              : 'Please read the description of our posting plans and choose the one that fits your needs.'}
+          </p>
 
-                <h3>{plan.name}</h3>
-                <p className="tsub">{plan.description}</p>
+          <div className="plans">
+            {paidPlans.map((plan) => (
+              <article key={plan.slug} className={`plan${plan.highlighted ? ' plan--pop' : ''}`}>
+                <header className="plan__head">
+                  <h3>{plan.name}</h3>
+                  {plan.badge && <span className="plan__badge">{plan.badge}</span>}
+                </header>
 
-                <div className="tprice">
+                <div className="plan__price">
                   {plan.price}
-                  {plan.unit && <small> {plan.unit}</small>}
+                  {plan.unit && <small>{plan.unit}</small>}
                 </div>
 
-                <ul>
+                <ul className="plan__rows">
                   {plan.features.map((f) => (
-                    <li key={f.label} style={f.included ? undefined : { opacity: 0.45 }}>
-                      <Icon name={f.included ? (f.star ? 'star' : 'check') : 'remove'} size={17} className="ic" />
-                      <span>{f.label}</span>
+                    <li key={f.label} className={f.included ? undefined : 'is-off'}>
+                      {f.star && <Icon name="star" size={14} className="plan__star" />}
+                      <span><Rich text={f.label} /></span>
                     </li>
                   ))}
                 </ul>
 
-                {plan.ctaMode === 'contact' ? (
-                  <a
-                    href="/contact"
-                    className={`btn btn--full ${plan.highlighted ? 'btn--gold' : 'btn--ghost'}`}
-                  >
-                    {plan.cta}
-                  </a>
-                ) : (
-                  <button
-                    onClick={() => handlePlanSelect(plan.slug)}
-                    className={`btn btn--full ${plan.highlighted ? 'btn--gold' : 'btn--ghost'}`}
-                  >
-                    {plan.cta}
-                  </button>
-                )}
-              </div>
+                <div className="plan__cta">
+                  {plan.ctaMode === 'contact' ? (
+                    <Link href="/contact" className="btn btn--full btn--gold">{plan.cta}</Link>
+                  ) : (
+                    <button onClick={() => handlePlanSelect(plan.slug)} className="btn btn--full btn--gold">
+                      {plan.cta}
+                    </button>
+                  )}
+                </div>
+              </article>
             ))}
+          </div>
+
+          <p className="plans-foot">
+            {pt
+              ? '* Cada anúncio só aparece online depois de confirmarmos que o imóvel está realmente à venda ou para arrendar.'
+              : '* Every listing appears online only after we have checked that the property is indeed on the market for sale or rent.'}
+          </p>
+
+          <div className="plans-notes">
+            {freePlan && (
+              <div className="plans-note">
+                <h3>{pt ? 'Opção grátis' : 'Free option'}</h3>
+                <p>{freePlan.description}</p>
+                <button onClick={() => handlePlanSelect(freePlan.slug, true)} className="plans-note__link">
+                  {pt ? 'Para publicar um anúncio grátis, clique aqui' : 'To publish a free listing, click here'} →
+                </button>
+              </div>
+            )}
+            <div className="plans-note">
+              <h3>{pt ? 'Formas de pagamento' : 'Payment methods'}</h3>
+              <p>
+                {pt
+                  ? 'O seu anúncio é verificado antes de aparecer online. Para acelerar a validação, faça o pagamento depois de receber a confirmação do anúncio:'
+                  : 'Your listing is checked before it appears online. To speed up validation, pay after you receive the listing confirmation:'}
+              </p>
+              <ul>
+                <li><b>M-Pesa</b> {pt ? 'ou' : 'or'} <b>e-Mola</b> — {pt ? 'o número aparece no seu painel ao escolher o plano' : 'the number is shown in your dashboard when you choose the plan'}</li>
+                <li>{pt ? 'Transferência bancária' : 'Bank transfer'} — {pt ? 'os dados da conta aparecem no seu painel' : 'account details are shown in your dashboard'}</li>
+                <li>{pt ? 'Dúvidas?' : 'Questions?'} <Link href="/contact">{pt ? 'Fale connosco' : 'Contact us'}</Link></li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>

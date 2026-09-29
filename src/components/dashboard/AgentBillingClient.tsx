@@ -59,6 +59,8 @@ interface PlanView {
   priceMinor: number; currency: string; interval: string | null;
   listingQuota: number; featuredQuota: number; durationDays: number | null;
   highlighted: boolean;
+  /** "contact": price on request — no checkout, the agent talks to the team. */
+  ctaMode: string;
 }
 
 interface CreditView {
@@ -122,7 +124,7 @@ function PlanShell({
 
 export default function AgentBillingClient({
   state, subscription, payments, plans, credits, graceDays,
-  instructions, destinationConfigured, openPayment,
+  instructions, destinationConfigured, openPayment, preselect = null,
 }: {
   state: EntitlementState;
   subscription: SubscriptionView | null;
@@ -133,6 +135,7 @@ export default function AgentBillingClient({
   instructions: PaymentInstructions;
   destinationConfigured: boolean;
   openPayment: OpenPaymentView | null;
+  preselect?: string | null;
 }) {
   const { lang } = useLanguage();
   const router = useRouter();
@@ -140,6 +143,13 @@ export default function AgentBillingClient({
   const [error, setError] = useState<string | null>(null);
   const [justStarted, setJustStarted] = useState(false);
   const payRef = useRef<HTMLDivElement | null>(null);
+
+  /* Arriving from the public pricing page with ?plan=: bring that plan into
+     view. It is highlighted, not bought — the agent still presses the button. */
+  useEffect(() => {
+    if (!preselect) return;
+    document.getElementById(`plan-${preselect}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [preselect]);
 
   /* Once the refreshed server render has put the panel on the page, jump to
      it. Keyed on the payment's own id so a second plan choice scrolls again. */
@@ -357,12 +367,19 @@ export default function AgentBillingClient({
             const current = subscription?.planSlug === p.slug;
             const oneOff = p.kind === 'one_off';
             return (
-              <div key={p.slug} className={`bill-plan${current ? ' is-on' : ''}`}>
+              <div
+                key={p.slug}
+                id={`plan-${p.slug}`}
+                className={`bill-plan${current ? ' is-on' : ''}`}
+                style={preselect === p.slug && !current ? { outline: '2px solid var(--d-gold, #c4922f)', outlineOffset: 2 } : undefined}
+              >
                 {current && <div className="bp-current">{pt ? 'O seu plano' : 'Your plan'}</div>}
                 <div className="bp-name">{pt ? p.namePt : p.nameEn}</div>
                 <div className="bp-price">
-                  {p.priceMinor === 0 ? (pt ? 'Grátis' : 'Free') : money(p.priceMinor, p.currency, lang)}
-                  {p.priceMinor > 0 && (
+                  {p.ctaMode === 'contact'
+                    ? (pt ? 'Sob consulta' : 'Price on request')
+                    : p.priceMinor === 0 ? (pt ? 'Grátis' : 'Free') : money(p.priceMinor, p.currency, lang)}
+                  {p.priceMinor > 0 && p.ctaMode !== 'contact' && (
                     <span>
                       {oneOff
                         ? (pt ? ' / anúncio' : ' / listing')
@@ -395,6 +412,11 @@ export default function AgentBillingClient({
                   )}
                 </ul>
 
+                {p.ctaMode === 'contact' && !current ? (
+                  <a className="btn" href="/contact" style={{ marginTop: 12, width: '100%', textAlign: 'center' }}>
+                    {pt ? 'Contacte-nos' : 'Contact us'}
+                  </a>
+                ) : (
                 <button
                   className={`btn${p.highlighted && !current ? ' primary' : ''}`}
                   style={{ marginTop: 12, width: '100%' }}
@@ -411,6 +433,7 @@ export default function AgentBillingClient({
                           ? (pt ? 'Comprar anúncio' : 'Buy a listing')
                           : (pt ? 'Escolher' : 'Choose')}
                 </button>
+                )}
               </div>
             );
           })}

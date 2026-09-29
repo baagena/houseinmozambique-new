@@ -15,7 +15,13 @@ export const dynamic = 'force-dynamic';
  * actually granted was not recorded anywhere. An agent could not answer "how
  * many listings do I have left" or "when does this run out" without asking.
  */
-export default async function AgentBillingPage() {
+export default async function AgentBillingPage({
+  searchParams,
+}: {
+  /** ?plan=<slug> from the public pricing page: that plan is scrolled to and highlighted. */
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan: preselect } = await searchParams;
   const session = await getSession();
   if (!session) redirect('/auth');
 
@@ -38,7 +44,7 @@ export default async function AgentBillingPage() {
       },
     }),
     prisma.pricingPlan.findMany({
-      where: { isActive: true },
+      where: { isActive: true, kind: { not: 'addon' } },
       orderBy: { sortOrder: 'asc' },
     }),
     prisma.listingCredit.findMany({
@@ -171,7 +177,9 @@ export default async function AgentBillingPage() {
         featuredQuota: p.featuredQuota,
         durationDays: p.durationDays,
         highlighted: p.highlighted,
+        ctaMode: p.ctaMode,
       }))}
+      preselect={preselect ?? null}
       credits={credits.map((c) => ({
         id: c.id,
         status: c.status,

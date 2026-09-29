@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { consumeCredit, planForNewListing } from '@/lib/entitlements';
 import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
+import { featureFromPlan } from '@/lib/listing-addons';
 import { revalidatePath } from 'next/cache';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
 
@@ -218,6 +219,15 @@ export async function publishDraft(id: string) {
       await consumeCredit(decision.listingCreditId, property.id);
     }
 
+    // A plan that includes featured places puts the listing on the homepage.
+    await featureFromPlan({
+      propertyId: property.id,
+      agentId: owned.property.hostId,
+      subscriptionId: decision.subscriptionId,
+      listingCreditId: decision.listingCreditId,
+      publishedUntil: decision.publishedUntil,
+    }).catch((e) => console.error('featureFromPlan failed:', e));
+
     revalidateListing(id);
     revalidatePath('/dashboard/agent/listings');
 
@@ -361,6 +371,18 @@ export async function createProperty(formData: any, imageUrls: string[]) {
     // nothing, and there is no user-facing way to get it back.
     if (!asDraft && decision.source === 'credit' && decision.listingCreditId) {
       await consumeCredit(decision.listingCreditId, property.id);
+    }
+
+    // A plan that includes featured places puts the listing on the homepage.
+    // Never allowed to fail the publication itself.
+    if (!asDraft) {
+      await featureFromPlan({
+        propertyId: property.id,
+        agentId: agent.id,
+        subscriptionId: decision.subscriptionId,
+        listingCreditId: decision.listingCreditId,
+        publishedUntil: decision.publishedUntil,
+      }).catch((e) => console.error('featureFromPlan failed:', e));
     }
 
     console.log('Asset published successfully:', property.id);

@@ -202,3 +202,81 @@ export async function sweepAddons(): Promise<number> {
 
   return done.length;
 }
+
+/**
+ * Puts a newly published listing on the homepage when the plan that paid for
+ * it includes featured places (`PricingPlan.featuredQuota`).
+ *
+ * Recorded as an ACTIVE FEATURED add-on marked `grantedBy: "plan:<slug>"`, so
+ * it runs and expires through exactly the same machinery as a bought boost:
+ * sweepAddons() closes it when the window ends and lowers the flag. The window
+ * is the listing's own publication period for a single-listing plan, and the
+ * subscription's current period for a monthly one.
+ *
+ * A subscription's featuredQuota is how many of the agent's listings may be
+ * featured at once; once they are all in use, further listings publish
+ * normally. Returns whether the listing was featured.
+ */
+export async function featureFromPlan(opts: {
+  propertyId: string;
+  agentId: string;
+  subscriptionId?: string | null;
+  listingCreditId?: string | null;
+  publishedUntil?: Date | null;
+}): Promise<boolean> {
+  const now = new Date();
+  let planId: string | null = null;
+  let until: Date | null = opts.publishedUntil ?? null;
+
+  if (opts.listingCreditId) {
+    const credit = await prisma.listingCredit.findUnique({
+      where: { id: opts.listingCreditId },
+      select: { planId: true },
+    });
+    planId = credit?.planId ?? null;
+  } else if (opts.subscriptionId) {
+    const sub = await prisma.subscription.findUnique({
+      where: { id: opts.subscriptionId },
+      select: { planId: true, currentPeriodEnd: true },
+    });
+    planId = sub?.planId ?? null;
+    until = sub?.currentPeriodEnd ?? null;
+  }
+  if (!planId) return false;
+
+  const plan = await prisma.pricingPlan.findUnique({
+    where: { id: planId },
+    select: { slug: true, featuredQuota: true, durationDays: true },
+  });
+  if (!plan || plan.featuredQuota <= 0) return false;
+
+  const grantedBy = `plan:${plan.slug}`;
+  const inUse = await prisma.listingAddon.count({
+    where: {
+      kind: 'FEATURED',
+      status: 'ACTIVE',
+      grantedBy,
+      property: { hostId: opts.agentId },
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+  });
+  if (inUse >= plan.featuredQuota) return false;
+
+  const expiresAt = until && until > now
+    ? until
+    : new Date(now.getTime() + (plan.durationDays ?? DEFAULT_ADDON_DAYS) * 86_400_000);
+
+  await prisma.listingAddon.create({
+    data: {
+      propertyId: opts.propertyId,
+      planId,
+      kind: 'FEATURED',
+      status: 'ACTIVE',
+      grantedBy,
+      startsAt: now,
+      expiresAt,
+    },
+  });
+  await prisma.property.update({ where: { id: opts.propertyId }, data: { isFeatured: true } });
+  return true;
+}
