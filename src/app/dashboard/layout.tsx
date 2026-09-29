@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import ThemeSwitch from '@/components/dashboard/ThemeSwitch';
@@ -25,6 +25,23 @@ export default function DashboardLayout({
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  /* Phones: the sidebar is a drawer. Any navigation closes it, adjusted during
+     render (as the sidebar does for its own state) so the next page never
+     paints with the drawer still over it. */
+  const pathname = usePathname();
+  const [navOpen, setNavOpen] = useState(false);
+  const [navPath, setNavPath] = useState(pathname);
+  if (pathname !== navPath) {
+    setNavPath(pathname);
+    setNavOpen(false);
+  }
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setNavOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,12 +97,32 @@ export default function DashboardLayout({
           used to be a render-blocking <link> to fonts.googleapis.com right
           here, which cost a third-party round trip before the console could
           paint. */}
-      <DashboardSidebar role={roleLabel as 'admin' | 'agent'} userName={user.name} accountRole={user.role} />
+      <DashboardSidebar
+        role={roleLabel as 'admin' | 'agent'}
+        userName={user.name}
+        accountRole={user.role}
+        mobileOpen={navOpen}
+        onNavigate={() => setNavOpen(false)}
+      />
+      <div
+        className={`dash-backdrop${navOpen ? ' is-open' : ''}`}
+        onClick={() => setNavOpen(false)}
+        aria-hidden="true"
+      />
 
       <main className="flex-1 overflow-y-auto custom-scrollbar relative">
         {/* Topbar — classes from the design package's ops-console-preview.html.
             The signed-in identity lives HERE, not in the sidebar foot. */}
         <header className="topbar">
+          <button
+            type="button"
+            className="icon-btn menu-btn"
+            onClick={() => setNavOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={navOpen}
+          >
+            <Icon name="menu" size={20} />
+          </button>
           <div className="search">
             <Icon name="search" size={15} />
             <label htmlFor="dash-search" className="sr-only">Search listings, leads and agents</label>

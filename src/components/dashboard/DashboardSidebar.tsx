@@ -51,6 +51,10 @@ interface DashboardSidebarProps {
   userName: string;
   /** Raw account role, so a private owner is not labelled as an agent. */
   accountRole?: string;
+  /** Phones: the sidebar is a drawer, and this says whether it is showing. */
+  mobileOpen?: boolean;
+  /** Called when a link is tapped, so the drawer closes even on the current page. */
+  onNavigate?: () => void;
 }
 
 const AGENT_GROUPS: SidebarGroup[] = [
@@ -139,7 +143,7 @@ const WIDE_ROUTES = ['/dashboard/agent/new'];
 
 const COLLAPSE_KEY = 'him_sidebar_collapsed';
 
-export default function DashboardSidebar({ role }: DashboardSidebarProps) {
+export default function DashboardSidebar({ role, mobileOpen = false, onNavigate }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [counts, setCounts] = useState<NavCounts>({});
@@ -224,7 +228,8 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
   };
 
   return (
-    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+    // An open drawer always shows its labels, whatever the desktop preference.
+    <aside className={`sidebar${collapsed && !mobileOpen ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
       <Link
         href="/"
         className="brand"
@@ -254,6 +259,7 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
                   aria-current={isActive ? 'page' : undefined}
                   className={`nav-item${isActive ? ' active' : ''}`}
                   style={{ textDecoration: 'none' }}
+                  onClick={onNavigate}
                   // The label is the only thing naming this row; with it hidden
                   // the icon needs to answer "what is this" on hover.
                   title={collapsed ? link.label : undefined}
@@ -275,7 +281,7 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
         <button
           type="button"
           onClick={toggleCollapsed}
-          className="nav-item"
+          className="nav-item collapse-toggle"
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-expanded={!collapsed}
         >

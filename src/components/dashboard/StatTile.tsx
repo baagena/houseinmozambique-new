@@ -42,7 +42,7 @@ export default function StatTile({
 }: StatTileProps) {
   return (
     <div
-      className="p-5 transition-colors"
+      className="stat-tile p-5 transition-colors"
       style={{
         background: 'var(--d-card)',
         border: '1px solid var(--d-border)',
@@ -82,7 +82,7 @@ export default function StatTile({
       </div>
 
       <p
-        className="display tabular"
+        className="display tabular stat-tile__value"
         style={{
           fontSize: 'var(--d-fs-figure)',
           fontWeight: 600,
@@ -108,12 +108,12 @@ export default function StatTile({
         )}
       </p>
 
-      <p style={{ fontSize: 'var(--d-fs-base)', color: 'var(--d-text-2)', margin: '2px 0 0' }}>
+      <p className="stat-tile__label" style={{ fontSize: 'var(--d-fs-base)', color: 'var(--d-text-2)', margin: '2px 0 0' }}>
         {label}
       </p>
 
       {hint && (
-        <p style={{ fontSize: 'var(--d-fs-sm)', color: 'var(--d-text-3)', margin: '6px 0 0' }}>
+        <p className="stat-tile__hint" style={{ fontSize: 'var(--d-fs-sm)', color: 'var(--d-text-3)', margin: '6px 0 0' }}>
           {hint}
         </p>
       )}
