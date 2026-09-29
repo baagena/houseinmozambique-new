@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
+import { activateRequestedPlan } from '@/lib/plan-requests';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
 
 export async function POST(request: Request, { params }: Params) {
@@ -21,6 +22,11 @@ export async function POST(request: Request, { params }: Params) {
       where: { id },
       data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
     });
+
+    // Approving a listing that asked for a paid plan activates that plan.
+    if (status === 'PUBLISHED') {
+      await activateRequestedPlan(id, admin.id).catch((e) => console.error('activateRequestedPlan failed:', e));
+    }
 
     if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
       try {
@@ -61,6 +67,11 @@ export async function PATCH(request: Request, { params }: Params) {
       where: { id },
       data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
     });
+
+    // Approving a listing that asked for a paid plan activates that plan.
+    if (status === 'PUBLISHED') {
+      await activateRequestedPlan(id, admin.id).catch((e) => console.error('activateRequestedPlan failed:', e));
+    }
 
     if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
       try {

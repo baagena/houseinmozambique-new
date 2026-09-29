@@ -56,6 +56,8 @@ export interface PricingPlanView {
   highlighted: boolean;
   /** The free tier, which the pricing page shows as a note, not a card. */
   isFree: boolean;
+  /** Has a set price (false for "price on request"). */
+  hasPrice: boolean;
   features: PlanFeature[];
 }
 
@@ -82,9 +84,11 @@ const feature = (label: string, included = true, star = false): PlanFeature => (
  * rendered bold.
  *
  * The paid plans are ctaMode "contact" for now: online payment is not set up
- * yet, so "Pedir este plano" opens the contact form with the plan in the
- * subject and the team grants it by hand (Admin → Payments). Switch them back
- * to "checkout" once the payment details are filled in under Admin → Settings.
+ * yet. "Pedir este plano" opens the listing wizard with the plan selected;
+ * the listing waits in Approvals with the plan named, the team confirms the
+ * payment, and approving activates the plan (lib/plan-requests.ts). Staff can
+ * also grant a plan on the admin agent page. Switch these back to "checkout"
+ * once the payment details are filled in under Admin → Settings.
  */
 export const DEFAULT_PRICING_PLANS: Omit<PricingPlanRecord, 'id'>[] = [
   {
@@ -359,6 +363,7 @@ export function toPlanView(plan: PricingPlanRecord, lang: Language): PricingPlan
     ctaMode: plan.ctaMode,
     highlighted: plan.highlighted,
     isFree: plan.priceMinor === 0 && plan.ctaMode !== 'contact',
+    hasPrice: plan.priceMinor > 0,
     features: (pt ? plan.featuresPt : plan.featuresEn).length
       ? pt
         ? plan.featuresPt

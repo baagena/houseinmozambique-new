@@ -158,6 +158,7 @@ export default function NewListingWizard({
   email,
   staff = false,
   doneHref = '/dashboard/agent/listings',
+  initialPlan = null,
 }: {
   /** True when this account cannot publish yet — createProperty would refuse. */
   needsVerification?: boolean;
@@ -166,6 +167,8 @@ export default function NewListingWizard({
   staff?: boolean;
   /** Where to go once the listing is saved. */
   doneHref?: string;
+  /** ?plan= from the pricing page: that plan starts selected. */
+  initialPlan?: string | null;
 } = {}) {
   const router = useRouter();
   /* The agent's own language, not the preview's. The preview below has its own
@@ -208,7 +211,10 @@ export default function NewListingWizard({
     upgrades: GatePlan[];
     oneOffs: GatePlan[];
     listings: GateListing[];
+    requestable?: RequestablePlan[];
   } | null>(null);
+  /* The paid plan chosen for this listing; '' means the agent's own plan. */
+  const [requestedPlan, setRequestedPlan] = useState<string>(initialPlan ?? '');
   const [gateOpen, setGateOpen] = useState(false);
 
   const loadEntitlement = useCallback(async () => {
@@ -226,6 +232,13 @@ export default function NewListingWizard({
   }, []);
 
   useEffect(() => { void loadEntitlement(); }, [loadEntitlement]);
+
+  /* A ?plan= that is not a paid, requestable plan (e.g. the free tier) means
+     "no plan": fall back to the agent's own plan rather than a blank choice. */
+  useEffect(() => {
+    if (!ent?.requestable || !requestedPlan) return;
+    if (!ent.requestable.some((p) => p.slug === requestedPlan)) setRequestedPlan('');
+  }, [ent, requestedPlan]);
 
   // Photo counts are derived from the real uploads rather than typed, which is
   // the one place this departs from the preview — the preview had no file
@@ -286,7 +299,8 @@ export default function NewListingWizard({
        */
       if (mode === 'publish') {
         const fresh = await loadEntitlement();
-        if (fresh && !fresh.state.canPublish) {
+        // A requested plan pays for this listing, so a full free slot is no bar.
+        if (fresh && !fresh.state.canPublish && !requestedPlan) {
           setGateOpen(true);
           return;
         }
@@ -309,7 +323,11 @@ export default function NewListingWizard({
       setProgress(mode === 'draft' ? 'Saving your draft…' : 'Submitting for review…');
 
       const result = await createProperty(
-        { ...wizardPropertyFields(answers, g, contact), asDraft: mode === 'draft' },
+        {
+          ...wizardPropertyFields(answers, g, contact),
+          asDraft: mode === 'draft',
+          requestedPlan: staff ? null : requestedPlan || null,
+        },
         urls,
       );
 
@@ -381,7 +399,7 @@ export default function NewListingWizard({
           </div>
 
           <div style={{ padding: 18 }}>
-            {!staff && ent && !ent.state.canPublish && (
+            {!staff && !requestedPlan && ent && !ent.state.canPublish && (
               <div className="alert warn" style={{ marginBottom: 14 }}>
                 <Icon name="info" size={18} />
                 <div>
@@ -400,7 +418,7 @@ export default function NewListingWizard({
               * this listing was going to cost them. Saying it every time is
               * what removes the need for a pricing step in the ordinary case.
               */}
-            {!staff && ent && ent.state.canPublish && ent.state.credits === 0 && (
+            {!staff && !requestedPlan && ent && ent.state.canPublish && ent.state.credits === 0 && (
               <div className="alert" style={{ marginBottom: 14 }}>
                 <Icon name={ent.state.remaining === 1 ? 'info' : 'check_circle'} size={18} />
                 <div>
@@ -421,6 +439,14 @@ export default function NewListingWizard({
             {step === 3 && <StepCategory a={a} set={set} w={w} />}
             {step === 4 && <StepFeatures a={a} set={set} w={w} />}
             {step === 5 && <StepPlace a={a} set={set} w={w} />}
+            {step === 7 && !staff && (ent?.requestable?.length ?? 0) > 0 && (
+              <StepPlan
+                plans={ent?.requestable ?? []}
+                value={requestedPlan}
+                onChange={setRequestedPlan}
+                w={w}
+              />
+            )}
             {step === 7 && <StepContact contact={contact} set={setContact} w={w} />}
             {step === 6 && (
               <StepPhotos
@@ -454,6 +480,13 @@ export default function NewListingWizard({
               {progress
                 ?? (step === LAST && blockers.length > 0
                   ? blockers[0]
+                  : step === LAST && requestedPlan && !staff
+                  ? w.planPending(
+                      (() => {
+                        const pl = ent?.requestable?.find((x) => x.slug === requestedPlan);
+                        return pl ? (w.isPt ? pl.namePt : pl.nameEn) : requestedPlan;
+                      })(),
+                    )
                   : step === LAST && ent?.state.canPublish
                     /* At the moment of publishing, the useful thing to say is
                        not which step they are on but what it will cost. */
@@ -1219,6 +1252,53 @@ function Check({ ok, children }: { ok: boolean; children: React.ReactNode }) {
     <div className={`check ${ok ? 'pass' : 'fail'}`}>
       <Icon name={ok ? 'check_circle' : 'error'} size={15} />
       <span>{children}</span>
+    </div>
+  );
+}
+
+interface RequestablePlan {
+  slug: string;
+  nameEn: string;
+  namePt: string;
+  priceEn: string;
+  pricePt: string;
+  highlighted: boolean;
+}
+
+/** The last step's plan question: the agent's own plan, or a paid plan. */
+function StepPlan({
+  plans, value, onChange, w,
+}: {
+  plans: RequestablePlan[];
+  value: string;
+  onChange: (slug: string) => void;
+  w: WizardCopy;
+}) {
+  const option = (slug: string, title: string, sub: string) => (
+    <label
+      key={slug || 'own'}
+      style={{
+        display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+        border: `1px solid ${value === slug ? 'var(--d-ink, #002045)' : 'var(--d-border, #e3e5e8)'}`,
+        background: value === slug ? 'var(--d-paper, #f5f6f8)' : 'transparent',
+      }}
+    >
+      <input type="radio" name="requested-plan" checked={value === slug} onChange={() => onChange(slug)} style={{ marginTop: 3 }} />
+      <span>
+        <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5 }}>{title}</span>
+        <span style={{ display: 'block', fontSize: 12, opacity: 0.75 }}>{sub}</span>
+      </span>
+    </label>
+  );
+
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>{w.planQ}</h3>
+      <p style={{ margin: '0 0 12px', fontSize: 12.5, opacity: 0.75 }}>{w.planWhy}</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {option('', w.planOwn, w.planOwnHint)}
+        {plans.map((pl) => option(pl.slug, w.isPt ? pl.namePt : pl.nameEn, w.isPt ? pl.pricePt : pl.priceEn))}
+      </div>
     </div>
   );
 }

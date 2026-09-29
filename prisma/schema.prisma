@@ -83,6 +83,11 @@ model Property {
   rating          Float?    @default(0)
   reviewCount     Int?      @default(0)
   views           Int       @default(0)
+  /// The paid plan the agent chose in the wizard ("featured", "brokers", …).
+  /// Set when the listing is waiting for the team to confirm payment; the
+  /// admin's approval activates it (lib/plan-requests.ts). Null for listings
+  /// published on a plan the agent already had.
+  requestedPlanSlug String?
   contactClicks   Int       @default(0)
   viewingClicks   Int       @default(0)
   isFeatured      Boolean   @default(false)

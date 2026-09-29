@@ -235,14 +235,25 @@ export async function sendPropertySubmissionNotification(property: {
   location: string;
   price: number;
   priceUnit: string;
-}, agent: { name: string; email: string; }) {
+}, agent: { name: string; email: string; },
+/** A paid plan chosen in the wizard; approving the listing activates it. */
+requestedPlan?: { name: string; price: string } | null) {
+  const planHtml = requestedPlan
+    ? `<p style="background:#fdf3e1;border-left:4px solid #c4922f;padding:10px 14px;color:#43474e;"><strong>Plano pedido: ${requestedPlan.name} (${requestedPlan.price})</strong><br>Confirme o pagamento com o agente. Aprovar o anúncio activa este plano.</p>`
+    : '';
+  const planText = requestedPlan
+    ? `
+Plano pedido: ${requestedPlan.name} (${requestedPlan.price}) — confirme o pagamento; aprovar o anúncio activa o plano.
+`
+    : '';
   return sendAdminNotificationEmail({
     to: ADMIN_EMAIL,
-    subject: `New Listing Submitted: ${property.title}`,
+    subject: `${requestedPlan ? `[${requestedPlan.name}] ` : ''}New Listing Submitted: ${property.title}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
         <h1 style="color: #002045;">New Property Submission</h1>
         <p style="color: #43474e;">A new property has been posted by ${agent.name}. Please review and approve in the admin dashboard.</p>
+        ${planHtml}
         <ul style="color: #43474e; line-height: 1.8;">
           <li><strong>Title:</strong> ${property.title}</li>
           <li><strong>Type:</strong> ${property.type}</li>
@@ -254,7 +265,7 @@ export async function sendPropertySubmissionNotification(property: {
       </div>
     `,
     text: `New Property Submission
-
+${planText}
 Title: ${property.title}
 Type: ${property.type}
 Listing: ${property.listingType}

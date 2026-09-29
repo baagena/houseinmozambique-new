@@ -53,14 +53,14 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
         { q: 'Are listings checked?', a: 'Yes. Every listing is reviewed by our team before it appears online, to confirm the property really is for sale or rent.' },
       ];
 
-  function handlePlanSelect(planSlug: string, free = false) {
+  function handlePlanSelect(planSlug: string, toWizard = false) {
     /*
-     * A paid plan goes to billing with that plan picked, where it is bought;
-     * sending it to the listing wizard (as before) published the listing on
-     * the free slot and the plan was never paid for or applied. The free
-     * option goes straight to the wizard.
+     * A plan with a price opens the listing wizard with that plan selected:
+     * the agent builds the listing, the team confirms payment and approving
+     * the listing activates the plan (lib/plan-requests.ts). `checkout` plans
+     * — once online payment exists — go to billing to be bought directly.
      */
-    const target = free
+    const target = toWizard
       ? afterAuth('/post-property', { plan: planSlug })
       : `/dashboard/agent/billing?plan=${encodeURIComponent(planSlug)}`;
     const auth = getAuth();
@@ -115,7 +115,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                 </ul>
 
                 <div className="plan__cta">
-                  {plan.ctaMode === 'contact' ? (
+                  {plan.ctaMode === 'contact' && !plan.hasPrice ? (
                     <Link
                       href={`/contact?subject=${encodeURIComponent(`${pt ? 'Plano' : 'Plan'}: ${plan.name}`)}`}
                       className="btn btn--full btn--gold"
@@ -123,7 +123,7 @@ export default function PricingClient({ plans }: { plans: PricingPlanRecord[] })
                       {plan.cta}
                     </Link>
                   ) : (
-                    <button onClick={() => handlePlanSelect(plan.slug)} className="btn btn--full btn--gold">
+                    <button onClick={() => handlePlanSelect(plan.slug, plan.ctaMode === 'contact')} className="btn btn--full btn--gold">
                       {plan.cta}
                     </button>
                   )}

@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db';
 import { requireAdmin as requireAdminSession } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
+import { activateRequestedPlan } from '@/lib/plan-requests';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
 
 async function requireAdmin() {
@@ -32,6 +33,11 @@ export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'RE
         ...(status === 'PUBLISHED' && { approvedAt: new Date() }),
       },
     });
+
+    // Approving a listing that asked for a paid plan activates that plan.
+    if (status === 'PUBLISHED') {
+      await activateRequestedPlan(id, auth.userId).catch((e) => console.error('activateRequestedPlan failed:', e));
+    }
 
     if (existing.status !== status && (status === 'PUBLISHED' || status === 'REJECTED')) {
       try {

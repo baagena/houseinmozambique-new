@@ -35,7 +35,7 @@ export async function GET() {
       select: {
         slug: true, kind: true, nameEn: true, namePt: true, priceMinor: true,
         currency: true, interval: true, listingQuota: true, durationDays: true,
-        highlighted: true,
+        highlighted: true, ctaMode: true, pricePt: true, priceEn: true, unitPt: true, unitEn: true,
       },
     }),
     prisma.property.findMany({
@@ -64,10 +64,20 @@ export async function GET() {
   );
   const oneOffs = plans.filter((p) => p.kind === 'one_off' && p.priceMinor > 0);
 
+  /* Every paid plan, for the wizard's "choose a plan" question: the listing
+     waits for the team, and approving it activates the plan. */
+  const requestable = plans
+    .filter((p) => p.kind !== 'addon' && !(p.priceMinor === 0 && p.ctaMode !== 'contact'))
+    .map((p) => ({
+      slug: p.slug, nameEn: p.nameEn, namePt: p.namePt, highlighted: p.highlighted,
+      priceEn: `${p.priceEn} ${p.unitEn}`.trim(), pricePt: `${p.pricePt} ${p.unitPt}`.trim(),
+    }));
+
   return NextResponse.json({
     state,
     upgrades,
     oneOffs,
+    requestable,
     listings: listings.map((l) => ({
       id: l.id,
       title: l.titlePt?.trim() || l.title,

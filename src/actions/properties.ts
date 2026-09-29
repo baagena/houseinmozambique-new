@@ -5,6 +5,7 @@ import { getSession } from '@/lib/session';
 import { consumeCredit, planForNewListing } from '@/lib/entitlements';
 import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
 import { featureFromPlan } from '@/lib/listing-addons';
+import { findRequestablePlan } from '@/lib/plan-requests';
 import { revalidatePath } from 'next/cache';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
 
@@ -285,7 +286,15 @@ export async function createProperty(formData: any, imageUrls: string[]) {
      */
     const asDraft = formData.asDraft === true;
 
-    const decision = asDraft
+    /*
+     * A paid plan chosen in the wizard. The listing is paid for by that plan,
+     * not by the agent's free slot, so the quota check is skipped: it waits
+     * for review, and the admin's approval activates the plan once payment is
+     * confirmed (lib/plan-requests.ts). Staff listings never request one.
+     */
+    const requestedPlan = !isAdmin && !asDraft ? await findRequestablePlan(formData.requestedPlan) : null;
+
+    const decision = asDraft || requestedPlan
       ? { ok: true as const, source: 'none' as const, subscriptionId: undefined, listingCreditId: undefined, publishedUntil: undefined }
       : await planForNewListing(agent.id, agent.role, {
           /* For the modest-rental exemption: a private owner listing a cheap
@@ -356,6 +365,7 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         contactPhone: formData.contactPhone ?? null,
         contactEmail: formData.contactEmail ?? null,
         status: asDraft ? 'DRAFT' : isAdmin ? 'PUBLISHED' : 'PENDING',
+        requestedPlanSlug: requestedPlan?.slug ?? null,
         ...(isAdmin && !asDraft && { approvedAt: new Date() }),
         // The entitlement that authorised it, recorded on the listing so a plan
         // that later lapses cannot orphan what it legitimately paid for.
@@ -399,7 +409,10 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         await sendPropertyApprovedEmail(property, { name: agent.name, email: agent.email });
       } else {
         await Promise.all([
-          sendPropertySubmissionNotification(property, { name: agent.name, email: agent.email }),
+          sendPropertySubmissionNotification(property, { name: agent.name, email: agent.email }, requestedPlan && {
+            name: requestedPlan.namePt || requestedPlan.nameEn,
+            price: `${requestedPlan.pricePt} ${requestedPlan.unitPt}`.trim(),
+          }),
           sendPropertySubmittedEmail(property, { name: agent.name, email: agent.email }),
         ]);
       }

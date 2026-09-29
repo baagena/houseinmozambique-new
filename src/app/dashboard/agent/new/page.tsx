@@ -13,7 +13,13 @@ export const metadata = { title: 'New listing' };
  * here is the one that decides whether this account is allowed to publish at
  * the end of it.
  */
-export default async function NewListingPage() {
+export default async function NewListingPage({
+  searchParams,
+}: {
+  /** ?plan=<slug> from the pricing page: that plan starts selected. */
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan } = await searchParams;
   const session = await getSession();
   if (!session) redirect('/auth?redirect=%2Fdashboard%2Fagent%2Fnew');
 
@@ -34,5 +40,5 @@ export default async function NewListingPage() {
   const needsVerification =
     account?.role !== 'ADMIN' && !account?.emailVerifiedAt;
 
-  return <NewListingWizard needsVerification={needsVerification} email={session.email} />;
+  return <NewListingWizard needsVerification={needsVerification} email={session.email} initialPlan={plan ?? null} />;
 }

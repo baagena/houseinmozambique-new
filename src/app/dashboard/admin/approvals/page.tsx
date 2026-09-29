@@ -34,6 +34,18 @@ export default async function AdminApprovalsPage() {
     orderBy: { createdAt: 'desc' },
   });
 
+  // Names and prices of the plans pending listings asked for.
+  const requestedSlugs = Array.from(new Set(pendingProperties.map((p) => p.requestedPlanSlug).filter(Boolean))) as string[];
+  const requestedPlans = requestedSlugs.length
+    ? await prisma.pricingPlan.findMany({
+        where: { slug: { in: requestedSlugs } },
+        select: { slug: true, namePt: true, nameEn: true, pricePt: true, unitPt: true },
+      })
+    : [];
+  const planLabel = new Map(
+    requestedPlans.map((p) => [p.slug, `${p.namePt || p.nameEn} — ${`${p.pricePt} ${p.unitPt}`.trim()}`]),
+  );
+
   const hostIds = Array.from(new Set(pendingProperties.map((property) => property.hostId)));
   const payments = hostIds.length > 0
     ? await prisma.payment.findMany({
@@ -51,6 +63,7 @@ export default async function AdminApprovalsPage() {
 
   const propertiesWithPayments = pendingProperties.map((property) => ({
     ...property,
+    requestedPlan: property.requestedPlanSlug ? planLabel.get(property.requestedPlanSlug) ?? property.requestedPlanSlug : null,
     createdAt: property.createdAt.toISOString(),
     updatedAt: property.updatedAt.toISOString(),
     payments: (paymentsByUserId[property.hostId] || []).map((payment) => ({

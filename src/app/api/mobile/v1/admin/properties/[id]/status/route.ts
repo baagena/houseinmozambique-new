@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { activateRequestedPlan } from '@/lib/plan-requests';
 import { prisma } from '@/lib/db';
 import { requireBearerAdmin } from '@/lib/mobile-auth';
 
@@ -21,5 +22,10 @@ export async function POST(request: Request, { params }: Params) {
     where: { id },
     data: { status, ...(status === 'PUBLISHED' && { approvedAt: new Date() }) },
   });
+
+  // Approving a listing that asked for a paid plan activates that plan.
+  if (status === 'PUBLISHED') {
+    await activateRequestedPlan(id, auth.agent.id).catch((e) => console.error('activateRequestedPlan failed:', e));
+  }
   return NextResponse.json({ success: true, property });
 }

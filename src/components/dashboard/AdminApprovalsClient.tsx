@@ -52,6 +52,8 @@ interface PendingProperty {
     location: string;
   };
   payments: AdminPayment[];
+  /** "Destaque — 500 MZN" when the agent chose a paid plan in the wizard. */
+  requestedPlan?: string | null;
 }
 
 interface NewAgent {
@@ -276,6 +278,12 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                   <p className="text-[13px] text-[#74777f]">
                     {listing.city} · Submitted by <span className="text-[#002045]">{listing.host.name}</span>
                   </p>
+                  {listing.requestedPlan && (
+                    <p className="rounded-md border border-[#e9c877] bg-[#fdf3e1] px-2 py-1.5 text-[12px] text-[#5b4410]">
+                      <b>Plano pedido: {listing.requestedPlan}</b> — confirme o pagamento; aprovar activa o plano
+                      (e o destaque na página inicial, se o plano o incluir).
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-1.5 pt-0.5">
                     <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${hasCompletedPayment ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
                       {hasCompletedPayment ? 'Payment verified' : 'Payment not verified'}

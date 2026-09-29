@@ -31,7 +31,7 @@ const adapter = new PrismaPg(pool as pg.Pool);
 // HMR cycle. Without this, an in-flight `next dev` keeps a stale PrismaClient
 // that is missing newly added models and throws "Cannot read properties of
 // undefined" until a full restart.
-const SCHEMA_VERSION = '2026-09-24-terms-accepted';
+const SCHEMA_VERSION = '2026-09-29-requested-plan';
 
 type VersionedClient = PrismaClient & { __schemaVersion?: string };
 const globalForPrisma = global as unknown as { prisma?: VersionedClient };
