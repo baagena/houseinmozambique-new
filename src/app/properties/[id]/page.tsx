@@ -5,9 +5,9 @@ import PropertyDetailClient from '@/components/properties/PropertyDetailClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildMetadata, realEstateListingJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 import { formatPrice } from '@/lib/utils';
-import { prisma } from '@/lib/db';
 import { listingHeadline } from '@/lib/listing-copy';
 import { resolvePropertyRef } from '@/lib/property-slug';
+import { getSession } from '@/lib/session';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -104,7 +104,20 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   if (!property) notFound();
 
-  await prisma.property.update({ where: { id }, data: { views: { increment: 1 } } });
+  /*
+   * Only published listings are public. Drafts, listings waiting for review,
+   * rejected and suspended ones used to render for anyone holding the link
+   * (the mobile API already refused them). Their own agent and staff can still
+   * open them, to check what they submitted.
+   */
+  if (property.status !== 'PUBLISHED') {
+    const session = await getSession();
+    const canPreview = session && (session.role === 'ADMIN' || session.id === property.hostId);
+    if (!canPreview) notFound();
+  }
+
+  /* Views are no longer counted here — see src/lib/property-views.ts. The
+     page sends a beacon once it has loaded in a browser. */
 
   const allProperties = await getProperties();
   /* Four, to fill the row the grid now lays out. Three left a gap at the end

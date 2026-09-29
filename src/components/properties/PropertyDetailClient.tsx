@@ -2,7 +2,7 @@
 
 import SafeImage from '@/components/ui/SafeImage';
 import Link from 'next/link';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { formatPrice, formatListingSentence } from '@/lib/utils';
 import PropertyCard from '@/components/properties/PropertyCard';
@@ -164,6 +164,12 @@ function lifecycleOf(p: PropertyDetail) {
 }
 
 export default function PropertyDetailClient({ property, similar }: PropertyDetailClientProps) {
+  /* One view per page load in a real browser; the route decides whether it
+     counts (bots, the owner, staff and repeat visits are skipped). */
+  useEffect(() => {
+    fetch(`/api/properties/${property.id}/view`, { method: 'POST', keepalive: true }).catch(() => {});
+  }, [property.id]);
+
   const { t, lang } = useLanguage();
 
   /*
