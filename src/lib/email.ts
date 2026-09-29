@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { prisma } from '@/lib/db';
+import { SITE_URL } from './site';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
@@ -8,9 +9,6 @@ const VERIFY_FROM_EMAIL = process.env.VERIFY_FROM_EMAIL || RESEND_FROM_EMAIL;
 const AUTH_FROM_EMAIL = process.env.AUTH_FROM_EMAIL || VERIFY_FROM_EMAIL;
 export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || process.env.ADMIN_EMAIL || 'admin@houseinmozambique.com';
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || CONTACT_EMAIL;
-// www, like lib/seo.ts: the bare domain only redirects there.
-export const SITE_URL = (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.houseinmozambique.com')
-  .replace('://houseinmozambique.com', '://www.houseinmozambique.com');
 
 let resend: Resend | null = null;
 if (RESEND_API_KEY) {

@@ -1,3 +1,4 @@
+import { SITE_HOST } from '@/lib/site';
 import { ImageResponse } from 'next/og';
 import { SITE_NAME, SITE_TAGLINE, DEFAULT_DESCRIPTION } from '@/lib/seo';
 
@@ -44,7 +45,7 @@ export default function OpengraphImage() {
           </span>
         </div>
 
-        <span style={{ fontSize: 24, color: '#9fb4d6' }}>houseinmozambique.com</span>
+        <span style={{ fontSize: 24, color: '#9fb4d6' }}>{SITE_HOST}</span>
       </div>
     ),
     { ...size },

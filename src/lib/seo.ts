@@ -3,18 +3,12 @@ import { hostIdentity } from '@/lib/host-identity';
 
 /**
  * Central SEO/AEO configuration and JSON-LD builders.
- * Set NEXT_PUBLIC_SITE_URL in the environment to your production domain.
+ * The origin comes from lib/site.ts (NEXT_PUBLIC_BASE_URL).
  */
-/*
- * The site is served from www — the bare domain answers with a redirect to it.
- * Canonicals, the sitemap and robots.txt all pointed at the bare domain, so
- * every URL handed to Google was a redirect, and a www property in Search
- * Console rejects sitemap URLs on another host. A bare-domain value (from the
- * default or from the environment) is therefore rewritten to www.
- */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.houseinmozambique.com')
-  .replace(/\/$/, '')
-  .replace('://houseinmozambique.com', '://www.houseinmozambique.com');
+import { SITE_URL } from './site';
+
+// Defined once in lib/site.ts; re-exported for existing imports.
+export { SITE_URL };
 export const SITE_NAME = 'House in Mozambique';
 export const SITE_TAGLINE = 'The Modern Estate Curator';
 export const PRICE_CURRENCY = 'MZN';

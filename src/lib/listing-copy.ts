@@ -17,6 +17,7 @@
  * screen notes that PT is the primary language of this market.
  */
 
+import { SITE_HOST } from './site';
 import {
   CATEGORY_LABEL_EN, CATEGORY_LABEL_PT, FEATURE_SCOPE,
   REQUIRES_INTERIOR_SHOTS, isBuilt,
@@ -494,7 +495,7 @@ export function generateListing(a: ListingAnswers): GeneratedListing {
      "What search engines will see" showed the agent a URL that did not exist.
      It is now the real address, and the slug below is the one stored on the
      row. */
-  const url = `houseinmozambique.com/properties/${slug}`;
+  const url = `${SITE_HOST}/properties/${slug}`;
 
   const ptType = PT_TYPE[a.propertyType] || a.propertyType;
 

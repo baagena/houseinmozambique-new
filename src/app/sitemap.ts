@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL } from '@/lib/site';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';

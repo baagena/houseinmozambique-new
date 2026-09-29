@@ -7,7 +7,6 @@ import { LanguageProvider } from '@/components/i18n/LanguageContext';
 import { getContentOverrides } from '@/lib/content';
 import JsonLd from '@/components/seo/JsonLd';
 import {
-  SITE_URL,
   SITE_NAME,
   SITE_TAGLINE,
   DEFAULT_DESCRIPTION,
@@ -15,6 +14,7 @@ import {
   organizationJsonLd,
   websiteJsonLd,
 } from '@/lib/seo';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

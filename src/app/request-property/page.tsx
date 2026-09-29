@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import PropertyRequestForm from '@/components/properties/PropertyRequestForm';
 import PropertyRequestHead from '@/components/properties/PropertyRequestHead';
 
-export const metadata: Metadata = {
-  title: 'Tell us what you are looking for | House in Mozambique',
+// buildMetadata, like every other public page, so the canonical and the
+// Open Graph URL come from the same origin (lib/site.ts) and agree; with only
+// `alternates` set, og:url fell back to the homepage.
+export const metadata: Metadata = buildMetadata({
+  title: 'Tell us what you are looking for',
   description:
     'Post what you need — city, budget, bedrooms — and agents with matching properties come to you. Free, no obligation.',
-  alternates: { canonical: '/request-property' },
-};
+  path: '/request-property',
+});
 
 /**
  * The demand side, as a public page.

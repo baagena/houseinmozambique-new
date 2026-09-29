@@ -1,5 +1,5 @@
 import { prisma } from './db';
-import { SITE_URL } from './seo';
+import { SITE_URL } from './site';
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
