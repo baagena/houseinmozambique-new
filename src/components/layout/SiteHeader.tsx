@@ -52,20 +52,21 @@ function trackClick(id: string) {
  * so the slot is never an empty grey box.
  */
 function TopbarAd({ ad }: { ad: TopAd | null }) {
+  const { t } = useLanguage();
   if (!ad) {
     return (
       <Link href="/pricing" className="topbar__ad" aria-label="Advertise with House in Mozambique">
-        <span className="ad__label">Advertisement</span>
+        <span className="ad__label">{t.nav.adLabel}</span>
         <span className="flex h-full items-center gap-3 px-4">
           <span className="grid h-9 w-9 flex-none place-items-center rounded-lg bg-[var(--gold)] text-[var(--ink-deep)]">
             <Icon name="campaign" />
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[0.82rem] font-semibold text-[var(--ink)]">
-              Advertise here
+              {t.nav.advertiseHere}
             </span>
             <span className="mono block truncate text-[0.66rem] text-[var(--hm-muted)]">
-              Reach buyers across Mozambique →
+              {t.nav.advertiseReach}
             </span>
           </span>
         </span>
@@ -75,7 +76,7 @@ function TopbarAd({ ad }: { ad: TopAd | null }) {
 
   const inner = (
     <>
-      <span className="ad__label">Advertisement</span>
+      <span className="ad__label">{t.nav.adLabel}</span>
       {ad.imageUrl ? (
         <img src={ad.imageUrl} alt={ad.title} />
       ) : (
@@ -422,7 +423,7 @@ function SiteHeaderContent() {
         })}
 
         <div className="mcta">
-          <Link href="/request-property" className="btn btn--ghost" onClick={() => setMobileOpen(false)}>
+          <Link href="/request-property" className="btn btn--ghost-l" onClick={() => setMobileOpen(false)}>
             {t.nav.requestProperty}
           </Link>
           <Link href="/post-listing" className="btn btn--gold" onClick={() => setMobileOpen(false)}>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Icon from '@/components/ui/Icon';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 /**
  * Arranging a viewing.
@@ -68,6 +69,9 @@ export default function ViewingRequest({
   propertyId, propertyTitle, agentId, whatsappNumber, labels,
 }: ViewingRequestProps) {
   const days = useMemo(() => nextDays(7), []);
+  const { lang } = useLanguage();
+  // Weekday names in the site's language, not the browser's.
+  const locale = lang === 'pt' ? 'pt-PT' : 'en-GB';
   const [day, setDay] = useState(0);
   const [picked, setPicked] = useState<string[]>([]);
   const [name, setName] = useState('');
@@ -78,7 +82,7 @@ export default function ViewingRequest({
   const [error, setError] = useState<string | null>(null);
 
   const key = (d: Date, slot: string) =>
-    `${d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} ${slot}`;
+    `${d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })} ${slot}`;
 
   const toggle = (label: string) =>
     setPicked((prev) =>
@@ -174,7 +178,7 @@ export default function ViewingRequest({
             className={`vr-day${i === day ? ' on' : ''}`}
             onClick={() => setDay(i)}
           >
-            <span className="dw">{d.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+            <span className="dw">{d.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '')}</span>
             <span className="dd">{d.getDate()}</span>
           </button>
         ))}

@@ -55,22 +55,22 @@ export default async function HomePage() {
     allProperties.filter(predicate).length;
 
   const categories: CategoryCount[] = [
-    { label: 'Featured', count: featured.length, href: '/properties?isFeatured=true' },
-    { label: 'For sale', count: countBy((p) => p.listingType === 'Buy'), href: '/properties?type=Buy' },
-    { label: 'For rent', count: countBy((p) => p.listingType === 'Rent'), href: '/properties?type=Rent' },
+    { label: 'Featured', key: 'chipFeatured', count: featured.length, href: '/properties?isFeatured=true' },
+    { label: 'For sale', key: 'chipForSale', count: countBy((p) => p.listingType === 'Buy'), href: '/properties?type=Buy' },
+    { label: 'For rent', key: 'chipForRent', count: countBy((p) => p.listingType === 'Rent'), href: '/properties?type=Rent' },
     {
-      label: 'Short stay',
+      label: 'Short stay', key: 'chipShortStay',
       count: countBy((p) => p.listingType === 'Short Stay'),
       href: '/properties?type=Short+Stay',
     },
-    { label: 'Auction', count: countBy((p) => p.listingType === 'Auction'), href: '/properties?type=Auction' },
-    { label: 'Villas', count: countBy((p) => p.type === 'Villa'), href: '/properties?propertyType=Villa' },
+    { label: 'Auction', key: 'chipAuction', count: countBy((p) => p.listingType === 'Auction'), href: '/properties?type=Auction' },
+    { label: 'Villas', key: 'chipVillas', count: countBy((p) => p.type === 'Villa'), href: '/properties?propertyType=Villa' },
     {
-      label: 'Apartments',
+      label: 'Apartments', key: 'chipApartments',
       count: countBy((p) => p.type === 'Apartment'),
       href: '/properties?propertyType=Apartment',
     },
-    { label: 'Land', count: countBy((p) => p.type === 'Land'), href: '/properties?propertyType=Land' },
+    { label: 'Land', key: 'chipLand', count: countBy((p) => p.type === 'Land'), href: '/properties?propertyType=Land' },
   ];
 
   const cityCounts = new Map<string, number>();

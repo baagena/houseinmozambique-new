@@ -218,7 +218,7 @@ export default function PropertyCard({
            * here, so a grid card asks for the smallest image that still looks
            * right rather than the full-size photograph.
            */
-          sizes="(max-width: 680px) 100vw, (max-width: 1000px) 50vw, 300px"
+          sizes="(max-width: 1000px) 50vw, 300px"
         />
 
         {/* One chip, only when there is something true to say. */}

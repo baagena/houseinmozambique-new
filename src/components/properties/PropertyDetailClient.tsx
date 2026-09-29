@@ -644,7 +644,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
                       <div className="nm">
                         {seller.name}
                         {seller.isVerified && (
-                          <span className="tagv"><Icon name="verified" size={11} />Verified</span>
+                          <span className="tagv"><Icon name="verified" size={11} />{t.property.verified}</span>
                         )}
                       </div>
                       {/* A staff account's job title ("Administrator") is not a

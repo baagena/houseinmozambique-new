@@ -24,7 +24,9 @@ interface Ad {
 }
 
 export interface CategoryCount {
+  /** English fallback; the chip shows t.home[key] in the visitor's language. */
   label: string;
+  key?: string;
   count: number;
   href: string;
 }
@@ -97,7 +99,7 @@ export default function HomeClient({
           <div className="chips">
             {categories.map((cat, i) => (
               <Link key={cat.label} href={cat.href} className={`chip${i === 0 ? ' is-active' : ''}`}>
-                {cat.label} <b>{cat.count}</b>
+                {(cat.key && (t.home as Record<string, string>)[cat.key]) || cat.label} <b>{cat.count}</b>
               </Link>
             ))}
           </div>
@@ -271,8 +273,8 @@ export default function HomeClient({
                 ) : (
                   <div className="quick-empty">
                     <Icon name="home_work" />
-                    <strong>0 properties</strong>
-                    <span>Nothing listed here yet.</span>
+                    <strong>{t.home.quickEmptyTitle}</strong>
+                    <span>{t.home.quickEmptyBody}</span>
                   </div>
                 )}
               </div>
