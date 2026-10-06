@@ -62,6 +62,9 @@ export async function PATCH(request: Request, { params }: Params) {
     /* Keeps demo, test and store-review accounts out of the public directory
        without disabling them. Admin-set only — never a self-service field. */
     if (body.isHidden !== undefined) data.isHidden = Boolean(body.isHidden);
+    /* Lets staff confirm an email by hand (or undo it) for an agent who never
+       clicked the link — unverified agents cannot sign in. */
+    if (body.emailVerified !== undefined) data.emailVerifiedAt = body.emailVerified ? new Date() : null;
     if (body.specializations !== undefined) data.specializations = toStringArray(body.specializations);
     if (body.role !== undefined && (body.role === 'ADMIN' || body.role === 'AGENT')) data.role = body.role;
 
@@ -85,6 +88,7 @@ export async function PATCH(request: Request, { params }: Params) {
         id: true, name: true, initials: true, title: true, location: true, phone: true,
         bio: true, avatar: true, yearsExperience: true, rating: true, reviewCount: true,
         isFeatured: true, isVerified: true, specializations: true, email: true, role: true,
+        isHidden: true, emailVerifiedAt: true,
       },
     });
 

@@ -60,11 +60,15 @@ export async function POST(request: Request) {
         isFeatured: Boolean(body.isFeatured),
         isVerified: body.isVerified !== undefined ? Boolean(body.isVerified) : true,
         role: body.role === 'ADMIN' ? 'ADMIN' : 'AGENT',
+        // An account the team creates is vouched for by the team. Without this
+        // it could never sign in: login refuses unverified non-admin accounts.
+        emailVerifiedAt: new Date(),
       },
       select: {
         id: true, name: true, initials: true, title: true, location: true, phone: true,
         bio: true, avatar: true, yearsExperience: true, rating: true, reviewCount: true,
         isFeatured: true, isVerified: true, specializations: true, email: true, role: true,
+        isHidden: true, emailVerifiedAt: true,
       },
     });
 

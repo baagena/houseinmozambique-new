@@ -23,13 +23,15 @@ export interface AdminAgent {
   isVerified: boolean;
   /** Kept out of the public /agents directory: demo, test, internal. */
   isHidden: boolean;
+  /** When the agent confirmed their email (ISO), or null. Unverified agents cannot sign in. */
+  emailVerifiedAt: string | null;
   specializations: string[];
   email: string;
   role: string;
   propertyCount: number;
 }
 
-type Draft = Partial<AdminAgent> & { password?: string };
+type Draft = Partial<AdminAgent> & { password?: string; emailVerified?: boolean };
 
 const EMPTY_DRAFT: Draft = {
   name: '', email: '', password: '', title: 'Agent', location: 'Mozambique', phone: '',
@@ -92,6 +94,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
         isHidden: draft.isHidden,
         role: draft.role,
       };
+      if (mode === 'edit' && draft.emailVerified !== undefined) payload.emailVerified = draft.emailVerified;
       if (draft.password) payload.password = draft.password;
 
       let res: Response;
@@ -247,6 +250,21 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     {agent.isFeatured && (
                       <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">Featured</span>
                     )}
+                    {agent.emailVerifiedAt ? (
+                      <span
+                        className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700"
+                        title={`Email confirmed ${new Date(agent.emailVerifiedAt).toLocaleDateString('en-GB')}`}
+                      >
+                        Email verified
+                      </span>
+                    ) : (
+                      <span
+                        className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700"
+                        title="Has not confirmed their email, so cannot sign in. Confirm it in Edit if you know the address is theirs."
+                      >
+                        Email not verified
+                      </span>
+                    )}
                     {agent.isHidden && (
                       <span
                         className="rounded-md bg-[#f1f3f5] px-1.5 py-0.5 text-[11px] font-medium text-[#5b616b]"
@@ -361,6 +379,13 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                   every ability it has; it is only removed from the public
                   directory, where a visitor would read it as a real agency. */}
               <Toggle label="Hide from directory" checked={!!draft.isHidden} onChange={(v) => set('isHidden', v)} />
+              {mode === 'edit' && (
+                <Toggle
+                  label="Email verified"
+                  checked={draft.emailVerified ?? !!draft.emailVerifiedAt}
+                  onChange={(v) => set('emailVerified', v)}
+                />
+              )}
               <div className="flex items-center gap-2">
                 <label className="text-[12px] font-medium text-[#5b616b]">Role</label>
                 <select
