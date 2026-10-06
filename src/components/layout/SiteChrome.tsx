@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import SiteHeader from './SiteHeader';
 import Footer from './Footer';
+import VisitTracker from './VisitTracker';
 
 /**
  * Wraps the public marketplace in the redesign shell (two-tier header, navy
@@ -23,6 +24,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="site">
+      {/* Public pages only: dashboard, auth and the posting form are not visits. */}
+      <VisitTracker />
       <SiteHeader />
       <main className="min-h-screen">{children}</main>
       <Footer />

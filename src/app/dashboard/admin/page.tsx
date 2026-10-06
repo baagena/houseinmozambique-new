@@ -4,6 +4,7 @@ import { getPlatformStats, getChartData } from '@/lib/data';
 import AdminDashboardClient from '@/components/dashboard/AdminDashboardClient';
 import { getSession } from '@/lib/session';
 import { AGENT_ADMIN_LIST } from '@/lib/dto';
+import { getTrafficSummary } from '@/lib/site-traffic';
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -41,8 +42,15 @@ export default async function AdminDashboard() {
     }),
   ]);
 
+  const [traffic, listingViews] = await Promise.all([
+    getTrafficSummary(),
+    prisma.property.aggregate({ _sum: { views: true } }),
+  ]);
+
   return (
     <AdminDashboardClient
+      traffic={traffic}
+      listingViews={listingViews._sum.views ?? 0}
       stats={{ ...stats, newsletterCount, pendingPayments }}
       chartData={chartData}
       latestAgents={latestAgents}

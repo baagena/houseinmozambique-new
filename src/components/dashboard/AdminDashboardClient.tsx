@@ -1,5 +1,6 @@
 'use client';
 
+import type { TrafficSummary } from '@/lib/site-traffic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -37,6 +38,10 @@ interface DashboardPayment {
 }
 
 interface AdminDashboardClientProps {
+  /** Website visitors and pageviews (lib/site-traffic.ts). */
+  traffic?: TrafficSummary;
+  /** Sum of every listing's view count. */
+  listingViews?: number;
   stats: {
     propertyCount: number;
     agentCount: number;
@@ -57,13 +62,15 @@ interface AdminDashboardClientProps {
 }
 
 export default function AdminDashboardClient({
+  traffic,
+  listingViews = 0,
   stats,
   chartData,
   latestAgents,
   recentInquiries = [],
   recentPayments = [],
 }: AdminDashboardClientProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
     <div className="space-y-7">
@@ -103,6 +110,8 @@ export default function AdminDashboardClient({
           hint={(stats.pendingPayments || 0) > 0 ? 'Needs review' : 'Nothing outstanding'}
         />
       </div>
+
+      {traffic && <TrafficPanel traffic={traffic} listingViews={listingViews} pt={lang === 'pt'} />}
 
       <section className="bg-white rounded-xl border border-[#eceef1] p-5">
         <div className="mb-4">
@@ -245,5 +254,66 @@ function StatusPill({ status }: { status: string }) {
     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium capitalize ${styles}`}>
       {status.toLowerCase()}
     </span>
+  );
+}
+
+/**
+ * Who comes to the website: visitors (one per browser per day) and pageviews,
+ * today and over the last 7 and 30 days, with a 30-day bar strip. Listing views
+ * are the separate per-property count shown on each listing.
+ */
+function TrafficPanel({ traffic, listingViews, pt }: { traffic: TrafficSummary; listingViews: number; pt: boolean }) {
+  const n = (v: number) => v.toLocaleString(pt ? 'pt-PT' : 'en-GB');
+  const max = Math.max(1, ...traffic.daily.map((d) => d.visitors));
+  const since = traffic.since
+    ? new Date(`${traffic.since}T12:00:00Z`).toLocaleDateString(pt ? 'pt-PT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  return (
+    <section className="bg-white rounded-xl border border-[#eceef1] p-5">
+      <div className="mb-4">
+        <h3 className="text-[15px] font-semibold text-[#002045] m-0">{pt ? 'Visitantes do site' : 'Website visitors'}</h3>
+        <p className="mt-0.5 text-xs text-[#9aa0a8]">
+          {pt
+            ? 'Um visitante é um navegador por dia; robôs e a equipa não contam.'
+            : 'A visitor is one browser per day; bots and staff are not counted.'}
+          {since && (pt ? ` A contar desde ${since}.` : ` Counting since ${since}.`)}
+        </p>
+      </div>
+
+      <div className="stat-row" style={{ marginBottom: 16 }}>
+        <StatTile label={pt ? 'Visitantes hoje' : 'Visitors today'} value={n(traffic.today.visitors)} icon="person"
+          hint={pt ? `${n(traffic.today.pageviews)} páginas vistas` : `${n(traffic.today.pageviews)} pageviews`} />
+        <StatTile label={pt ? 'Últimos 7 dias' : 'Last 7 days'} value={n(traffic.last7.visitors)} icon="group"
+          hint={pt ? `${n(traffic.last7.pageviews)} páginas vistas` : `${n(traffic.last7.pageviews)} pageviews`} />
+        <StatTile label={pt ? 'Últimos 30 dias' : 'Last 30 days'} value={n(traffic.last30.visitors)} icon="trending_up"
+          hint={pt ? `${n(traffic.last30.pageviews)} páginas vistas` : `${n(traffic.last30.pageviews)} pageviews`} />
+        <StatTile label={pt ? 'Visualizações de imóveis' : 'Listing views'} value={n(listingViews)} icon="visibility"
+          hint={pt ? 'Todos os anúncios, desde sempre' : 'All listings, all time'} />
+      </div>
+
+      <div
+        role="img"
+        aria-label={pt ? 'Visitantes por dia, últimos 30 dias' : 'Visitors per day, last 30 days'}
+        style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 64 }}
+      >
+        {traffic.daily.map((d) => (
+          <div
+            key={d.day}
+            title={`${d.day}: ${n(d.visitors)} ${pt ? 'visitantes' : 'visitors'}, ${n(d.pageviews)} ${pt ? 'páginas' : 'pageviews'}`}
+            style={{
+              flex: 1,
+              height: `${Math.max(3, (d.visitors / max) * 100)}%`,
+              background: d.visitors ? 'var(--d-ink, #002045)' : 'var(--d-border, #e3e5e8)',
+              borderRadius: 3,
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9aa0a8', marginTop: 4 }}>
+        <span>{traffic.daily[0]?.day}</span>
+        <span>{pt ? 'hoje' : 'today'}</span>
+      </div>
+    </section>
   );
 }

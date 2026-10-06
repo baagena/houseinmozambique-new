@@ -803,3 +803,13 @@ model ContactEvent {
   @@index([propertyId, createdAt])
   @@index([channel, createdAt])
 }
+
+/// Website traffic, one row per day (Maputo time). Written by POST /api/visit
+/// from public pages; see lib/site-traffic.ts. No personal data: a visitor is
+/// "unique" for a day because a cookie holding only that day's date is set.
+model SiteTrafficDay {
+  day       String   @id // "2026-10-06", Africa/Maputo
+  visitors  Int      @default(0)
+  pageviews Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
