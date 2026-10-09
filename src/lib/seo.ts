@@ -154,6 +154,7 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
 
 interface ListingInput {
   id: string;
+  slug?: string | null;
   title: string;
   description: string;
   price: number;
@@ -170,7 +171,10 @@ interface ListingInput {
 }
 
 export function realEstateListingJsonLd(p: ListingInput) {
-  const url = absoluteUrl(`/properties/${p.id}`);
+  /* The slug address, matching the canonical. The id address 301s to it, and
+     a url in structured data that redirects is crawled and reported in Search
+     Console as "Page with redirect". */
+  const url = absoluteUrl(`/properties/${p.slug ?? p.id}`);
   /* The seller Google prints in a rich result. A staff-posted listing is sold
      by the platform, so it must not carry the internal account name — that
      string is what appears in search results, not just on our own page. */

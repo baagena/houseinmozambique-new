@@ -292,13 +292,15 @@ export async function sendPropertySubmittedEmail(property: {
   });
 }
 
-export async function sendPropertyApprovedEmail(property: { title: string; id: string }, recipient: { name: string; email: string }) {
+export async function sendPropertyApprovedEmail(property: { title: string; id: string; slug?: string | null }, recipient: { name: string; email: string }) {
+  // The slug, not the id: the id address only redirects to it.
+  const listingUrl = `${SITE_URL}/properties/${property.slug ?? property.id}`;
   return sendEmail({
     to: recipient.email,
     from: NOTIFICATION_FROM_EMAIL,
     subject: `Your listing is live: ${property.title}`,
-    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Your listing is now live</h1><p>Hello ${escapeEmailHtml(recipient.name)},</p><p><strong>${escapeEmailHtml(property.title)}</strong> has been approved and is now visible on House in Mozambique.</p><p><a href="${SITE_URL}/properties/${property.id}">View your live listing</a></p></div>`,
-    text: `Your listing is now live\n\nYour listing "${property.title}" has been approved.\n\nView it here: ${SITE_URL}/properties/${property.id}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">Your listing is now live</h1><p>Hello ${escapeEmailHtml(recipient.name)},</p><p><strong>${escapeEmailHtml(property.title)}</strong> has been approved and is now visible on House in Mozambique.</p><p><a href="${listingUrl}">View your live listing</a></p></div>`,
+    text: `Your listing is now live\n\nYour listing "${property.title}" has been approved.\n\nView it here: ${listingUrl}`,
   });
 }
 
