@@ -6,6 +6,7 @@ import { hostIdentity } from '@/lib/host-identity';
  * The origin comes from lib/site.ts (NEXT_PUBLIC_BASE_URL).
  */
 import { SITE_URL } from './site';
+import { localizedPath } from './site-lang';
 
 // Defined once in lib/site.ts; re-exported for existing imports.
 export { SITE_URL };
@@ -64,14 +65,27 @@ export function buildMetadata({
   publishedTime,
   modifiedTime,
 }: PageMetaInput = {}): Metadata {
-  const url = absoluteUrl(path);
+  /*
+   * Path-relative on purpose: the root layout's metadataBase is the /en origin
+   * on English addresses, and Next joins this path onto it, so each address
+   * declares itself as canonical. The language alternates are absolute — they
+   * name both addresses whichever one is being served.
+   */
+  const url = path.startsWith('/') ? path : `/${path}`;
   const ogImages = images && images.length > 0 ? images : [absoluteUrl('/opengraph-image')];
 
   return {
     title,
     description,
     keywords: keywords && keywords.length ? keywords : undefined,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      languages: {
+        pt: absoluteUrl(url),
+        en: absoluteUrl(localizedPath(url, 'en')),
+        'x-default': absoluteUrl(url),
+      },
+    },
     robots: noindex
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },

@@ -15,78 +15,90 @@ import {
   websiteJsonLd,
 } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
+import { requestLang } from '@/lib/request-lang';
+import { EN_PREFIX } from '@/lib/site-lang';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: DEFAULT_DESCRIPTION,
-  keywords: DEFAULT_KEYWORDS,
-  applicationName: SITE_NAME,
-  authors: [{ name: SITE_NAME }],
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
-  alternates: { canonical: '/' },
-  category: 'real estate',
-  formatDetection: { telephone: true, address: true, email: true },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await requestLang();
+  return {
+    /*
+     * The English pages' base is the /en origin. Next joins a path-relative
+     * canonical onto the base's path, so every page's `canonical: '/properties'`
+     * (lib/seo.ts buildMetadata) comes out as /en/properties on the English
+     * address without each page having to know its language.
+     */
+    metadataBase: new URL(lang === 'en' ? `${SITE_URL}${EN_PREFIX}` : SITE_URL),
+    title: {
+      default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+      template: `%s | ${SITE_NAME}`,
+    },
+    description: DEFAULT_DESCRIPTION,
+    keywords: DEFAULT_KEYWORDS,
+    applicationName: SITE_NAME,
+    authors: [{ name: SITE_NAME }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    alternates: {
+      // Absolute for English: '/' joined onto the /en base comes out as /en/.
+      canonical: lang === 'en' ? `${SITE_URL}${EN_PREFIX}` : '/',
+      languages: { pt: SITE_URL, en: `${SITE_URL}${EN_PREFIX}`, 'x-default': SITE_URL },
+    },
+    category: 'real estate',
+    formatDetection: { telephone: true, address: true, email: true },
+    robots: {
       index: true,
       follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
     },
-  },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-    url: SITE_URL,
-    locale: 'en_US',
-    alternateLocale: ['pt_PT'],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-  },
-  icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
-  },
-};
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+      description: DEFAULT_DESCRIPTION,
+      url: '/',
+      locale: lang === 'en' ? 'en_US' : 'pt_MZ',
+      alternateLocale: [lang === 'en' ? 'pt_MZ' : 'en_US'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+      description: DEFAULT_DESCRIPTION,
+    },
+    // Absolute: a relative path would be joined onto the /en base as well.
+    icons: {
+      icon: `${SITE_URL}/logo.png`,
+      apple: `${SITE_URL}/logo.png`,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const contentOverrides = await getContentOverrides();
+  const [contentOverrides, lang] = await Promise.all([getContentOverrides(), requestLang()]);
 
   return (
     /*
-     * Portuguese, because that is what this renders.
-     *
-     * LanguageProvider opens on 'pt' and only switches after it has read
-     * localStorage on the client, so the server HTML — the copy Google indexes
-     * and the one a screen reader meets first — is always Portuguese. Declaring
-     * it as English made every assistive technology read a Portuguese page in
-     * an English voice. The provider rewrites this attribute when a visitor
-     * picks the other language.
+     * The language this renders: English on the /en addresses, Portuguese on
+     * the rest (lib/site-lang.ts). Declaring English over Portuguese copy made
+     * every assistive technology read it in an English voice. The provider
+     * rewrites this attribute when a visitor picks the other language.
      */
     <html
-      lang="pt"
+      lang={lang}
       className={`antialiased ${fontVariables}`}
     >
       <body>
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-        <LanguageProvider overrides={contentOverrides}>
+        <LanguageProvider overrides={contentOverrides} initialLang={lang}>
           <SiteChrome>{children}</SiteChrome>
           {/* Inside the provider: the button writes its own opening message,
               which has to be in the language the visitor is reading. It sat

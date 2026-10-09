@@ -4,6 +4,8 @@ import { getPropertyById, getProperties } from '@/lib/data';
 import PropertyDetailClient from '@/components/properties/PropertyDetailClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildMetadata, realEstateListingJsonLd, breadcrumbJsonLd } from '@/lib/seo';
+import { localizedPath } from '@/lib/site-lang';
+import { requestLang } from '@/lib/request-lang';
 import { formatPrice } from '@/lib/utils';
 import { listingHeadline } from '@/lib/listing-copy';
 import { resolvePropertyRef } from '@/lib/property-slug';
@@ -97,7 +99,8 @@ export default async function PropertyDetailPage({ params }: Props) {
    * attached to the cuid it is moving away from. `redirect()` issues 307;
    * `permanentRedirect()` is the one that transfers it.
    */
-  if (resolved.shouldRedirect) permanentRedirect(resolved.canonicalPath);
+  // To the slug in the language asked for: /en/properties/<id> stays English.
+  if (resolved.shouldRedirect) permanentRedirect(localizedPath(resolved.canonicalPath, await requestLang()));
 
   const id = resolved.id;
   const property = await getPropertyById(id);

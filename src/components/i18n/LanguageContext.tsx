@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { Language, translations } from '@/lib/translations';
+import { isEnglishPath, stripLangPrefix } from '@/lib/site-lang';
 
 /** Flat dot-path overrides keyed by language, loaded from the DB CMS. */
 export type ContentOverrides = Partial<Record<Language, Record<string, string>>>;
@@ -39,13 +40,18 @@ function applyOverrides(lang: Language, overrides: Record<string, string> | unde
 export function LanguageProvider({
   children,
   overrides,
+  initialLang = 'pt',
 }: {
   children: React.ReactNode;
   overrides?: ContentOverrides;
+  /** The language the server rendered in: 'en' on the /en addresses. */
+  initialLang?: Language;
 }) {
-  const [lang, setLangState] = useState<Language>('pt');
+  const [lang, setLangState] = useState<Language>(initialLang);
 
   useEffect(() => {
+    // On an /en address the address decides; a saved choice applies elsewhere.
+    if (isEnglishPath(window.location.pathname)) return;
     const savedLang = localStorage.getItem('app_lang') as Language;
     if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
       setLangState(savedLang);
@@ -64,8 +70,15 @@ export function LanguageProvider({
   }, [lang]);
 
   const setLang = (newLang: Language) => {
-    setLangState(newLang);
     localStorage.setItem('app_lang', newLang);
+    /* Portuguese chosen on an /en address: go to the Portuguese address, or a
+       reload (or the next visitor given the link) would be English again. */
+    const { pathname, search, hash } = window.location;
+    if (newLang === 'pt' && isEnglishPath(pathname)) {
+      window.location.assign(`${stripLangPrefix(pathname)}${search}${hash}`);
+      return;
+    }
+    setLangState(newLang);
   };
 
   const t = useMemo(() => applyOverrides(lang, overrides?.[lang]), [lang, overrides]);

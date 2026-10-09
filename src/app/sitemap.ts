@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 import { prisma } from '@/lib/db';
+import { EN_PREFIX } from '@/lib/site-lang';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,5 +68,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('sitemap: failed to load dynamic routes', error);
   }
 
-  return [...staticRoutes, ...dynamicRoutes];
+  return [...staticRoutes, ...dynamicRoutes].flatMap(withEnglish);
+}
+
+/**
+ * Each page twice: the Portuguese address and its /en twin, both naming the
+ * pair as language alternates (lib/site-lang.ts). Without the English
+ * addresses Google never saw the site in English.
+ */
+function withEnglish(entry: MetadataRoute.Sitemap[number]): MetadataRoute.Sitemap {
+  const path = entry.url.slice(SITE_URL.length);
+  const pt = entry.url;
+  const en = `${SITE_URL}${EN_PREFIX}${path === '/' ? '' : path}`;
+  const alternates = { languages: { pt, en, 'x-default': pt } };
+  return [
+    { ...entry, alternates },
+    { ...entry, url: en, alternates },
+  ];
 }

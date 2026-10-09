@@ -2,7 +2,9 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
-  const disallow = ['/dashboard/', '/api/', '/auth'];
+  const private_ = ['/dashboard/', '/api/', '/auth'];
+  // And their /en twins, which src/proxy.ts serves too.
+  const disallow = [...private_, ...private_.map((p) => `/en${p}`)];
 
   return {
     rules: [
