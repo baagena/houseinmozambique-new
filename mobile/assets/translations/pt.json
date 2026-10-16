@@ -23,7 +23,8 @@
     "approve": "Aprovar",
     "reject": "Rejeitar",
     "all": "Todos",
-    "optional": "{} (opcional)"
+    "optional": "{} (opcional)",
+    "close": "Fechar"
   },
   "nav": {
     "post": "Anunciar",

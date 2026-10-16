@@ -23,7 +23,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "all": "All",
-    "optional": "{} (optional)"
+    "optional": "{} (optional)",
+    "close": "Close"
   },
   "nav": {
     "post": "Post",

@@ -9,13 +9,21 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/legal_links.dart';
 
 // Translation keys; the step labels are looked up when drawn.
-const _agentSteps = ['auth.stepPersonal', 'auth.stepProfessional', 'auth.stepExpertise'];
+const _agentSteps = [
+  'auth.stepPersonal',
+  'auth.stepProfessional',
+  'auth.stepExpertise',
+];
 const _customerSteps = ['auth.stepPersonal'];
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? redirectTo;
   final String initialAccountType;
-  const RegisterScreen({super.key, this.redirectTo, this.initialAccountType = 'AGENT'});
+  const RegisterScreen({
+    super.key,
+    this.redirectTo,
+    this.initialAccountType = 'AGENT',
+  });
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -43,7 +51,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _submitting = false;
   String? _error;
 
-  List<String> get _steps => _accountType == 'CUSTOMER' ? _customerSteps : _agentSteps;
+  List<String> get _steps =>
+      _accountType == 'CUSTOMER' ? _customerSteps : _agentSteps;
   bool get _isCustomer => _accountType == 'CUSTOMER';
   bool get _onLastStep => _step == _steps.length - 1;
 
@@ -90,7 +99,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
     if (_step < _steps.length - 1) {
       setState(() => _step++);
-      _pageController.animateToPage(_step, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+      _pageController.animateToPage(
+        _step,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
     } else {
       await _submit();
     }
@@ -99,7 +112,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _goBack() {
     if (_step == 0) return;
     setState(() => _step--);
-    _pageController.animateToPage(_step, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    _pageController.animateToPage(
+      _step,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _submit() async {
@@ -108,18 +125,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _error = null;
     });
     try {
-      await ref.read(authControllerProvider.notifier).register(
+      await ref
+          .read(authControllerProvider.notifier)
+          .register(
             email: _emailController.text.trim(),
             password: _passwordController.text,
             name: _nameController.text.trim(),
             role: _accountType,
             acceptedTerms: _acceptedTerms,
-            phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-            title: _isCustomer || _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
-            location: _isCustomer || _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
-            yearsExperience: _isCustomer ? null : int.tryParse(_yearsController.text.trim()),
-            bio: _isCustomer || _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
-            specializations: _isCustomer || _specializations.isEmpty ? null : _specializations,
+            phone: _phoneController.text.trim().isEmpty
+                ? null
+                : _phoneController.text.trim(),
+            title: _isCustomer || _titleController.text.trim().isEmpty
+                ? null
+                : _titleController.text.trim(),
+            location: _isCustomer || _locationController.text.trim().isEmpty
+                ? null
+                : _locationController.text.trim(),
+            yearsExperience: _isCustomer
+                ? null
+                : int.tryParse(_yearsController.text.trim()),
+            bio: _isCustomer || _bioController.text.trim().isEmpty
+                ? null
+                : _bioController.text.trim(),
+            specializations: _isCustomer || _specializations.isEmpty
+                ? null
+                : _specializations,
           );
       if (mounted) {
         // Land on a real tab first so sheet-style redirect targets (e.g. the
@@ -128,7 +159,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         if (widget.redirectTo != null) context.push(widget.redirectTo!);
       }
     } catch (e) {
-      setState(() => _error = e.asApiException?.message ?? 'common.somethingWentWrong'.tr());
+      setState(
+        () => _error =
+            e.asApiException?.message ?? 'common.somethingWentWrong'.tr(),
+      );
       // Surface the error near the top of whichever step the user is on.
       setState(() => _step = 0);
       _pageController.jumpToPage(0);
@@ -139,54 +173,87 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
-      appBar: AppBar(title: Text(_isCustomer ? 'auth.createAccountTitle'.tr() : 'auth.registerTitle'.tr())),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          tooltip: 'common.close'.tr(),
+          onPressed: _submitting
+              ? null
+              : () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/profile');
+                  }
+                },
+          icon: const Icon(Icons.close),
+        ),
+        title: Text(
+          _isCustomer
+              ? 'auth.createAccountTitle'.tr()
+              : 'auth.registerTitle'.tr(),
+        ),
+      ),
       body: Column(
         children: [
           if (_step == 0)
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
-              child: _AccountTypeToggle(accountType: _accountType, onChanged: _setAccountType),
+              child: _AccountTypeToggle(
+                accountType: _accountType,
+                onChanged: _setAccountType,
+              ),
             ),
           if (_steps.length > 1)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
-            child: Row(
-              children: List.generate(_steps.length, (i) {
-                final active = i <= _step;
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: i == _steps.length - 1 ? 0 : 8),
-                    child: Column(
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: active ? AppColors.primary : AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
+              child: Row(
+                children: List.generate(_steps.length, (i) {
+                  final active = i <= _step;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: i == _steps.length - 1 ? 0 : 8,
+                      ),
+                      child: Column(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: active
+                                  ? AppColors.primary
+                                  : AppColors.surfaceVariant,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _steps[i].tr(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+                          const SizedBox(height: 6),
+                          Text(
+                            _steps[i].tr(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: active
+                                  ? AppColors.primary
+                                  : AppColors.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
-          ),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-              child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           Expanded(
             child: PageView(
@@ -195,20 +262,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 _buildStep(
                   formKey: _formKeys[0],
-                  title: _isCustomer ? 'auth.customerHeading'.tr() : 'auth.agentHeading'.tr(),
-                  subtitle: _isCustomer ? 'auth.customerSubtitle'.tr() : 'auth.agentSubtitle'.tr(),
+                  title: _isCustomer
+                      ? 'auth.customerHeading'.tr()
+                      : 'auth.agentHeading'.tr(),
+                  subtitle: _isCustomer
+                      ? 'auth.customerSubtitle'.tr()
+                      : 'auth.agentSubtitle'.tr(),
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: InputDecoration(labelText: 'auth.fullName'.tr(), prefixIcon: const Icon(Icons.person_outline)),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'auth.nameRequired'.tr() : null,
+                      decoration: InputDecoration(
+                        labelText: 'auth.fullName'.tr(),
+                        prefixIcon: const Icon(Icons.person_outline),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'auth.nameRequired'.tr()
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(labelText: 'auth.email'.tr(), prefixIcon: const Icon(Icons.email_outlined)),
-                      validator: (v) => (v == null || !v.contains('@')) ? 'auth.emailInvalid'.tr() : null,
+                      decoration: InputDecoration(
+                        labelText: 'auth.email'.tr(),
+                        prefixIcon: const Icon(Icons.email_outlined),
+                      ),
+                      validator: (v) => (v == null || !v.contains('@'))
+                          ? 'auth.emailInvalid'.tr()
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -224,15 +305,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(labelText: 'auth.password'.tr(), prefixIcon: const Icon(Icons.lock_outline)),
-                      validator: (v) => (v == null || v.length < 8) ? 'auth.passwordTooShort'.tr() : null,
+                      decoration: InputDecoration(
+                        labelText: 'auth.password'.tr(),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                      ),
+                      validator: (v) => (v == null || v.length < 8)
+                          ? 'auth.passwordTooShort'.tr()
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: true,
-                      decoration: InputDecoration(labelText: 'auth.confirmPassword'.tr(), prefixIcon: const Icon(Icons.lock_outline)),
-                      validator: (v) => (v != _passwordController.text) ? 'auth.passwordsDontMatch'.tr() : null,
+                      decoration: InputDecoration(
+                        labelText: 'auth.confirmPassword'.tr(),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                      ),
+                      validator: (v) => (v != _passwordController.text)
+                          ? 'auth.passwordsDontMatch'.tr()
+                          : null,
                     ),
                   ],
                 ),
@@ -253,12 +344,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     TextFormField(
                       controller: _yearsController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'auth.yearsExperience'.tr(), prefixIcon: const Icon(Icons.timeline_outlined)),
+                      decoration: InputDecoration(
+                        labelText: 'auth.yearsExperience'.tr(),
+                        prefixIcon: const Icon(Icons.timeline_outlined),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _locationController,
-                      decoration: InputDecoration(labelText: 'auth.officeLocation'.tr(), prefixIcon: const Icon(Icons.location_on_outlined)),
+                      decoration: InputDecoration(
+                        labelText: 'auth.officeLocation'.tr(),
+                        prefixIcon: const Icon(Icons.location_on_outlined),
+                      ),
                     ),
                   ],
                 ),
@@ -282,14 +379,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: _specializations
-                            .map((s) => AnimatedScale(
-                                  scale: 1,
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Chip(
-                                    label: Text(s),
-                                    onDeleted: () => setState(() => _specializations.remove(s)),
+                            .map(
+                              (s) => AnimatedScale(
+                                scale: 1,
+                                duration: const Duration(milliseconds: 200),
+                                child: Chip(
+                                  label: Text(s),
+                                  onDeleted: () => setState(
+                                    () => _specializations.remove(s),
                                   ),
-                                ))
+                                ),
+                              ),
+                            )
                             .toList(),
                       ),
                     if (_specializations.isNotEmpty) const SizedBox(height: 12),
@@ -298,12 +399,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _specInputController,
-                            decoration: InputDecoration(labelText: 'auth.specializations'.tr(), hintText: 'auth.specializationsHint'.tr()),
+                            decoration: InputDecoration(
+                              labelText: 'auth.specializations'.tr(),
+                              hintText: 'auth.specializationsHint'.tr(),
+                            ),
                             onFieldSubmitted: (_) => _addSpecialization(),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        IconButton.filled(onPressed: _addSpecialization, icon: const Icon(Icons.add)),
+                        IconButton.filled(
+                          onPressed: _addSpecialization,
+                          icon: const Icon(Icons.add),
+                        ),
                       ],
                     ),
                   ],
@@ -334,20 +441,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: _submitting || (_onLastStep && !_acceptedTerms) ? null : _goNext,
+                    onPressed: _submitting || (_onLastStep && !_acceptedTerms)
+                        ? null
+                        : _goNext,
                     child: _submitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text(_step == _steps.length - 1 ? (_isCustomer ? 'auth.register'.tr() : 'auth.completeApplication'.tr()) : 'common.continue'.tr()),
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            _step == _steps.length - 1
+                                ? (_isCustomer
+                                      ? 'auth.register'.tr()
+                                      : 'auth.completeApplication'.tr())
+                                : 'common.continue'.tr(),
+                          ),
                   ),
                 ),
               ],
             ),
           ),
-          TextButton(
-            onPressed: () => context.push('/agent-login', extra: widget.redirectTo),
-            child: Text('${'auth.haveAccount'.tr()} ${'auth.signIn'.tr()}'),
-          ),
-          const SizedBox(height: 8),
+          if (!keyboardOpen)
+            TextButton(
+              onPressed: () =>
+                  context.push('/agent-login', extra: widget.redirectTo),
+              child: Text('${'auth.haveAccount'.tr()} ${'auth.signIn'.tr()}'),
+            ),
+          SizedBox(height: keyboardOpen ? 4 : 8),
         ],
       ),
     );
@@ -366,9 +490,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: AppColors.onSurfaceVariant,
+                fontSize: 13,
+              ),
+            ),
             const SizedBox(height: 20),
             ...children,
           ],
@@ -385,7 +518,11 @@ class _TermsCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const linkStyle = TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, decoration: TextDecoration.underline);
+    const linkStyle = TextStyle(
+      color: AppColors.primary,
+      fontWeight: FontWeight.w700,
+      decoration: TextDecoration.underline,
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 24, 0),
       child: Row(
@@ -399,16 +536,28 @@ class _TermsCheckbox extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () => onChanged(!value),
-                    child: Text('${'auth.agreePrefix'.tr()} ', style: const TextStyle(fontSize: 13)),
+                    child: Text(
+                      '${'auth.agreePrefix'.tr()} ',
+                      style: const TextStyle(fontSize: 13),
+                    ),
                   ),
                   GestureDetector(
                     onTap: openTermsOfService,
-                    child: Text('auth.terms'.tr(), style: linkStyle.copyWith(fontSize: 13)),
+                    child: Text(
+                      'auth.terms'.tr(),
+                      style: linkStyle.copyWith(fontSize: 13),
+                    ),
                   ),
-                  Text(' ${'auth.and'.tr()} ', style: const TextStyle(fontSize: 13)),
+                  Text(
+                    ' ${'auth.and'.tr()} ',
+                    style: const TextStyle(fontSize: 13),
+                  ),
                   GestureDetector(
                     onTap: openPrivacyPolicy,
-                    child: Text('auth.privacy'.tr(), style: linkStyle.copyWith(fontSize: 13)),
+                    child: Text(
+                      'auth.privacy'.tr(),
+                      style: linkStyle.copyWith(fontSize: 13),
+                    ),
                   ),
                 ],
               ),
@@ -423,7 +572,10 @@ class _TermsCheckbox extends StatelessWidget {
 class _AccountTypeToggle extends StatelessWidget {
   final String accountType;
   final ValueChanged<String> onChanged;
-  const _AccountTypeToggle({required this.accountType, required this.onChanged});
+  const _AccountTypeToggle({
+    required this.accountType,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -435,8 +587,15 @@ class _AccountTypeToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _segment(label: 'auth.accountCustomer'.tr(), value: 'CUSTOMER')),
-          Expanded(child: _segment(label: 'auth.accountAgent'.tr(), value: 'AGENT')),
+          Expanded(
+            child: _segment(
+              label: 'auth.accountCustomer'.tr(),
+              value: 'CUSTOMER',
+            ),
+          ),
+          Expanded(
+            child: _segment(label: 'auth.accountAgent'.tr(), value: 'AGENT'),
+          ),
         ],
       ),
     );

@@ -345,6 +345,7 @@ a.btn--ghost-l, button.btn--ghost-l, .btn--ghost-l { border: 1px solid rgba(255,
 .hero h1 { color: #fff; max-width: 18ch; }
 .hero .eyebrow { color: #e9c877; }
 .hero p { max-width: 52ch; color: rgba(255,255,255,.85); margin-top: 14px; font-size: 1.08rem; }
+.hero .hero__tagline { font-family: var(--serif); font-size: clamp(1.3rem, 2.4vw, 1.9rem); line-height: 1.25; color: rgba(255,255,255,.92); max-width: 34ch; margin-top: 12px; }
 .hero .search { margin-top: 26px; max-width: 1180px; }
 
 .page-hero {
@@ -825,6 +826,7 @@ a.feature:hover .feature__media img { transform: scale(1.05); }
   .hero__inner { padding-block: 96px 32px; }
   .hero h1 { max-width: 18ch; font-size: clamp(2rem, 9vw, 2.7rem); }
   .hero p { font-size: .98rem; }
+  .hero .hero__tagline { font-size: 1.15rem; }
   .hero-cta { margin-top: 22px; }
   .hero-cta .btn { flex: 1 1 100%; }
   .search { flex-direction: column; flex-wrap: nowrap; }

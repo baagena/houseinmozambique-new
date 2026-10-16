@@ -18,6 +18,7 @@ class WizardSubmission {
   final Map<String, dynamic> answers;
   final List<String> imageUrls;
   final Map<String, String> contact;
+
   /// Which of [imageUrls] the agent marked as interior shots.
   final Set<String> interiorUrls;
   const WizardSubmission({
@@ -45,6 +46,7 @@ class ListingWizard extends ConsumerStatefulWidget {
 
   /// Shown as a back arrow on the first step (e.g. back to the plan picker).
   final VoidCallback? onExit;
+  final VoidCallback onClose;
   final Future<void> Function(WizardSubmission submission) onComplete;
 
   /// Answers to start from, e.g. when coming back from the payment step.
@@ -54,6 +56,7 @@ class ListingWizard extends ConsumerStatefulWidget {
     super.key,
     required this.scrollController,
     required this.submitLabel,
+    required this.onClose,
     required this.onComplete,
     this.onExit,
     this.initial,
@@ -96,7 +99,8 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
 
   String get _lang => context.locale.languageCode == 'en' ? 'en' : 'pt';
 
-  TextEditingController _numberField(String key) => _numbers.putIfAbsent(key, () {
+  TextEditingController _numberField(String key) =>
+      _numbers.putIfAbsent(key, () {
         final c = TextEditingController();
         c.addListener(_schedulePreview);
         return c;
@@ -116,7 +120,16 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
   @override
   void dispose() {
     _debounce?.cancel();
-    for (final c in [_bairro, _price, ..._numbers.values, ..._near, _mapLink, _whatsapp, _phone, _email]) {
+    for (final c in [
+      _bairro,
+      _price,
+      ..._numbers.values,
+      ..._near,
+      _mapLink,
+      _whatsapp,
+      _phone,
+      _email,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -131,11 +144,29 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     _currency = a['currency'] as String? ?? _currency;
     _bairro.text = a['bairro'] as String? ?? '';
     _price.text = text(a['price']);
-    for (final key in ['beds', 'baths', 'suites', 'storeys', 'parking', 'buildingSize', 'landSize', 'frontage', 'depth']) {
+    for (final key in [
+      'beds',
+      'baths',
+      'suites',
+      'storeys',
+      'parking',
+      'buildingSize',
+      'landSize',
+      'frontage',
+      'depth',
+    ]) {
       _numberField(key).text = text(a[key]);
     }
     _numberField('floor').text = a['floor'] == null ? '' : '${a['floor']}';
-    for (final key in ['condition', 'furnishing', 'zoning', 'duat', 'roadSurface', 'structures', 'commercialUse']) {
+    for (final key in [
+      'condition',
+      'furnishing',
+      'zoning',
+      'duat',
+      'roadSurface',
+      'structures',
+      'commercialUse',
+    ]) {
       final v = a[key];
       if (v is String && v.isNotEmpty) _choices[key] = v;
     }
@@ -157,7 +188,8 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
 
   // ── Answers & preview ─────────────────────────────────────────────────────
 
-  num _n(String key) => num.tryParse(_numberField(key).text.trim().replaceAll(',', '.')) ?? 0;
+  num _n(String key) =>
+      num.tryParse(_numberField(key).text.trim().replaceAll(',', '.')) ?? 0;
 
   Map<String, dynamic> _answers() {
     final floorText = _numberField('floor').text.trim();
@@ -166,7 +198,8 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       'propertyType': _type,
       'city': _city,
       'bairro': _bairro.text.trim(),
-      'price': num.tryParse(_price.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0,
+      'price':
+          num.tryParse(_price.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0,
       'currency': _currency,
       'beds': _n('beds'),
       'baths': _n('baths'),
@@ -200,7 +233,9 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
 
   Future<void> _refreshPreview({String? mapLink}) async {
     try {
-      final preview = await ref.read(agentDashboardRepositoryProvider).previewListing(_lang, _answers(), mapLink: mapLink);
+      final preview = await ref
+          .read(agentDashboardRepositoryProvider)
+          .previewListing(_lang, _answers(), mapLink: mapLink);
       if (!mounted) return;
       setState(() => _preview = preview);
     } catch (_) {
@@ -208,14 +243,17 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     }
   }
 
-  List<String> get _blockers => ((_preview?['blockers'] as List?) ?? const []).cast<String>();
+  List<String> get _blockers =>
+      ((_preview?['blockers'] as List?) ?? const []).cast<String>();
 
   // ── Map pin ───────────────────────────────────────────────────────────────
 
   Future<void> _setPin(Map<String, dynamic> text) async {
     final link = _mapLink.text.trim();
     if (link.isEmpty) return;
-    final preview = await ref.read(agentDashboardRepositoryProvider).previewListing(_lang, _answers(), mapLink: link);
+    final preview = await ref
+        .read(agentDashboardRepositoryProvider)
+        .previewListing(_lang, _answers(), mapLink: link);
     if (!mounted) return;
     final pin = preview['pin'] as Map<String, dynamic>?;
     setState(() {
@@ -223,9 +261,13 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       if (pin != null) {
         _lat = (pin['lat'] as num).toDouble();
         _lng = (pin['lng'] as num).toDouble();
-        _pinMessage = pin['outsideMozambique'] == true ? text['outsideMozambique'] as String? : null;
+        _pinMessage = pin['outsideMozambique'] == true
+            ? text['outsideMozambique'] as String?
+            : null;
       } else {
-        _pinMessage = preview['pinError'] == 'short' ? text['shortLinkError'] as String? : text['noCoordsError'] as String?;
+        _pinMessage = preview['pinError'] == 'short'
+            ? text['shortLinkError'] as String?
+            : text['noCoordsError'] as String?;
       }
     });
   }
@@ -236,11 +278,20 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     final picker = ImagePicker();
     List<XFile> files;
     try {
-      files = await picker.pickMultiImage(imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+      files = await picker.pickMultiImage(
+        imageQuality: 75,
+        maxWidth: 1600,
+        maxHeight: 1600,
+      );
     } catch (_) {
       // Some older gallery apps reject the multi-select intent; retry single.
       try {
-        final single = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 1600, maxHeight: 1600);
+        final single = await picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 75,
+          maxWidth: 1600,
+          maxHeight: 1600,
+        );
         files = single == null ? [] : [single];
       } catch (e) {
         _snack('${'dashboard.imagePickerError'.tr()}\n($e)');
@@ -254,8 +305,12 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     for (final file in files) {
       try {
         final bytes = await file.readAsBytes();
-        final mime = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-        final url = await ref.read(agentDashboardRepositoryProvider).uploadImage('data:$mime;base64,${base64Encode(bytes)}');
+        final mime = file.name.toLowerCase().endsWith('.png')
+            ? 'image/png'
+            : 'image/jpeg';
+        final url = await ref
+            .read(agentDashboardRepositoryProvider)
+            .uploadImage('data:$mime;base64,${base64Encode(bytes)}');
         if (!mounted) return;
         setState(() => _photos.add(_Photo(url)));
       } catch (e) {
@@ -267,12 +322,19 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     setState(() => _uploading = false);
     _schedulePreview();
     if (failed > 0) {
-      _snack('dashboard.imageUploadFailed'.tr(args: ['$failed', lastError.asApiException?.message ?? '$lastError']));
+      _snack(
+        'dashboard.imageUploadFailed'.tr(
+          args: ['$failed', lastError.asApiException?.message ?? '$lastError'],
+        ),
+      );
     }
   }
 
   void _snack(String message) {
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    if (mounted)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -285,13 +347,22 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
   Future<void> _submit() async {
     setState(() => _submitting = true);
     try {
-      await widget.onComplete(WizardSubmission(
-        lang: _lang,
-        answers: _answers(),
-        imageUrls: _photos.map((p) => p.url).toList(),
-        contact: {'whatsapp': _whatsapp.text.trim(), 'phone': _phone.text.trim(), 'email': _email.text.trim()},
-        interiorUrls: {for (final p in _photos) if (p.interior) p.url},
-      ));
+      await widget.onComplete(
+        WizardSubmission(
+          lang: _lang,
+          answers: _answers(),
+          imageUrls: _photos.map((p) => p.url).toList(),
+          contact: {
+            'whatsapp': _whatsapp.text.trim(),
+            'phone': _phone.text.trim(),
+            'email': _email.text.trim(),
+          },
+          interiorUrls: {
+            for (final p in _photos)
+              if (p.interior) p.url,
+          },
+        ),
+      );
     } catch (e) {
       _snack(e.asApiException?.message ?? 'common.somethingWentWrong'.tr());
     } finally {
@@ -312,9 +383,15 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(e.asApiException?.message ?? 'common.somethingWentWrong'.tr(), textAlign: TextAlign.center),
+              Text(
+                e.asApiException?.message ?? 'common.somethingWentWrong'.tr(),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
-              OutlinedButton(onPressed: () => ref.invalidate(listingWizardProvider(_lang)), child: Text('common.retry'.tr())),
+              OutlinedButton(
+                onPressed: () => ref.invalidate(listingWizardProvider(_lang)),
+                child: Text('common.retry'.tr()),
+              ),
             ],
           ),
         ),
@@ -326,7 +403,8 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
   Widget _buildWizard(Map<String, dynamic> schema) {
     final text = (schema['text'] as Map).cast<String, dynamic>();
     final steps = (schema['steps'] as List).cast<String>();
-    final category = ((schema['categories'] as Map)[_type] as Map).cast<String, dynamic>();
+    final category = ((schema['categories'] as Map)[_type] as Map)
+        .cast<String, dynamic>();
     String t(String key) => (text[key] as String?) ?? key;
 
     final body = switch (_step) {
@@ -344,15 +422,27 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
         Expanded(
           child: ListView(
             controller: widget.scrollController,
-            padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(2)),
-                ),
+              Row(
+                children: [
+                  const Spacer(),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'common.close'.tr(),
+                    onPressed: widget.onClose,
+                    icon: const Icon(Icons.close),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ),
               Row(
                 children: [
@@ -361,18 +451,40 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
                       onPressed: widget.onExit,
                       icon: const Icon(Icons.arrow_back),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
                     ),
-                  Expanded(child: Text(t('heading'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                  if (_preview != null) _QualityBadge(label: t('quality'), score: _preview!['score'] as num, band: _preview!['band'] as String),
+                  Expanded(
+                    child: Text(
+                      t('heading'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (_preview != null)
+                    _QualityBadge(
+                      label: t('quality'),
+                      score: _preview!['score'] as num,
+                      band: _preview!['band'] as String,
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
               _StepProgress(steps: steps, current: _step),
               const SizedBox(height: 4),
               Text(
-                'wizard.stepOf'.tr(args: ['${_step + 1}', '${steps.length}', steps[_step]]),
-                style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w600),
+                'wizard.stepOf'.tr(
+                  args: ['${_step + 1}', '${steps.length}', steps[_step]],
+                ),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 16),
               ...body,
@@ -388,7 +500,12 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     final isLast = _step == _lastStep;
     final blocked = isLast && _blockers.isNotEmpty;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 10, 20, 12 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        10,
+        20,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         border: Border(top: BorderSide(color: AppColors.outlineVariant)),
@@ -400,7 +517,14 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           if (isLast && _blockers.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(_blockers.first, style: const TextStyle(fontSize: 12.5, color: AppColors.error, fontWeight: FontWeight.w600)),
+              child: Text(
+                _blockers.first,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           Row(
             children: [
@@ -416,9 +540,18 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: _submitting || _uploading || blocked ? null : (isLast ? _submit : () => _go(_step + 1)),
+                  onPressed: _submitting || _uploading || blocked
+                      ? null
+                      : (isLast ? _submit : () => _go(_step + 1)),
                   child: _submitting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : Text(isLast ? widget.submitLabel : t('continue')),
                 ),
               ),
@@ -431,7 +564,10 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
 
   // ── Steps ─────────────────────────────────────────────────────────────────
 
-  List<Widget> _stepWhere(Map<String, dynamic> schema, String Function(String) t) {
+  List<Widget> _stepWhere(
+    Map<String, dynamic> schema,
+    String Function(String) t,
+  ) {
     final intents = (schema['intents'] as List).cast<Map>();
     final types = (schema['propertyTypes'] as List).cast<Map>();
     final cities = (schema['cities'] as List).cast<String>();
@@ -439,28 +575,42 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       _Question(title: t('whereQ'), why: t('whereWhy')),
       _Label(t('listingType')),
       _ChoiceWrap(
-        options: [for (final i in intents) (i['value'] as String, i['label'] as String)],
+        options: [
+          for (final i in intents) (i['value'] as String, i['label'] as String),
+        ],
         selected: _intent,
         onSelected: (v) => _changed(() => _intent = v),
       ),
       _Label(t('propertyType')),
       _ChoiceWrap(
-        options: [for (final ty in types) (ty['value'] as String, ty['label'] as String)],
+        options: [
+          for (final ty in types)
+            (ty['value'] as String, ty['label'] as String),
+        ],
         selected: _type,
         onSelected: (v) => _changed(() => _type = v),
       ),
       _Label(t('city')),
       DropdownButtonFormField<String>(
         initialValue: _city,
-        items: [for (final c in cities) DropdownMenuItem(value: c, child: Text(c))],
+        items: [
+          for (final c in cities) DropdownMenuItem(value: c, child: Text(c)),
+        ],
         onChanged: (v) => _changed(() => _city = v ?? _city),
       ),
       _Label(t('bairro')),
-      TextField(controller: _bairro, decoration: InputDecoration(hintText: t('bairroPlaceholder'))),
+      TextField(
+        controller: _bairro,
+        decoration: InputDecoration(hintText: t('bairroPlaceholder')),
+      ),
     ];
   }
 
-  List<Widget> _stepNumbers(Map<String, dynamic> schema, Map<String, dynamic> category, String Function(String) t) {
+  List<Widget> _stepNumbers(
+    Map<String, dynamic> schema,
+    Map<String, dynamic> category,
+    String Function(String) t,
+  ) {
     final labels = (schema['numLabels'] as Map).cast<String, dynamic>();
     final fields = (category['numericFields'] as List).cast<String>();
     return [
@@ -473,7 +623,9 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
             child: TextField(
               controller: _price,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
               decoration: InputDecoration(labelText: t('price')),
             ),
           ),
@@ -494,7 +646,13 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       ),
       Padding(
         padding: const EdgeInsets.only(top: 6),
-        child: Text(t('priceNote'), style: const TextStyle(fontSize: 11.5, color: AppColors.onSurfaceVariant)),
+        child: Text(
+          t('priceNote'),
+          style: const TextStyle(
+            fontSize: 11.5,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
       ),
       const SizedBox(height: 8),
       for (final f in fields)
@@ -502,7 +660,10 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           padding: const EdgeInsets.only(top: 12),
           child: TextField(
             controller: _numberField(f),
-            keyboardType: TextInputType.numberWithOptions(signed: f == 'floor', decimal: f.contains('Size')),
+            keyboardType: TextInputType.numberWithOptions(
+              signed: f == 'floor',
+              decimal: f.contains('Size'),
+            ),
             decoration: InputDecoration(
               labelText: labels[f] as String? ?? f,
               helperText: labels['${f}Hint'] as String?,
@@ -513,15 +674,24 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     ];
   }
 
-  List<Widget> _stepDetails(Map<String, dynamic> category, String Function(String) t) {
+  List<Widget> _stepDetails(
+    Map<String, dynamic> category,
+    String Function(String) t,
+  ) {
     final built = category['built'] == true;
     final questions = (category['questions'] as List).cast<Map>();
     return [
-      _Question(title: built ? t('buildingQ') : t('plotQ'), why: built ? t('buildingWhy') : t('plotWhy')),
+      _Question(
+        title: built ? t('buildingQ') : t('plotQ'),
+        why: built ? t('buildingWhy') : t('plotWhy'),
+      ),
       for (final q in questions) ...[
         _Label(q['label'] as String),
         _ChoiceWrap(
-          options: [for (final c in (q['choices'] as List).cast<Map>()) (c['value'] as String, c['label'] as String)],
+          options: [
+            for (final c in (q['choices'] as List).cast<Map>())
+              (c['value'] as String, c['label'] as String),
+          ],
           selected: _choices[q['key']] ?? '',
           onSelected: (v) => _changed(() => _choices[q['key'] as String] = v),
         ),
@@ -529,11 +699,17 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     ];
   }
 
-  List<Widget> _stepFeatures(Map<String, dynamic> category, String Function(String) t) {
+  List<Widget> _stepFeatures(
+    Map<String, dynamic> category,
+    String Function(String) t,
+  ) {
     final built = category['built'] == true;
     final groups = (category['featureGroups'] as List).cast<Map>();
     return [
-      _Question(title: built ? t('featuresBuiltQ') : t('featuresLandQ'), why: t('featuresWhy')),
+      _Question(
+        title: built ? t('featuresBuiltQ') : t('featuresLandQ'),
+        why: t('featuresWhy'),
+      ),
       for (final g in groups) ...[
         _Label(g['label'] as String),
         Wrap(
@@ -544,7 +720,11 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
               FilterChip(
                 label: Text(item['label'] as String),
                 selected: _features.contains(item['value']),
-                onSelected: (on) => _changed(() => on ? _features.add(item['value'] as String) : _features.remove(item['value'])),
+                onSelected: (on) => _changed(
+                  () => on
+                      ? _features.add(item['value'] as String)
+                      : _features.remove(item['value']),
+                ),
               ),
           ],
         ),
@@ -552,7 +732,10 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
     ];
   }
 
-  List<Widget> _stepPlace(Map<String, dynamic> text, String Function(String) t) {
+  List<Widget> _stepPlace(
+    Map<String, dynamic> text,
+    String Function(String) t,
+  ) {
     return [
       _Question(title: t('nearQ'), why: t('nearWhy')),
       for (var i = 0; i < 3; i++)
@@ -560,7 +743,10 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           padding: const EdgeInsets.only(bottom: 10),
           child: TextField(
             controller: _near[i],
-            decoration: InputDecoration(labelText: 'wizard.landmark'.tr(args: ['${i + 1}']), hintText: t('landmarkPlaceholder')),
+            decoration: InputDecoration(
+              labelText: 'wizard.landmark'.tr(args: ['${i + 1}']),
+              hintText: t('landmarkPlaceholder'),
+            ),
           ),
         ),
       const SizedBox(height: 12),
@@ -572,7 +758,10 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           hintText: t('pastePlaceholder'),
           helperText: t('pasteHint'),
           helperMaxLines: 3,
-          suffixIcon: IconButton(icon: const Icon(Icons.push_pin_outlined), onPressed: () => _setPin(text)),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.push_pin_outlined),
+            onPressed: () => _setPin(text),
+          ),
         ),
         onSubmitted: (_) => _setPin(text),
       ),
@@ -582,7 +771,11 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           children: [
             const Icon(Icons.location_on, color: AppColors.primary, size: 18),
             const SizedBox(width: 6),
-            Expanded(child: Text('${t('pinSet')} ${_lat!.toStringAsFixed(6)}, ${_lng!.toStringAsFixed(6)}')),
+            Expanded(
+              child: Text(
+                '${t('pinSet')} ${_lat!.toStringAsFixed(6)}, ${_lng!.toStringAsFixed(6)}',
+              ),
+            ),
             TextButton(
               onPressed: () => _changed(() {
                 _lat = null;
@@ -595,16 +788,28 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           ],
         )
       else
-        Text(t('noPin'), style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant)),
+        Text(
+          t('noPin'),
+          style: const TextStyle(
+            fontSize: 12.5,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
       if (_pinMessage != null)
         Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text(_pinMessage!.trim().replaceFirst(RegExp(r'^—\s*'), ''), style: const TextStyle(fontSize: 12.5, color: AppColors.error)),
+          child: Text(
+            _pinMessage!.trim().replaceFirst(RegExp(r'^—\s*'), ''),
+            style: const TextStyle(fontSize: 12.5, color: AppColors.error),
+          ),
         ),
     ];
   }
 
-  List<Widget> _stepPhotos(Map<String, dynamic> category, String Function(String) t) {
+  List<Widget> _stepPhotos(
+    Map<String, dynamic> category,
+    String Function(String) t,
+  ) {
     final needsInterior = category['requiresInterior'] == true;
     final interior = _photos.where((p) => p.interior).length;
     final enough = _photos.length >= 6;
@@ -613,14 +818,28 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       OutlinedButton.icon(
         onPressed: _uploading ? null : _addPhotos,
         icon: _uploading
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : const Icon(Icons.add_photo_alternate_outlined),
         label: Text(t('addPhotos')),
       ),
       const SizedBox(height: 12),
-      _StatusLine(ok: enough, text: enough ? 'wizard.photosEnough'.tr(args: ['${_photos.length}']) : 'wizard.photosShort'.tr(args: ['${_photos.length}'])),
+      _StatusLine(
+        ok: enough,
+        text: enough
+            ? 'wizard.photosEnough'.tr(args: ['${_photos.length}'])
+            : 'wizard.photosShort'.tr(args: ['${_photos.length}']),
+      ),
       if (needsInterior)
-        _StatusLine(ok: interior >= 2, text: interior >= 2 ? 'wizard.interiorEnough'.tr(args: ['$interior']) : t('interiorShort')),
+        _StatusLine(
+          ok: interior >= 2,
+          text: interior >= 2
+              ? 'wizard.interiorEnough'.tr(args: ['$interior'])
+              : t('interiorShort'),
+        ),
       const SizedBox(height: 12),
       if (_photos.isNotEmpty)
         GridView.count(
@@ -635,7 +854,8 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
                 photo: photo,
                 interiorLabel: t('interior'),
                 showInterior: needsInterior,
-                onToggleInterior: () => _changed(() => photo.interior = !photo.interior),
+                onToggleInterior: () =>
+                    _changed(() => photo.interior = !photo.interior),
                 onRemove: () => _changed(() => _photos.remove(photo)),
               ),
           ],
@@ -651,27 +871,51 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
       TextField(
         controller: _whatsapp,
         keyboardType: TextInputType.phone,
-        decoration: InputDecoration(labelText: t('whatsappNumber'), prefixIcon: const Icon(Icons.chat_outlined), hintText: '+258 84 123 4567'),
+        decoration: InputDecoration(
+          labelText: t('whatsappNumber'),
+          prefixIcon: const Icon(Icons.chat_outlined),
+          hintText: '+258 84 123 4567',
+        ),
       ),
       const SizedBox(height: 10),
       TextField(
         controller: _phone,
         keyboardType: TextInputType.phone,
-        decoration: InputDecoration(labelText: t('phoneNumber'), prefixIcon: const Icon(Icons.phone_outlined), hintText: '+258 84 123 4567'),
+        decoration: InputDecoration(
+          labelText: t('phoneNumber'),
+          prefixIcon: const Icon(Icons.phone_outlined),
+          hintText: '+258 84 123 4567',
+        ),
       ),
       const SizedBox(height: 10),
       TextField(
         controller: _email,
         keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(labelText: t('emailLabel'), prefixIcon: const Icon(Icons.email_outlined), hintText: t('emailPlaceholder')),
+        decoration: InputDecoration(
+          labelText: t('emailLabel'),
+          prefixIcon: const Icon(Icons.email_outlined),
+          hintText: t('emailPlaceholder'),
+        ),
       ),
       const SizedBox(height: 8),
-      Text(t('contactFallback'), style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+      Text(
+        t('contactFallback'),
+        style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+      ),
       if (title != null) ...[
         const SizedBox(height: 24),
-        Text(t('previewTitle'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+        Text(
+          t('previewTitle'),
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
         const SizedBox(height: 4),
-        Text(t('generatedNote'), style: const TextStyle(fontSize: 11.5, color: AppColors.onSurfaceVariant)),
+        Text(
+          t('generatedNote'),
+          style: const TextStyle(
+            fontSize: 11.5,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(14),
@@ -682,10 +926,19 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
               if (description != null && description.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(description, style: const TextStyle(fontSize: 13, height: 1.45)),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 13, height: 1.45),
+                ),
               ],
             ],
           ),
@@ -709,9 +962,19 @@ class _Question extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 4),
-          Text(why, style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant, height: 1.35)),
+          Text(
+            why,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: AppColors.onSurfaceVariant,
+              height: 1.35,
+            ),
+          ),
         ],
       ),
     );
@@ -726,7 +989,10 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 8),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+      ),
     );
   }
 }
@@ -735,7 +1001,11 @@ class _ChoiceWrap extends StatelessWidget {
   final List<(String value, String label)> options;
   final String selected;
   final ValueChanged<String> onSelected;
-  const _ChoiceWrap({required this.options, required this.selected, required this.onSelected});
+  const _ChoiceWrap({
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -770,7 +1040,9 @@ class _StepProgress extends StatelessWidget {
               height: 4,
               margin: EdgeInsets.only(right: i == steps.length - 1 ? 0 : 4),
               decoration: BoxDecoration(
-                color: i <= current ? AppColors.primary : AppColors.surfaceVariant,
+                color: i <= current
+                    ? AppColors.primary
+                    : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -784,7 +1056,11 @@ class _QualityBadge extends StatelessWidget {
   final String label;
   final num score;
   final String band;
-  const _QualityBadge({required this.label, required this.score, required this.band});
+  const _QualityBadge({
+    required this.label,
+    required this.score,
+    required this.band,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -795,8 +1071,18 @@ class _QualityBadge extends StatelessWidget {
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
-      child: Text('$label ${score.round()}', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        '$label ${score.round()}',
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }
@@ -812,7 +1098,11 @@ class _StatusLine extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(ok ? Icons.check_circle : Icons.info_outline, size: 16, color: ok ? const Color(0xFF1E7B4A) : AppColors.onSurfaceVariant),
+          Icon(
+            ok ? Icons.check_circle : Icons.info_outline,
+            size: 16,
+            color: ok ? const Color(0xFF1E7B4A) : AppColors.onSurfaceVariant,
+          ),
           const SizedBox(width: 6),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 12.5))),
         ],
@@ -848,7 +1138,11 @@ class _PhotoTile extends StatelessWidget {
             right: 4,
             child: GestureDetector(
               onTap: onRemove,
-              child: const CircleAvatar(radius: 12, backgroundColor: Colors.black54, child: Icon(Icons.close, size: 14, color: Colors.white)),
+              child: const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.black54,
+                child: Icon(Icons.close, size: 14, color: Colors.white),
+              ),
             ),
           ),
           if (showInterior)
@@ -867,13 +1161,21 @@ class _PhotoTile extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(photo.interior ? Icons.check : Icons.weekend_outlined, size: 13, color: Colors.white),
+                      Icon(
+                        photo.interior ? Icons.check : Icons.weekend_outlined,
+                        size: 13,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           interiorLabel,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],

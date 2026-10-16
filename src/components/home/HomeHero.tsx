@@ -55,8 +55,11 @@ export default function HomeHero() {
       <div className="hero__inner">
         <div className="wrap">
           <span className="eyebrow">{t.home.heroBadge}</span>
-          <h1 className="display-xl">{t.home.heroTitle}</h1>
-          <p>{t.home.heroSubtitle}</p>
+          {/* The name is the heading: it is what someone searching for the site
+              types, and Google weighs the h1 next to the <title>. The pitch
+              follows as the second line. */}
+          <h1 className="display-xl">House in Mozambique</h1>
+          <p className="hero__tagline">{t.home.heroTitle}</p>
 
           <form className="search" role="search" onSubmit={submit}>
             <div className="search__tabs">

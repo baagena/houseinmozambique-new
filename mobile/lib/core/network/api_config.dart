@@ -13,6 +13,9 @@ class ApiConfig {
   /// public JSON routes shared with the website.
   static String get rootUrl {
     if (_override.isNotEmpty) return _override;
-    return 'https://www.houseinmozambique.com';
+    // Production redirects the www host to the bare domain with HTTP 308.
+    // Native clients (especially POST requests) should call the canonical
+    // origin directly so the request body is never lost or rejected on redirect.
+    return 'https://houseinmozambique.com';
   }
 }

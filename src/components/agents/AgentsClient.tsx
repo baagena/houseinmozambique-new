@@ -63,7 +63,9 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
         </section>
       )}
 
-      <section className="section pt0">
+      {/* Flush only under the featured section; without one it would sit
+          against the hero. */}
+      <section className={featured.length > 0 ? 'section pt0' : 'section'}>
         <div className="wrap">
           <div className="inv-head">
             <div>

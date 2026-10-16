@@ -155,8 +155,12 @@ export async function getPropertyById(id: string) {
  * been sitting in the live directory as if they were real estate agents
  * somebody could ring — a visitor cannot tell "Play Store Review" from a
  * small agency, and finds out by calling a number nobody answers.
+ *
+ * `emailVerifiedAt` keeps out accounts nobody has confirmed: sign-ups that
+ * never clicked the link (often junk), and staff can confirm one by hand
+ * from Manage agents.
  */
-const DIRECTORY_VISIBLE = { role: 'AGENT', isHidden: false } as const;
+const DIRECTORY_VISIBLE = { role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null } } as const;
 
 export async function getAgents() {
   // `include` returns every scalar column alongside the relation, which put the
