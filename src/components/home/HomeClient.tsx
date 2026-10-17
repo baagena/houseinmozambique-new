@@ -38,6 +38,14 @@ export interface CityCount {
   href: string;
 }
 
+export interface PropertyTypeCard {
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  count: number;
+}
+
 interface HomeClientProps {
   /** The one property in the featured slot, with the reason it is there. */
   slot?: FeaturedSlotProps | null;
@@ -45,6 +53,7 @@ interface HomeClientProps {
   latest: any[];
   cities: CityCount[];
   categories: CategoryCount[];
+  propertyTypes: PropertyTypeCard[];
   rentProps: any[];
   buyProps: any[];
   shortStayProps: any[];
@@ -76,6 +85,7 @@ export default function HomeClient({
   latest,
   cities,
   categories,
+  propertyTypes,
   rentProps,
   buyProps,
   shortStayProps,
@@ -94,11 +104,33 @@ export default function HomeClient({
       <HomeHero />
 
       {/* ── Category chips with live counts ── */}
-      <section className="section pt0" style={{ paddingTop: 32 }}>
+      <section className="section--tight property-type-section">
         <div className="wrap">
-          <div className="chips">
-            {categories.map((cat, i) => (
-              <Link key={cat.label} href={cat.href} className={`chip${i === 0 ? ' is-active' : ''}`}>
+          <div className="property-type-layout">
+            <div className="property-type-intro">
+              <span className="eyebrow">{t.home.exploreEyebrow}</span>
+              <h2>{t.home.browsePropertyTypes}</h2>
+              <p>{t.home.browsePropertyTypesDesc}</p>
+              <Link href="/properties" className="property-type-all">{t.home.viewAllProperties} <span aria-hidden="true">→</span></Link>
+            </div>
+            <div className="property-type-grid">
+              {propertyTypes.map((type, index) => (
+                <Link key={type.title} href={type.href} className="property-type-card">
+                  <span className="property-type-image">
+                    <SafeImage src={type.image} alt={`${type.title} in Mozambique`} fill className="object-cover" sizes="(max-width: 680px) 72vw, (max-width: 1000px) 38vw, 18vw" />
+                    <span className="property-type-count">{type.count} {type.count === 1 ? t.home.listingCountSingle : t.home.listingCount}</span>
+                  </span>
+                  <span className="property-type-copy">
+                    <strong>{[t.home.typeHouses, t.home.typeApartments, t.home.typeOffices, t.home.typeLand, t.home.typeRentals][index]}</strong>
+                    <span>{[t.home.typeHousesDesc, t.home.typeApartmentsDesc, t.home.typeOfficesDesc, t.home.typeLandDesc, t.home.typeRentalsDesc][index]}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="chips property-type-filters">
+            {categories.map((cat) => (
+              <Link key={cat.label} href={cat.href} className="chip">
                 {(cat.key && (t.home as Record<string, string>)[cat.key]) || cat.label} <b>{cat.count}</b>
               </Link>
             ))}
@@ -155,8 +187,11 @@ export default function HomeClient({
         <section className="section pt0">
           <div className="wrap">
             <div className="section-title-row">
-              <h2>{t.home.advertisersTitle}</h2>
-              <Link href="/agents">{t.home.seeAll} →</Link>
+              <h2>Featured agents &amp; agencies</h2>
+              <div className="flex items-center gap-4">
+                <Link href="/services/agent-listing">Promote your agency →</Link>
+                <Link href="/agents">{t.home.seeAll} →</Link>
+              </div>
             </div>
             <div className="advs">
               {featuredAgents.slice(0, 6).map((agent) => (

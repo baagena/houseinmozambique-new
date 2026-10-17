@@ -15,7 +15,7 @@ const TABS = [
   { value: 'Auction', key: 'auction' },
 ] as const;
 
-const PROPERTY_TYPES = ['Villa', 'Apartment', 'Penthouse', 'Land', 'Lodge', 'Studio', 'Bungalow'];
+const PROPERTY_TYPES = ['House', 'Villa', 'Apartment', 'Penthouse', 'Office', 'Land', 'Lodge', 'Studio', 'Bungalow'];
 
 /** Round MZN bands — kept in Meticais so the copy never mixes currencies. */
 const PRICE_CAPS = [500_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000];
@@ -44,7 +44,7 @@ export default function HomeHero() {
       <div className="hero__bg">
         <Image
           src={HERO_IMG}
-          alt="Waterfront at dusk on the Mozambican coast"
+          alt="Maputo waterfront at dusk"
           fill
           priority
           className="object-cover"
@@ -54,12 +54,10 @@ export default function HomeHero() {
 
       <div className="hero__inner">
         <div className="wrap">
-          <span className="eyebrow">{t.home.heroBadge}</span>
-          {/* The name is the heading: it is what someone searching for the site
-              types, and Google weighs the h1 next to the <title>. The pitch
-              follows as the second line. */}
-          <h1 className="display-xl">House in Mozambique</h1>
-          <p className="hero__tagline">{t.home.heroTitle}</p>
+          <div className="hero__copy">
+            <h1 className="display-xl">{t.home.heroHeading}</h1>
+            <p className="hero__tagline">{t.home.heroTitle}</p>
+          </div>
 
           <form className="search" role="search" onSubmit={submit}>
             <div className="search__tabs">

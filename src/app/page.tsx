@@ -82,6 +82,14 @@ export default async function HomePage() {
     { label: 'Land', key: 'chipLand', count: countBy((p) => p.type === 'Land'), href: '/properties?propertyType=Land' },
   ];
 
+  const propertyTypes = [
+    { title: 'Houses', description: 'Buy or rent your dream home', href: '/properties?propertyType=Villa%2CHouse%2CBungalow', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=900&auto=format&fit=crop', count: countBy((p) => ['Villa', 'House', 'Bungalow'].includes(p.type)) },
+    { title: 'Apartments', description: 'Modern living in prime locations', href: '/properties?propertyType=Apartment', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=900&auto=format&fit=crop', count: countBy((p) => p.type === 'Apartment') },
+    { title: 'Offices', description: 'Find the perfect workspace', href: '/properties?propertyType=Office', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=900&auto=format&fit=crop', count: countBy((p) => p.type === 'Office') },
+    { title: 'Land', description: 'Invest in land across Mozambique', href: '/properties?propertyType=Land', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=900&auto=format&fit=crop', count: countBy((p) => p.type === 'Land') },
+    { title: 'Rentals', description: 'Great places for short or long stays', href: '/properties?type=Rent', image: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=900&auto=format&fit=crop', count: countBy((p) => p.listingType === 'Rent' || p.listingType === 'Short Stay') },
+  ];
+
   const cityCounts = new Map<string, number>();
   for (const p of allProperties) {
     if (!p.city) continue;
@@ -118,6 +126,7 @@ export default async function HomePage() {
         latest={sanitizeProperties(latest) as any}
         cities={cities}
         categories={categories}
+        propertyTypes={propertyTypes}
         rentProps={sanitizeProperties(rentProps) as any}
         buyProps={sanitizeProperties(buyProps) as any}
         shortStayProps={sanitizeProperties(shortStayProps) as any}

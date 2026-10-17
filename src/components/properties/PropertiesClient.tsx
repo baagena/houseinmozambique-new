@@ -24,7 +24,7 @@ interface Props {
   ads?: Ad[];
 }
 
-const PROPERTY_TYPES = ['Villa', 'Apartment', 'Penthouse', 'Land', 'Lodge', 'Studio', 'Bungalow'];
+const PROPERTY_TYPES = ['House', 'Villa', 'Apartment', 'Penthouse', 'Office', 'Land', 'Lodge', 'Studio', 'Bungalow'];
 const PAGE_SIZE = 12;
 const PAGE_HERO =
   'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=1800&auto=format&fit=crop';
@@ -58,7 +58,7 @@ export default function PropertiesClient({
     setMaxPrice(searchParams.get('max') || '');
     setFeaturedOnly(searchParams.get('isFeatured') === 'true');
     const pt = searchParams.get('propertyType');
-    setSelectedTypes(pt ? [pt] : []);
+    setSelectedTypes(pt ? pt.split(',').filter(Boolean) : []);
     setVisible(PAGE_SIZE);
   }, [searchParams]);
 
