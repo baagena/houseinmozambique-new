@@ -451,6 +451,7 @@ export default function NewListingWizard({
             {step === 6 && (
               <StepPhotos
                 shots={shots}
+                supportsInterior={isBuilt(a.propertyType)}
                 onAdd={addFiles}
                 onToggleInterior={(i) =>
                   setShots((prev) => prev.map((s, j) => (j === i ? { ...s, interior: !s.interior } : s)))
@@ -1116,9 +1117,10 @@ function StepPlace({ a, set, w }: { a: ListingAnswers; set: Setter; w: WizardCop
 }
 
 function StepPhotos({
-  shots, onAdd, onToggleInterior, onRemove, slug, w,
+  shots, supportsInterior, onAdd, onToggleInterior, onRemove, slug, w,
 }: {
   shots: Shot[];
+  supportsInterior: boolean;
   onAdd: (f: FileList | null) => void;
   onToggleInterior: (i: number) => void;
   onRemove: (i: number) => void;
@@ -1153,14 +1155,16 @@ function StepPhotos({
                 style={{ width: 104, height: 78, objectFit: 'cover', borderRadius: 'var(--d-radius-sm)', display: 'block' }}
               />
               <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                <button
-                  type="button"
-                  className={`fchip${s.interior ? ' on' : ''}`}
-                  style={{ flex: 1, fontSize: 11 }}
-                  onClick={() => onToggleInterior(i)}
-                >
-                  {w.interior}
-                </button>
+                {supportsInterior && (
+                  <button
+                    type="button"
+                    className={`fchip${s.interior ? ' on' : ''}`}
+                    style={{ flex: 1, fontSize: 11 }}
+                    onClick={() => onToggleInterior(i)}
+                  >
+                    {w.interior}
+                  </button>
+                )}
                 <button type="button" className="fchip" style={{ fontSize: 11 }} onClick={() => onRemove(i)}>
                   ✕
                 </button>
@@ -1174,9 +1178,7 @@ function StepPhotos({
         <Check ok={shots.length >= 6}>
           {shots.length >= 6 ? w.photosEnough(shots.length) : w.photosShort(shots.length)}
         </Check>
-        <Check ok={interior >= 2}>
-          {interior >= 2 ? w.interiorEnough(interior) : w.interiorShort}
-        </Check>
+        {supportsInterior && interior > 0 && <Check ok>{w.interiorCount(interior)}</Check>}
         <Check ok>
           {w.filenamesGenerated}{' '}
           <span className="mono" style={{ fontSize: 11.5 }}>{slug}-01.webp</span>

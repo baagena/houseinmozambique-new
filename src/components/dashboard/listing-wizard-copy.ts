@@ -189,13 +189,12 @@ const en = {
   // Step 6
   photosQ: 'Photos',
   photosWhy:
-    'Six minimum, at least two interior. Filenames are generated from the listing — no more IMG_8293.jpg.',
+    'Six clear photos minimum. Show the property and its surroundings. Filenames are generated from the listing — no more IMG_8293.jpg.',
   addPhotos: 'Add photos',
   interior: 'Interior',
   photosEnough: (n: number) => `${n} photos — meets the minimum`,
   photosShort: (n: number) => `${n} photos — six are required before this can publish`,
-  interiorEnough: (n: number) => `${n} interior shots`,
-  interiorShort: 'Needs two interior shots',
+  interiorCount: (n: number) => `${n} interior photos added (optional)`,
   filenamesGenerated: 'Filenames and alt text generated:',
 
   // Step 7
@@ -243,7 +242,6 @@ const en = {
     landSize: (step: string) => `Set the plot size — step 2, ${step}`,
     duat: (step: string) => `Say where the DUAT stands — step 3, ${step}`,
     beds: (step: string) => `Set the number of bedrooms — step 2, ${step}`,
-    interior: (step: string) => `At least two interior shots are required — step 6, ${step}`,
     verifyEmail: 'Confirm your email address to publish',
   },
 };
@@ -408,13 +406,12 @@ const pt: typeof en = {
 
   photosQ: 'Fotos',
   photosWhy:
-    'Seis no mínimo, pelo menos duas de interior. Os nomes dos ficheiros são gerados a partir do anúncio — acabaram-se os IMG_8293.jpg.',
+    'Seis fotos nítidas, no mínimo. Mostre o imóvel e a sua envolvente. Os nomes dos ficheiros são gerados a partir do anúncio — acabaram-se os IMG_8293.jpg.',
   addPhotos: 'Adicionar fotos',
   interior: 'Interior',
   photosEnough: (n) => `${n} fotos — cumpre o mínimo`,
   photosShort: (n) => `${n} fotos — são precisas seis para poder publicar`,
-  interiorEnough: (n) => `${n} fotos de interior`,
-  interiorShort: 'Faltam duas fotos de interior',
+  interiorCount: (n) => `${n} fotos de interior adicionadas (opcional)`,
   filenamesGenerated: 'Nomes de ficheiro e texto alternativo gerados:',
 
   contactQ: 'Como devem os compradores falar consigo sobre este anúncio?',
@@ -458,7 +455,6 @@ const pt: typeof en = {
     landSize: (step) => `Indique a área do terreno — passo 2, ${step}`,
     duat: (step) => `Diga em que situação está o DUAT — passo 3, ${step}`,
     beds: (step) => `Indique o número de quartos — passo 2, ${step}`,
-    interior: (step) => `São precisas pelo menos duas fotos de interior — passo 6, ${step}`,
     verifyEmail: 'Confirme o seu endereço de e-mail para publicar',
   },
 };

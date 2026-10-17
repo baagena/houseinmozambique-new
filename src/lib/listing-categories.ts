@@ -200,7 +200,7 @@ export const CATEGORY_QUESTIONS: Record<CategoryKey, readonly (keyof typeof CHOI
 
 /** A plot has no interior, so it cannot be asked for interior photographs. */
 export const REQUIRES_INTERIOR_SHOTS: Record<CategoryKey, boolean> = {
-  House: true, Apartment: true, 'Beach house': true, Commercial: true, Land: false,
+  House: false, Apartment: false, 'Beach house': false, Commercial: false, Land: false,
 };
 
 export const isBuilt = (t: string) => t !== 'Land';

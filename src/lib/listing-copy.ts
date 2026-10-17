@@ -20,7 +20,7 @@
 import { SITE_HOST } from './site';
 import {
   CATEGORY_LABEL_EN, CATEGORY_LABEL_PT, FEATURE_SCOPE,
-  REQUIRES_INTERIOR_SHOTS, isBuilt,
+  isBuilt,
   type CategoryAnswers, type CategoryKey,
 } from './listing-categories';
 
@@ -1151,11 +1151,8 @@ export function generateListing(a: ListingAnswers): GeneratedListing {
     missing.push('six photos');
   }
 
-  // A plot has no interior. It was previously marked down for not providing
-  // photographs of rooms it does not have, which capped every land listing.
-  if (!REQUIRES_INTERIOR_SHOTS[a.propertyType as CategoryKey]) score += 10;
-  else if (a.interior >= 2) score += 10;
-  else missing.push('two interior shots');
+  // Interior photos are optional; reward having them without penalizing their absence.
+  score += 10;
 
   score = Math.min(100, score);
 
@@ -1313,7 +1310,6 @@ export interface BlockerCopy {
   landSize: (step: string) => string;
   duat: (step: string) => string;
   beds: (step: string) => string;
-  interior: (step: string) => string;
 }
 
 const EN_BLOCKERS: BlockerCopy = {
@@ -1323,7 +1319,6 @@ const EN_BLOCKERS: BlockerCopy = {
   landSize: (step) => `Set the plot size — step 2, ${step}`,
   duat: (step) => `Say where the DUAT stands — step 3, ${step}`,
   beds: (step) => `Set the number of bedrooms — step 2, ${step}`,
-  interior: (step) => `At least two interior shots are required — step 6, ${step}`,
 };
 
 const EN_STEPS = ['What & where', 'The numbers', 'Details', 'Features', 'The place', 'Photos', 'Contact'];
@@ -1363,16 +1358,6 @@ export function publishBlockers(
     if (!a.duat) blockers.push(copy.duat(step(3)));
   } else {
     if (!a.beds) blockers.push(copy.beds(step(2)));
-    /*
-     * A plot has no interior, so it is never asked for interior shots.
-     *
-     * This rule used to run for every category. The line above it already
-     * exempted land from the bedroom rule, so the branch had been considered
-     * and then missed here — with the result that a complete, correctly
-     * photographed land listing could never be published at all, because the
-     * Submit button stays disabled while any blocker remains.
-     */
-    if (a.interior < 2) blockers.push(copy.interior(step(6)));
   }
 
   return blockers;
