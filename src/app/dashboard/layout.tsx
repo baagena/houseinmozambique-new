@@ -45,18 +45,25 @@ export default function DashboardLayout({
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then((res) => {
-        if (!res.ok) throw new Error('Unauthenticated');
-        return res.json();
-      })
-      .then((data) => {
-        if (!cancelled) setUser(data.user);
-      })
-      .catch(() => {
-        if (!cancelled) router.push('/auth');
-      });
-    return () => { cancelled = true; };
+    const refreshUser = () => {
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then((res) => {
+          if (!res.ok) throw new Error('Unauthenticated');
+          return res.json();
+        })
+        .then((data) => {
+          if (!cancelled) setUser(data.user);
+        })
+        .catch(() => {
+          if (!cancelled) router.push('/auth');
+        });
+    };
+    refreshUser();
+    window.addEventListener('account-profile-updated', refreshUser);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('account-profile-updated', refreshUser);
+    };
   }, [router]);
 
   const handleLogout = useCallback(async () => {

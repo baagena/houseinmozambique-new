@@ -11,12 +11,11 @@ export default async function AgentSettingsPage() {
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
     select: {
-      email: true,
       phone: true,
     },
   });
 
   if (!agent) redirect('/auth');
 
-  return <SettingsForm email={agent.email} phone={agent.phone || ''} />;
+  return <SettingsForm phone={agent.phone || ''} />;
 }

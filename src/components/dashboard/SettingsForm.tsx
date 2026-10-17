@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Icon from '@/components/ui/Icon';
+import AccountProfileForm from '@/components/dashboard/AccountProfileForm';
 
 interface SettingsFormProps {
-  email: string;
   phone: string;
 }
 
-export default function SettingsForm({ email, phone: initialPhone }: SettingsFormProps) {
+export default function SettingsForm({ phone: initialPhone }: SettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,21 +70,14 @@ export default function SettingsForm({ email, phone: initialPhone }: SettingsFor
         </div>
       )}
 
+      <AccountProfileForm />
+
       <form onSubmit={handleSave} className="space-y-10">
         {/* Contact info card */}
         <div className="bg-white p-10 rounded-[2.5rem] border border-[#f2f4f6] shadow-sm space-y-8">
            <h3 className="text-xs font-black text-[#74777f] uppercase tracking-widest px-1">Contact &amp; Region</h3>
            
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#002045] uppercase tracking-widest ml-1">Professional Email</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  disabled
-                  className="w-full bg-[#f7f9fb] border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#c4c6cf] cursor-not-allowed"
-                />
-              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-[#002045] uppercase tracking-widest ml-1">Direct Mobile</label>
                 <input 

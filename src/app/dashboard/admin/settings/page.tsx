@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import Icon from '@/components/ui/Icon';
 import type { PaymentInstructions } from '@/lib/payment-instructions';
+import AccountProfileForm from '@/components/dashboard/AccountProfileForm';
 
 type Settings = {
-  adminName: string;
-  adminEmail: string;
   platformTagline: string;
   globalNotifications: boolean;
   agentApprovalAlerts: boolean;
@@ -52,8 +51,6 @@ async function readResponse(response: Response) {
 export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<Settings>({
-    adminName: 'Dev Admin',
-    adminEmail: 'admin@houseinmozambique.com',
     platformTagline: 'The Modern Estate Curator',
     globalNotifications: true,
     agentApprovalAlerts: true,
@@ -122,37 +119,18 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
+      <AccountProfileForm />
+
       <form onSubmit={handleSave} className="space-y-5">
         {isLoading && <p className="text-sm text-[#74777f]">Loading settings...</p>}
         {message && <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</p>}
         {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
-        {/* Profile Card */}
+        {/* Global platform branding */}
         <div className="bg-white rounded-xl border border-[#eceef1] overflow-hidden">
           <div className="px-5 h-12 flex items-center border-b border-[#eceef1]">
-            <h3 className="text-sm font-semibold text-[#002045]">Administrative profile</h3>
+            <h3 className="text-sm font-semibold text-[#002045]">Platform branding</h3>
           </div>
           <div className="p-5 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Admin identity</label>
-                <input
-                  type="text"
-                  value={formData.adminName}
-                  onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
-                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Restricted email</label>
-                <input
-                  type="email"
-                  value={formData.adminEmail}
-                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                  className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Global site tagline</label>
               <input

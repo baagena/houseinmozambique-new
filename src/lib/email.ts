@@ -24,6 +24,7 @@ console.info(`Resend config loaded: ${JSON.stringify({
 
 interface EmailOptions {
   to: string;
+  exactRecipient?: boolean;
   subject: string;
   html: string;
   text?: string;
@@ -68,7 +69,9 @@ async function sendEmail(options: EmailOptions) {
   }).then((setting) => setting?.value.trim() || ADMIN_EMAIL).catch(() => ADMIN_EMAIL);
 
   const msg = {
-    to: options.to === ADMIN_EMAIL || options.to === CONTACT_EMAIL ? configuredAdminEmail : options.to,
+    to: !options.exactRecipient && (options.to === ADMIN_EMAIL || options.to === CONTACT_EMAIL)
+      ? configuredAdminEmail
+      : options.to,
     from: options.from || RESEND_FROM_EMAIL,
     subject: options.subject,
     html: options.html,
@@ -331,6 +334,7 @@ export async function sendAgentVerificationEmail(agent: {
     : SITE_URL;
   return sendEmail({
     to: agent.email,
+    exactRecipient: true,
     from: AUTH_FROM_EMAIL,
     subject: 'Verify your House in Mozambique account',
     html: `
