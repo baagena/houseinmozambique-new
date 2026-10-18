@@ -9,7 +9,7 @@ import HomeClient, { type CategoryCount, type CityCount } from '@/components/hom
 import JsonLd from '@/components/seo/JsonLd';
 import { faqJsonLd, HOME_FAQS } from '@/lib/seo';
 import { sanitizeProperties } from '@/lib/mobile-serialize';
-import { MOZAMBIQUE_PROVINCES } from '@/lib/listing-copy';
+import { MOZAMBIQUE_PROVINCES, provinceForPlace } from '@/lib/listing-copy';
 
 /**
  * Province tiles shown in the "Explore Mozambique" grid. Counts come from
@@ -99,14 +99,14 @@ export default async function HomePage() {
     { title: 'Rentals', description: 'Great places for short or long stays', href: '/properties?type=Rent', image: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=900&auto=format&fit=crop', count: countBy((p) => p.listingType === 'Rent' || p.listingType === 'Short Stay') },
   ];
 
-  const cityCounts = new Map<string, number>();
+  const provinceCounts = new Map<string, number>();
   for (const p of allProperties) {
-    if (!p.city) continue;
-    cityCounts.set(p.city, (cityCounts.get(p.city) || 0) + 1);
+    const province = provinceForPlace(p.city) || provinceForPlace(p.location);
+    if (province) provinceCounts.set(province, (provinceCounts.get(province) || 0) + 1);
   }
   const cities: CityCount[] = MOZAMBIQUE_PROVINCES.map((name) => ({
       name,
-      count: cityCounts.get(name) || 0,
+      count: provinceCounts.get(name) || 0,
       image: CITY_IMAGES[name] || FALLBACK_CITY_IMAGE,
       href: `/properties?location=${encodeURIComponent(name)}`,
     }));

@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 import { prisma } from '@/lib/db';
 import { EN_PREFIX } from '@/lib/site-lang';
+import { getDirectoryVisibleWhere } from '@/lib/data';
+import { getAgentProfileSlug } from '@/lib/agent-profile-url';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicRoutes: MetadataRoute.Sitemap = [];
 
   try {
-    const [properties, posts] = await Promise.all([
+    const [properties, posts, agents] = await Promise.all([
       prisma.property.findMany({
         where: { status: 'PUBLISHED' },
         select: { id: true, slug: true, updatedAt: true, images: true },
@@ -41,6 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.blogPost.findMany({
         where: { status: 'PUBLISHED' },
         select: { slug: true, updatedAt: true, publishedAt: true, coverImage: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 5000,
+      }),
+      prisma.agent.findMany({
+        where: getDirectoryVisibleWhere(now),
+        select: { id: true, name: true, agencyName: true, updatedAt: true, avatar: true },
         orderBy: { updatedAt: 'desc' },
         take: 5000,
       }),
@@ -62,6 +70,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'monthly' as const,
         priority: 0.6,
         images: post.coverImage ? [post.coverImage] : undefined,
+      })),
+      ...agents.map((agent) => ({
+        url: `${SITE_URL}/agents/${getAgentProfileSlug(agent)}`,
+        lastModified: agent.updatedAt,
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+        images: agent.avatar ? [agent.avatar] : undefined,
       })),
     ];
   } catch (error) {

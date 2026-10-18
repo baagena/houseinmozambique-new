@@ -671,7 +671,7 @@ function AuthForm() {
                         <div className="space-y-1.5">
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.profRoleLabel}</label>
                           <select
-                            required
+                            required={accountType === 'AGENT'}
                             className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                             value={formData.title}
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -683,7 +683,7 @@ function AuthForm() {
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expLabel}</label>
                           <input
                             type="number"
-                            required
+                            required={accountType === 'AGENT'}
                             min={0}
                             max={80}
                             className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] tabular-nums outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
@@ -703,7 +703,7 @@ function AuthForm() {
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.locationLabel}</label>
                         <input
                           type="text"
-                          required
+                          required={accountType !== 'CORPORATE'}
                           maxLength={100}
                           className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="e.g. Maputo City, Polana"
@@ -714,8 +714,8 @@ function AuthForm() {
                       {accountType !== 'OWNER' && (
                         <div className="space-y-1.5">
                           <label className="block text-[13px] font-medium text-[#5b616b]">Exact office / contact address</label>
-                          <textarea required maxLength={400} rows={2} autoComplete="street-address" className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#13233F] outline-none focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none" placeholder="Office or building, street, bairro, city and province" value={formData.officeAddress} onChange={(e) => setFormData({...formData, officeAddress: e.target.value})} />
-                          <p className="text-[11px] text-[#74777f]">This address appears on your public agent profile so clients can find your office.</p>
+                          <textarea required={accountType === 'AGENT'} maxLength={400} rows={2} autoComplete="street-address" className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#13233F] outline-none focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none" placeholder="Office or building, street, bairro, city and province (optional for agencies)" value={formData.officeAddress} onChange={(e) => setFormData({...formData, officeAddress: e.target.value})} />
+                          <p className="text-[11px] text-[#74777f]">Optional for corporate agencies; individual agents show this on their public profile.</p>
                         </div>
                       )}
                     </div>
@@ -748,16 +748,16 @@ function AuthForm() {
                             <p className="mt-1 text-[11px] text-[#74777f]">Help clients understand your company and the services you offer.</p>
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
-                            <select required value={formData.agencyBusinessType} onChange={(e) => setFormData({...formData, agencyBusinessType: e.target.value})} className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] bg-white text-sm">
-                              <option value="">Choose business type</option><option>Real estate agency</option><option>Property consultancy</option><option>Property management</option><option>Property developer</option><option>Independent brokerage</option>
+                            <select value={formData.agencyBusinessType} onChange={(e) => setFormData({...formData, agencyBusinessType: e.target.value})} className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] bg-white text-sm">
+                              <option value="">Business type (optional)</option><option>Real estate agency</option><option>Property consultancy</option><option>Property management</option><option>Property developer</option><option>Independent brokerage</option>
                             </select>
                             <input type="email" maxLength={254} value={formData.agencyEmail} onChange={(e) => setFormData({...formData, agencyEmail: e.target.value})} placeholder="Public business email (optional)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm" />
                             <input type="url" maxLength={300} value={formData.agencyWebsite} onChange={(e) => setFormData({...formData, agencyWebsite: e.target.value})} placeholder="Website (optional, https://...)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm sm:col-span-2" />
                           </div>
-                          <textarea required minLength={30} maxLength={2000} rows={4} value={formData.agencyAbout} onChange={(e) => setFormData({...formData, agencyAbout: e.target.value})} placeholder="About the agency: experience, approach, qualifications, languages, and who you help" className="w-full px-3 py-3 rounded-lg border border-[#e3e6ea] text-sm resize-y" />
-                          <input required maxLength={500} value={formData.agencyAreasServed} onChange={(e) => setFormData({...formData, agencyAreasServed: e.target.value})} placeholder="Areas served, separated by commas (e.g. Maputo, Matola, Beira)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm" />
+                          <textarea maxLength={2000} rows={4} value={formData.agencyAbout} onChange={(e) => setFormData({...formData, agencyAbout: e.target.value})} placeholder="About the agency (optional): experience, approach, qualifications, languages, and who you help" className="w-full px-3 py-3 rounded-lg border border-[#e3e6ea] text-sm resize-y" />
+                          <input maxLength={500} value={formData.agencyAreasServed} onChange={(e) => setFormData({...formData, agencyAreasServed: e.target.value})} placeholder="Areas served (optional; separate with commas, e.g. Maputo, Matola, Beira)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm" />
                           <div>
-                            <p className="mb-2 text-xs font-medium text-[#5b616b]">Services offered <span className="text-red-600">*</span></p>
+                            <p className="mb-2 text-xs font-medium text-[#5b616b]">Services offered (optional)</p>
                             <div className="flex flex-wrap gap-2">{CORPORATE_SERVICES.map((service) => <button key={service} type="button" onClick={() => toggleAgencyService(service)} className={`rounded-full px-3 py-1.5 text-xs ${formData.agencyServices.includes(service) ? 'bg-[#13233F] text-white' : 'bg-[#f1f3f5] text-[#5b616b]'}`}>{service}</button>)}</div>
                           </div>
                         </section>
@@ -765,12 +765,12 @@ function AuthForm() {
                       <div className="space-y-1.5">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.bioLabel}</label>
                         <textarea
-                          required
-                          minLength={20}
+                          required={accountType === 'AGENT'}
+                          minLength={accountType === 'AGENT' ? 20 : undefined}
                           maxLength={2000}
                           rows={4}
                           className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#5E6B7A] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none"
-                          placeholder="Tell us a little about your experience and how you help clients…"
+                          placeholder={accountType === 'CORPORATE' ? 'Professional biography (optional for agencies)' : 'Tell us a little about your experience and how you help clients…'}
                           value={formData.bio}
                           onChange={(e) => setFormData({...formData, bio: e.target.value})}
                         />

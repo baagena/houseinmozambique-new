@@ -9,7 +9,7 @@ import AdBanner from '@/components/ads/AdBanner';
 import { Property } from '@/types';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
-import { PROPERTY_TYPES } from '@/lib/listing-copy';
+import { isMozambiqueProvince, provinceForPlace, PROPERTY_TYPES } from '@/lib/listing-copy';
 
 interface Ad {
   id: string;
@@ -101,8 +101,11 @@ export default function PropertiesClient({
     return initialProperties.filter((p) => {
       const matchesType = dealType ? p.listingType === dealType : true;
       const matchesLocation = location
-        ? p.location.toLowerCase().includes(location.toLowerCase()) ||
-          p.city.toLowerCase().includes(location.toLowerCase())
+        ? isMozambiqueProvince(location)
+          ? provinceForPlace(p.city) === provinceForPlace(location) ||
+            p.location.toLowerCase().includes(location.toLowerCase())
+          : p.location.toLowerCase().includes(location.toLowerCase()) ||
+            p.city.toLowerCase().includes(location.toLowerCase())
         : true;
       const matchesPropType = selectedTypes.length ? selectedTypes.includes(p.type) : true;
       const matchesBeds = bedrooms ? p.bedrooms >= bedrooms : true;

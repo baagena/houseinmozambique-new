@@ -38,8 +38,11 @@ export async function POST(request: Request) {
       ? specializations.map((item: unknown) => String(item).trim()).filter(Boolean).slice(0, 20)
       : [];
     const phoneDigits = phone.replace(/\D/g, '');
-    if (isCorporate && (!agencyName || !agencyPhone || !agencyBusinessType || agencyAbout.length < 30 || agencyAbout.length > 2000 || !agencyServices.length || !agencyAreasServed.length)) {
-      return NextResponse.json({ error: 'Complete the agency name, contact phone, business type, agency description, services, and service areas.' }, { status: 400 });
+    if (isCorporate && (!agencyName || !agencyPhone)) {
+      return NextResponse.json({ error: 'Enter the agency name and contact phone.' }, { status: 400 });
+    }
+    if (isCorporate && (phoneDigits.length < 6 || phoneDigits.length > 20)) {
+      return NextResponse.json({ error: 'Enter a complete agency phone number with 6 to 20 digits. Include a country code when available.' }, { status: 400 });
     }
     if (agencyWebsite && (!/^https:\/\//i.test(agencyWebsite) || agencyWebsite.length > 300)) {
       return NextResponse.json({ error: 'Enter a full website address starting with https://.' }, { status: 400 });
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
     if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) {
       return NextResponse.json({ error: 'Enter a valid public agency email address.' }, { status: 400 });
     }
-    if (role === 'AGENT' && (phoneDigits.length < 7 || phoneDigits.length > 15 || agentLocation.length < 2 || officeAddress.length < 8 || officeAddress.length > 400 || !agentTitle || agentBio.length < 20 || agentBio.length > 2000 || !agentSpecializations.length || !Number.isInteger(experience) || experience < 0 || experience > 80)) {
+    if (!isCorporate && role === 'AGENT' && (phoneDigits.length < 7 || phoneDigits.length > 15 || agentLocation.length < 2 || officeAddress.length < 8 || officeAddress.length > 400 || !agentTitle || agentBio.length < 20 || agentBio.length > 2000 || !agentSpecializations.length || !Number.isInteger(experience) || experience < 0 || experience > 80)) {
       return NextResponse.json({ error: 'Complete your phone, service area, exact office address, professional title, biography, and at least one specialization.' }, { status: 400 });
     }
     let avatarUrl: string | null = null;
@@ -106,11 +109,11 @@ export async function POST(request: Request) {
         password: hashedPassword,
         name,
         initials,
-        title: role === "OWNER" ? (title || "Property Owner") : (agentTitle || "Agent"),
-        location: role === "OWNER" ? (location || "Mozambique") : agentLocation,
+        title: role === "OWNER" ? (title || "Property Owner") : (agentTitle || (isCorporate ? 'Agency representative' : 'Agent')),
+        location: role === "OWNER" ? (location || "Mozambique") : (agentLocation || 'Maputo'),
         phone: role === 'AGENT' ? phone : null,
         officeAddress: role === 'AGENT' ? officeAddress : null,
-        yearsExperience: role === "OWNER" ? 0 : experience,
+        yearsExperience: role === "OWNER" || (isCorporate && !Number.isInteger(experience)) ? 0 : experience,
         bio: role === "OWNER" ? "" : agentBio,
         specializations: role === "OWNER" ? [] : agentSpecializations,
         agencyName: isCorporate ? agencyName : null,

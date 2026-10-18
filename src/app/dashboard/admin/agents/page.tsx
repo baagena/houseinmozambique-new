@@ -20,6 +20,7 @@ export default async function AdminAgentsPage() {
     initials: agent.initials,
     title: agent.title,
     location: agent.location,
+    officeAddress: agent.officeAddress ?? '',
     phone: agent.phone ?? '',
     bio: agent.bio ?? '',
     avatar: agent.avatar ?? '',
@@ -36,7 +37,14 @@ export default async function AdminAgentsPage() {
     propertyCount: (agent as { _count?: { properties?: number } })._count?.properties ?? 0,
     agencyName: agent.agencyName ?? '',
     agencyPhone: agent.agencyPhone ?? '',
+    agencyBusinessType: agent.agencyBusinessType ?? '',
+    agencyAbout: agent.agencyAbout ?? '',
+    agencyServices: agent.agencyServices ?? [],
+    agencyAreasServed: agent.agencyAreasServed ?? [],
+    agencyWebsite: agent.agencyWebsite ?? '',
+    agencyEmail: agent.agencyEmail ?? '',
     corporateStatus: agent.corporateStatus ?? '',
+    corporatePaidThrough: agent.subscriptions[0]?.currentPeriodEnd?.toISOString() ?? null,
   }));
 
   return <AdminAgentsClient initialAgents={agents} />;

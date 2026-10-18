@@ -26,11 +26,18 @@ export async function POST(request: Request, { params }: Params) {
   const note = typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '';
 
   const [agent, plan] = await Promise.all([
-    prisma.agent.findUnique({ where: { id }, select: { id: true, corporateStatus: true } }),
+    prisma.agent.findUnique({ where: { id }, select: { id: true, agencyName: true, corporateStatus: true } }),
     prisma.pricingPlan.findUnique({ where: { slug: planSlug }, select: { kind: true } }),
   ]);
   if (!agent) return NextResponse.json({ error: 'Agent not found.' }, { status: 404 });
   if (!plan || plan.kind === 'addon') return NextResponse.json({ error: 'Choose a plan.' }, { status: 400 });
+  const isCorporate = Boolean(agent.corporateStatus || agent.agencyName);
+  if (isCorporate && plan.kind !== 'subscription') {
+    return NextResponse.json({ error: 'Corporate directory visibility requires a monthly or annual subscription.' }, { status: 400 });
+  }
+  if (isCorporate && (body.paymentConfirmed !== true || !note)) {
+    return NextResponse.json({ error: 'Confirm that payment was received and add a payment reference or record.' }, { status: 400 });
+  }
 
   await grantManually({
     agentId: id,
@@ -42,7 +49,7 @@ export async function POST(request: Request, { params }: Params) {
 
   // A corporate account is published only after staff confirm payment and
   // grant its paid subscription. One-off listing credits do not activate it.
-  if (agent.corporateStatus && plan.kind === 'subscription') {
+  if (isCorporate && plan.kind === 'subscription') {
     await prisma.agent.update({ where: { id }, data: { corporateStatus: 'ACTIVE', isVerified: true } });
   }
 

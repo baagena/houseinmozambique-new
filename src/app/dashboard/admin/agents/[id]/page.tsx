@@ -81,9 +81,10 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
 
       <AdminGrantPlan
         agentId={agent.id}
-        plans={plans.map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn, kind: p.kind, price: `${p.pricePt} ${p.unitPt}`.trim() }))}
+        plans={plans.filter((p) => !(corporate?.corporateStatus || corporate?.agencyName) || p.kind === 'subscription').map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn, kind: p.kind, price: `${p.pricePt} ${p.unitPt}`.trim() }))}
         currentPlan={entitlement.planName}
         credits={entitlement.credits}
+        isCorporate={Boolean(corporate?.corporateStatus || corporate?.agencyName)}
       />
 
       {corporate?.corporateStatus && (

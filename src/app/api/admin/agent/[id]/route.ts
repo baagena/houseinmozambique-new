@@ -29,6 +29,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const { id } = await params;
     const body = await request.json();
+    const accountType = body.accountType === 'CORPORATE' ? 'CORPORATE' : body.accountType === 'INDIVIDUAL' ? 'INDIVIDUAL' : undefined;
 
     const name = body.name !== undefined ? String(body.name).trim() : undefined;
     if (name !== undefined && !name) {
@@ -36,6 +37,43 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const data: Record<string, unknown> = {};
+    if (accountType) {
+      const current = await prisma.agent.findUnique({ where: { id }, select: { corporateStatus: true } });
+      if (!current) return NextResponse.json({ error: 'Agent not found.' }, { status: 404 });
+      if (accountType === 'CORPORATE') {
+        const agencyName = String(body.agencyName || '').trim();
+        const agencyPhone = String(body.agencyPhone || '').trim();
+        const agencyBusinessType = String(body.agencyBusinessType || '').trim();
+        const agencyAbout = String(body.agencyAbout || '').trim();
+        const agencyServices = toStringArray(body.agencyServices) ?? [];
+        const agencyAreasServed = toStringArray(body.agencyAreasServed) ?? [];
+        const agencyWebsite = String(body.agencyWebsite || '').trim();
+        const agencyEmail = String(body.agencyEmail || '').trim().toLowerCase();
+        if (!agencyName) return NextResponse.json({ error: 'Enter the agency or company name.' }, { status: 400 });
+        if (!agencyPhone) return NextResponse.json({ error: 'Enter the agency contact phone.' }, { status: 400 });
+        const agencyPhoneDigits = agencyPhone.replace(/\D/g, '');
+        if (agencyPhoneDigits.length < 6 || agencyPhoneDigits.length > 20) {
+          return NextResponse.json({ error: 'Enter a complete agency contact number with 6 to 20 digits. Include the country code when available.' }, { status: 400 });
+        }
+        if (agencyWebsite && (!/^https:\/\//i.test(agencyWebsite) || agencyWebsite.length > 300)) {
+          return NextResponse.json({ error: 'Enter a website address starting with https://.' }, { status: 400 });
+        }
+        if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) {
+          return NextResponse.json({ error: 'Enter a valid agency email address.' }, { status: 400 });
+        }
+        Object.assign(data, {
+          agencyName, agencyPhone, agencyBusinessType, agencyAbout, agencyServices, agencyAreasServed,
+          agencyWebsite: agencyWebsite || null, agencyEmail: agencyEmail || null,
+          corporateStatus: current.corporateStatus || 'PENDING',
+        });
+      } else {
+        Object.assign(data, {
+          agencyName: null, agencyPhone: null, agencyBusinessType: null, agencyAbout: null,
+          agencyServices: [], agencyAreasServed: [], agencyWebsite: null, agencyEmail: null,
+          corporateStatus: null,
+        });
+      }
+    }
     if (name !== undefined) {
       data.name = name;
       data.initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'AG';
@@ -43,6 +81,7 @@ export async function PATCH(request: Request, { params }: Params) {
     if (body.title !== undefined) data.title = String(body.title).trim() || 'Agent';
     if (body.location !== undefined) data.location = String(body.location).trim() || 'Mozambique';
     if (body.phone !== undefined) data.phone = body.phone ? String(body.phone).trim() : null;
+    if (body.officeAddress !== undefined) data.officeAddress = body.officeAddress ? String(body.officeAddress).trim() : null;
     if (body.bio !== undefined) data.bio = body.bio ? String(body.bio).trim() : null;
     if (body.avatar !== undefined) data.avatar = body.avatar ? String(body.avatar).trim() : null;
     if (body.yearsExperience !== undefined) {
@@ -85,10 +124,12 @@ export async function PATCH(request: Request, { params }: Params) {
       where: { id },
       data,
       select: {
-        id: true, name: true, initials: true, title: true, location: true, phone: true,
+        id: true, name: true, initials: true, title: true, location: true, phone: true, officeAddress: true,
         bio: true, avatar: true, yearsExperience: true, rating: true, reviewCount: true,
         isFeatured: true, isVerified: true, specializations: true, email: true, role: true,
         isHidden: true, emailVerifiedAt: true,
+        agencyName: true, agencyPhone: true, agencyBusinessType: true, agencyAbout: true,
+        agencyServices: true, agencyAreasServed: true, agencyWebsite: true, agencyEmail: true, corporateStatus: true,
       },
     });
 

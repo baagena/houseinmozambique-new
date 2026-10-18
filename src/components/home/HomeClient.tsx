@@ -60,17 +60,6 @@ interface HomeClientProps {
   ads: Ad[];
 }
 
-const PARTNERS = [
-  'Millennium bim',
-  'Standard Bank',
-  'M-Pesa',
-  'e-Mola',
-  'FNB Moçambique',
-  'Absa',
-  'BCI',
-  'Vodacom M-Pesa',
-];
-
 const initials = (name: string) =>
   name
     .split(' ')
@@ -349,21 +338,6 @@ export default function HomeClient({
       </section>
 
       {/* ── Partners marquee ── */}
-      <section className="partners">
-        <div className="wrap">
-          <span className="plabel">{t.home.partnersLabel}</span>
-          <div className="marquee">
-            <div className="marquee__track">
-              {[...PARTNERS, ...PARTNERS].map((name, i) => (
-                <span className="marquee__item" key={`${name}-${i}`}>
-                  <i>{initials(name)}</i>
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

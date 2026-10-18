@@ -162,23 +162,35 @@ export async function getPropertyById(id: string) {
  * never clicked the link (often junk), and staff can confirm one by hand
  * from Manage agents.
  */
-const DIRECTORY_VISIBLE = {
-  role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null },
-  // Corporate requests are held out of public pages until an admin verifies
-  // payment and grants the paid subscription.
-  OR: [
-    { corporateStatus: null },
-    { corporateStatus: 'ACTIVE' },
-    ...(process.env.NODE_ENV === 'production' ? [] : [{ corporateStatus: 'DEMO' }]),
-  ],
-};
+export function getDirectoryVisibleWhere(now = new Date()) {
+  return {
+    role: 'AGENT' as const,
+    isHidden: false,
+    emailVerifiedAt: { not: null },
+    // Corporate agencies appear publicly only during a current paid period.
+    OR: [
+      { corporateStatus: null, agencyName: null },
+      {
+        corporateStatus: 'ACTIVE',
+        subscriptions: {
+          some: {
+            status: 'ACTIVE',
+            currentPeriodEnd: { gt: now },
+            plan: { kind: 'subscription', priceMinor: { gt: 0 } },
+          },
+        },
+      },
+      ...(process.env.NODE_ENV === 'production' ? [] : [{ corporateStatus: 'DEMO' }]),
+    ],
+  };
+}
 
 export async function getAgents() {
   // `include` returns every scalar column alongside the relation, which put the
   // password hash and the reset/verify tokens into the PUBLIC /agents page.
   // Select explicitly instead.
   return await prisma.agent.findMany({
-    where: DIRECTORY_VISIBLE,
+    where: getDirectoryVisibleWhere(),
     orderBy: { rating: 'desc' },
     select: { ...AGENT_PUBLIC, _count: { select: { properties: true } } },
   });
@@ -193,13 +205,22 @@ export async function getAgentsForAdmin() {
   return await prisma.agent.findMany({
     where: { role: 'AGENT' },
     orderBy: { rating: 'desc' },
-    select: { ...AGENT_ADMIN_LIST, _count: { select: { properties: true } } },
+    select: {
+      ...AGENT_ADMIN_LIST,
+      _count: { select: { properties: true } },
+      subscriptions: {
+        where: { status: 'ACTIVE', currentPeriodEnd: { gt: new Date() }, plan: { kind: 'subscription', priceMinor: { gt: 0 } } },
+        orderBy: { currentPeriodEnd: 'desc' },
+        take: 1,
+        select: { currentPeriodEnd: true },
+      },
+    },
   });
 }
 
 export async function getFeaturedAgents() {
   return await prisma.agent.findMany({
-    where: { ...DIRECTORY_VISIBLE, isFeatured: true },
+    where: { ...getDirectoryVisibleWhere(), isFeatured: true },
     take: 10,
     select: AGENT_PUBLIC,
   });

@@ -1,26 +1,34 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import Icon from '@/components/ui/Icon';
 import { prisma } from '@/lib/db';
 import { AGENT_PUBLIC } from '@/lib/dto';
 import { buildMetadata } from '@/lib/seo';
+import { getDirectoryVisibleWhere } from '@/lib/data';
+import { agentMatchesProfileSegment, getAgentProfilePath, getAgentProfileSlug } from '@/lib/agent-profile-url';
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const agent = await prisma.agent.findFirst({ where: { id, role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null }, OR: [{ corporateStatus: null }, { corporateStatus: 'ACTIVE' }, ...(process.env.NODE_ENV === 'production' ? [] : [{ corporateStatus: 'DEMO' }])] }, select: { name: true, agencyName: true, location: true, agencyAbout: true, bio: true } });
-  if (!agent) return buildMetadata({ title: 'Agent profile', path: `/agents/${id}` });
+  const { id: segment } = await params;
+  const candidates = await prisma.agent.findMany({ where: getDirectoryVisibleWhere(), select: { id: true, name: true, agencyName: true, location: true, agencyAbout: true, bio: true } });
+  const agent = candidates.find((candidate) => agentMatchesProfileSegment(candidate, segment));
+  if (!agent) return buildMetadata({ title: 'Agent profile', path: `/agents/${segment}` });
   const name = agent.agencyName || agent.name;
-  return buildMetadata({ title: `${name} | Real Estate in Mozambique`, description: agent.agencyAbout || agent.bio || `${name}, real estate professional in ${agent.location}, Mozambique.`, path: `/agents/${id}` });
+  return buildMetadata({ title: `${name} | Real Estate in Mozambique`, description: agent.agencyAbout || agent.bio || `${name}, real estate professional in ${agent.location}, Mozambique.`, path: getAgentProfilePath(agent) });
 }
 
 export default async function AgentProfilePage({ params }: Props) {
-  const { id } = await params;
+  const { id: segment } = await params;
+  const candidates = await prisma.agent.findMany({ where: getDirectoryVisibleWhere(), select: { id: true, name: true, agencyName: true } });
+  const candidate = candidates.find((agent) => agentMatchesProfileSegment(agent, segment));
+  if (!candidate) notFound();
+  if (segment !== getAgentProfileSlug(candidate)) redirect(getAgentProfilePath(candidate));
+
   const agent = await prisma.agent.findFirst({
-    where: { id, role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null }, OR: [{ corporateStatus: null }, { corporateStatus: 'ACTIVE' }, ...(process.env.NODE_ENV === 'production' ? [] : [{ corporateStatus: 'DEMO' }])] },
+    where: { id: candidate.id, ...getDirectoryVisibleWhere() },
     select: {
       ...AGENT_PUBLIC,
       corporateStatus: true,
@@ -32,6 +40,8 @@ export default async function AgentProfilePage({ params }: Props) {
     },
   });
   if (!agent) notFound();
+  const canonicalSlug = getAgentProfileSlug(agent);
+  if (segment !== canonicalSlug) redirect(getAgentProfilePath(agent));
 
   const corporate = Boolean(agent.agencyName);
   const publicName = agent.agencyName || agent.name;
@@ -98,6 +108,7 @@ export default async function AgentProfilePage({ params }: Props) {
               {agent.agencyEmail && <a href={`mailto:${agent.agencyEmail}`} className="flex flex-col items-center gap-2 rounded-xl bg-[var(--paper)] p-3 text-xs font-semibold hover:bg-[var(--line)]"><Icon name="mail" size={22} className="text-[var(--gold-deep)]" />Email</a>}
             </div>
             {phone && <div className="px-5 pb-5"><a href={`tel:${phone}`} className="btn btn--gold btn--full"><Icon name="call" size={17} />Contact {corporate ? 'agency' : 'agent'}</a></div>}
+            {corporate && phone && <p className="px-5 pb-4 text-center text-sm text-[#56615c]">Phone / WhatsApp: <a className="font-semibold text-[var(--ink)] hover:underline" href={`tel:${phone}`}>{phone}</a></p>}
             <div className="mx-5 border-t border-[#edf0ed] py-4 text-xs leading-5 text-[#68736e]">{agent.officeAddress ? <><span className="font-semibold text-[#26352e]">Office address</span><br />{agent.officeAddress}</> : `${agent.location}, Mozambique`}</div>
             {agent.isVerified && <div className="mx-5 mb-5 flex gap-2 rounded-xl bg-[#f5efe3] p-3 text-xs leading-5 text-[var(--ink)]"><Icon name="verified_user" size={17} className="text-[var(--verified)]" />Identity / business details verified by House in Mozambique.</div>}
           </aside>

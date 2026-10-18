@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,15 +31,35 @@ export interface AdminAgent {
   propertyCount: number;
   agencyName?: string;
   agencyPhone?: string;
+  agencyBusinessType?: string;
+  agencyAbout?: string;
+  agencyServices?: string[];
+  agencyAreasServed?: string[];
+  agencyWebsite?: string;
+  agencyEmail?: string;
+  officeAddress?: string;
   corporateStatus?: string;
+  corporatePaidThrough?: string | null;
 }
 
-type Draft = Partial<AdminAgent> & { password?: string; emailVerified?: boolean };
+type AgentAccountType = 'INDIVIDUAL' | 'CORPORATE';
+type Draft = Partial<AdminAgent> & {
+  password?: string;
+  emailVerified?: boolean;
+  accountType?: AgentAccountType;
+  specializationsText?: string;
+  agencyServicesText?: string;
+  agencyAreasServedText?: string;
+};
+
+const splitCommaList = (value: string) => value.split(/[,;\n]/).map((part) => part.trim()).filter(Boolean);
 
 const EMPTY_DRAFT: Draft = {
-  name: '', email: '', password: '', title: 'Agent', location: 'Mozambique', phone: '',
+  name: '', email: '', password: '', accountType: 'INDIVIDUAL', title: 'Real Estate Agent', location: 'Maputo', phone: '',
   bio: '', avatar: '', yearsExperience: 0, specializations: [], isFeatured: false,
-  isVerified: true, isHidden: false, role: 'AGENT',
+  isVerified: true, isHidden: false, role: 'AGENT', officeAddress: '', agencyName: '', agencyPhone: '',
+  agencyBusinessType: '', agencyAbout: '', agencyServices: [], agencyAreasServed: [], agencyWebsite: '', agencyEmail: '',
+  specializationsText: '', agencyServicesText: '', agencyAreasServedText: '',
 };
 
 export default function AdminAgentsClient({ initialAgents }: { initialAgents: AdminAgent[] }) {
@@ -51,19 +71,38 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [agentFilter, setAgentFilter] = useState<'ALL' | 'INDIVIDUAL' | 'CORPORATE' | 'ADMIN'>('ALL');
+
+  const isCorporate = (agent: AdminAgent) => Boolean(agent.corporateStatus || agent.agencyName);
+  const visibleAgents = agents.filter((agent) => {
+    if (agentFilter === 'CORPORATE') return isCorporate(agent);
+    if (agentFilter === 'INDIVIDUAL') return agent.role !== 'ADMIN' && !isCorporate(agent);
+    if (agentFilter === 'ADMIN') return agent.role === 'ADMIN';
+    return true;
+  });
 
   function openCreate() {
     setDraft(EMPTY_DRAFT);
     setEditingId(null);
     setMode('create');
     setError(null);
+    setUploadingAvatar(false);
   }
 
   function openEdit(agent: AdminAgent) {
-    setDraft({ ...agent, password: '' });
+    setDraft({
+      ...agent,
+      password: '',
+      accountType: isCorporate(agent) ? 'CORPORATE' : 'INDIVIDUAL',
+      specializationsText: agent.specializations.join(', '),
+      agencyServicesText: (agent.agencyServices ?? []).join(', '),
+      agencyAreasServedText: (agent.agencyAreasServed ?? []).join(', '),
+    });
     setEditingId(agent.id);
     setMode('edit');
     setError(null);
+    setUploadingAvatar(false);
   }
 
   function close() {
@@ -71,10 +110,29 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
     setDraft(EMPTY_DRAFT);
     setEditingId(null);
     setError(null);
+    setUploadingAvatar(false);
   }
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function uploadAvatar(file?: File) {
+    if (!file) return;
+    setUploadingAvatar(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.set('avatar', file);
+      const response = await fetch('/api/admin/agent/avatar', { method: 'POST', body: form, credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok || !data.avatar) throw new Error(data.error || 'Photo upload failed.');
+      set('avatar', data.avatar);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Photo upload failed.');
+    } finally {
+      setUploadingAvatar(false);
+    }
   }
 
   async function save() {
@@ -91,11 +149,21 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
         yearsExperience: draft.yearsExperience,
         rating: draft.rating,
         reviewCount: draft.reviewCount,
-        specializations: draft.specializations,
+        specializations: splitCommaList(draft.specializationsText ?? (draft.specializations ?? []).join(', ')),
         isFeatured: draft.isFeatured,
         isVerified: draft.isVerified,
         isHidden: draft.isHidden,
         role: draft.role,
+        accountType: draft.accountType ?? 'INDIVIDUAL',
+        officeAddress: draft.officeAddress,
+        agencyName: draft.agencyName,
+        agencyPhone: draft.agencyPhone,
+        agencyBusinessType: draft.agencyBusinessType,
+        agencyAbout: draft.agencyAbout,
+        agencyServices: splitCommaList(draft.agencyServicesText ?? (draft.agencyServices ?? []).join(', ')),
+        agencyAreasServed: splitCommaList(draft.agencyAreasServedText ?? (draft.agencyAreasServed ?? []).join(', ')),
+        agencyWebsite: draft.agencyWebsite,
+        agencyEmail: draft.agencyEmail,
       };
       if (mode === 'edit' && draft.emailVerified !== undefined) payload.emailVerified = draft.emailVerified;
       if (draft.password) payload.password = draft.password;
@@ -178,7 +246,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
           <p className="mt-1 text-sm text-[#74777f]">Create, edit, and manage every agent profile.</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden text-[13px] font-medium text-[#9aa0a8] sm:inline">{agents.length} agents</span>
+          <span className="hidden text-[13px] font-medium text-[#9aa0a8] sm:inline">{visibleAgents.length} shown · {agents.length} total</span>
           <button
             onClick={openCreate}
             className="flex flex-none items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#002045] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0a2f5c]"
@@ -187,6 +255,25 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             Add agent
           </button>
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2" aria-label="Filter agent accounts">
+        {([
+          ['ALL', 'All accounts', agents.length],
+          ['INDIVIDUAL', 'Individual agents', agents.filter((agent) => agent.role !== 'ADMIN' && !isCorporate(agent)).length],
+          ['CORPORATE', 'Corporate agencies', agents.filter(isCorporate).length],
+          ['ADMIN', 'Platform admins', agents.filter((agent) => agent.role === 'ADMIN').length],
+        ] as const).map(([value, label, count]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setAgentFilter(value)}
+            aria-pressed={agentFilter === value}
+            className={`rounded-full border px-3.5 py-2 text-[12px] font-medium transition ${agentFilter === value ? 'border-[#002045] bg-[#002045] text-white' : 'border-[#e3e6ea] bg-white text-[#5b616b] hover:border-[#002045]/30 hover:text-[#002045]'}`}
+          >
+            {label} <span className={agentFilter === value ? 'text-white/70' : 'text-[#9aa0a8]'}>{count}</span>
+          </button>
+        ))}
       </div>
 
       <div className="overflow-hidden rounded-xl border border-[#eceef1] bg-white">
@@ -200,7 +287,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             </tr>
           </thead>
           <tbody>
-            {agents.map((agent) => (
+            {visibleAgents.map((agent) => (
               <tr key={agent.id} className="group border-b border-[#f2f4f6] transition-colors hover:bg-[#fafbfc] last:border-0">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
@@ -224,7 +311,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     <div className="leading-tight">
                       <p className="text-[13px] font-medium text-[#002045]">{agent.name}</p>
                       <p className="text-[12px] text-[#9aa0a8]">{agent.email}</p>
-                      {agent.corporateStatus && <p className="mt-1 text-[12px] font-medium text-[#845326]">Corporate request: {agent.agencyName} · {agent.corporateStatus.toLowerCase()}{agent.agencyPhone ? ` · ${agent.agencyPhone}` : ''}</p>}
+                      {isCorporate(agent) && <p className="mt-1 text-[12px] font-medium text-[#845326]">{agent.agencyName || 'Corporate agency'} · {agent.agencyBusinessType || 'Real estate'} · {(agent.corporateStatus || 'PENDING').toLowerCase()}{agent.agencyPhone ? ` · ${agent.agencyPhone}` : ''}</p>}
                       {agent.avatar && (
                         <a
                           href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
@@ -248,6 +335,9 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${agent.role === 'ADMIN' ? 'bg-[#002045] text-white' : 'bg-[#f1f3f5] text-[#5b616b]'}`}>
                       {agent.role === 'ADMIN' ? 'Admin' : 'Agent'}
                     </span>
+                    {agent.role !== 'ADMIN' && <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${isCorporate(agent) ? 'bg-violet-50 text-violet-700' : 'bg-sky-50 text-sky-700'}`}>{isCorporate(agent) ? 'Corporate' : 'Individual'}</span>}
+                    {isCorporate(agent) && <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${agent.corporateStatus === 'DEMO' ? 'bg-sky-50 text-sky-700' : agent.corporatePaidThrough ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{agent.corporateStatus === 'DEMO' ? 'Demo' : agent.corporatePaidThrough ? 'Paid' : agent.corporateStatus === 'ACTIVE' ? 'Payment due' : 'Pending payment'}</span>}
+                    {isCorporate(agent) && agent.corporatePaidThrough && <span className="rounded-md bg-[#f1f3f5] px-1.5 py-0.5 text-[11px] font-medium text-[#5b616b]">Paid through {new Date(agent.corporatePaidThrough).toLocaleDateString('en-GB')}</span>}
                     {agent.isVerified && (
                       <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">Verified</span>
                     )}
@@ -293,7 +383,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                       href={`/dashboard/admin/agents/${agent.id}`}
                       className="rounded-md px-3 py-2 text-left text-[#74777f] hover:bg-[#f7f9fb] hover:text-[#002045]"
                     >
-                      Analytics
+                      {isCorporate(agent) ? agent.corporatePaidThrough ? 'Payment & profile' : 'Confirm payment & activate' : 'Analytics'}
                     </Link>
                     <button
                       onClick={() => revoke(agent.id)}
@@ -314,10 +404,10 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                 </td>
               </tr>
             ))}
-            {agents.length === 0 && (
+            {visibleAgents.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-5 py-16 text-center text-sm text-[#9aa0a8]">
-                  No agents yet. Add one to get started.
+                  {agents.length === 0 ? 'No agent accounts yet. Add one to get started.' : 'No accounts in this group yet.'}
                 </td>
               </tr>
             )}
@@ -333,48 +423,102 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
             </button>
             <h3 className="text-base font-semibold text-[#002045]">{mode === 'create' ? 'Add new agent' : `Edit ${draft.name}`}</h3>
             <p className="mb-5 mt-0.5 text-sm text-[#74777f]">
-              {mode === 'create' ? 'Provision a new agent account with login credentials.' : 'Update this agent’s profile details.'}
+              {mode === 'create' ? 'Create an individual professional or corporate agency account. Both can manage their own property listings.' : 'Update the account type, access, and public profile.'}
             </p>
 
             {error && (
               <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-[13px] font-medium text-red-600">{error}</div>
             )}
 
+            <div className="mb-5 rounded-xl border border-[#e3e6ea] bg-[#fafbfc] p-4">
+              <label className="mb-1 block text-[12px] font-semibold text-[#263b56]">Account type</label>
+              <select value={draft.accountType ?? 'INDIVIDUAL'} onChange={(e) => {
+                const nextType = e.target.value as AgentAccountType;
+                set('accountType', nextType);
+                if (nextType === 'CORPORATE') set('agencyPhone', draft.agencyPhone || draft.phone || '');
+                else set('phone', draft.phone || draft.agencyPhone || '');
+              }} className="w-full max-w-sm rounded-lg border border-[#e3e6ea] bg-white px-3 py-2.5 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10">
+                <option value="INDIVIDUAL">Individual real estate agent</option>
+                <option value="CORPORATE">Corporate agency</option>
+              </select>
+              <p className="mt-2 text-[12px] leading-5 text-[#74777f]">
+                {draft.accountType === 'CORPORATE' ? 'The agency profile stays private while payment is pending. An admin activates it by granting a subscription.' : 'The professional profile appears in the agent directory when it is verified and visible.'}
+              </p>
+            </div>
+
+            <SectionTitle>Account holder</SectionTitle>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Full Name" value={draft.name ?? ''} onChange={(v) => set('name', v)} />
-              <Field label="Email" type="email" value={draft.email ?? ''} onChange={(v) => set('email', v)} disabled={mode === 'edit'} />
-              <Field label={mode === 'create' ? 'Password' : 'Reset Password (optional)'} type="password" value={draft.password ?? ''} onChange={(v) => set('password', v)} />
-              <Field label="Title" value={draft.title ?? ''} onChange={(v) => set('title', v)} />
-              <Field label="Location" value={draft.location ?? ''} onChange={(v) => set('location', v)} />
-              <Field label="Phone" value={draft.phone ?? ''} onChange={(v) => set('phone', v)} />
-              <Field label="Years Experience" type="number" value={String(Number.isFinite(draft.yearsExperience) ? draft.yearsExperience : 0)} onChange={(v) => set('yearsExperience', Number.isFinite(Number(v)) ? Number(v) : 0)} />
-              <Field label="Avatar URL" value={draft.avatar ?? ''} onChange={(v) => set('avatar', v)} />
-              {mode === 'edit' && (
-                <>
-                  <Field label="Rating (0–5)" type="number" value={String(Number.isFinite(draft.rating) ? draft.rating : 0)} onChange={(v) => set('rating', Number.isFinite(Number(v)) ? Number(v) : 0)} />
-                  <Field label="Review Count" type="number" value={String(Number.isFinite(draft.reviewCount) ? draft.reviewCount : 0)} onChange={(v) => set('reviewCount', Number.isFinite(Number(v)) ? Number(v) : 0)} />
-                </>
-              )}
+              <Field label="Full name / representative" value={draft.name ?? ''} onChange={(v) => set('name', v)} />
+              <Field label="Login email" type="email" value={draft.email ?? ''} onChange={(v) => set('email', v)} disabled={mode === 'edit'} />
+              <Field label={mode === 'create' ? 'Temporary password (8+ characters)' : 'Reset password (optional)'} type="password" value={draft.password ?? ''} onChange={(v) => set('password', v)} />
+              <Field label="Professional title" value={draft.title ?? ''} onChange={(v) => set('title', v)} />
+              <Field label="Primary service area (optional)" value={draft.location ?? ''} onChange={(v) => set('location', v)} />
+              <div className={draft.accountType === 'CORPORATE' ? 'sm:col-span-2' : undefined}>
+                <Field
+                  label={draft.accountType === 'CORPORATE' ? 'Agency phone / WhatsApp number' : 'Contact phone'}
+                  type="tel"
+                  value={draft.accountType === 'CORPORATE' ? draft.agencyPhone ?? '' : draft.phone ?? ''}
+                  onChange={(v) => {
+                    set('phone', v);
+                    if (draft.accountType === 'CORPORATE') set('agencyPhone', v);
+                  }}
+                  placeholder="+258 84 123 4567"
+                />
+                {draft.accountType === 'CORPORATE' && <p className="mt-1 text-[11px] text-[#74777f]">This number appears on the agency profile for calls and WhatsApp. Enter the full number; spaces and + are saved.</p>}
+              </div>
+              {draft.accountType !== 'CORPORATE' && <Field label="Office address (optional)" value={draft.officeAddress ?? ''} onChange={(v) => set('officeAddress', v)} />}
+              {draft.accountType !== 'CORPORATE' && <Field label="Years of experience" type="number" value={String(Number.isFinite(draft.yearsExperience) ? draft.yearsExperience : 0)} onChange={(v) => set('yearsExperience', Number.isFinite(Number(v)) ? Number(v) : 0)} />}
             </div>
 
-            <div className="mt-4">
-              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Specializations (comma separated)</label>
-              <input
-                value={(draft.specializations ?? []).join(', ')}
-                onChange={(e) => set('specializations', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
-                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
-              />
+            <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-[#e3e6ea] bg-[#fafbfc] p-4">
+              <div className="relative h-16 w-16 overflow-hidden rounded-full bg-[#edf0f3]">
+                {draft.avatar ? <Image src={draft.avatar} alt="Agent profile preview" fill className="object-cover" sizes="64px" /> : <div className="flex h-full items-center justify-center text-xl font-semibold text-[#718096]">{draft.initials || 'AG'}</div>}
+              </div>
+              <div>
+                <label className="block text-[12px] font-semibold text-[#263b56]">Profile photo <span className="text-red-600">*</span></label>
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadAvatar(event.target.files?.[0])} className="mt-1 block max-w-full text-[12px] text-[#5b616b] file:mr-3 file:rounded-lg file:border-0 file:bg-[#002045] file:px-3 file:py-2 file:text-[12px] file:font-medium file:text-white" />
+                <p className="mt-1 text-[11px] text-[#74777f]">JPG, PNG or WebP, up to 5 MB. {uploadingAvatar ? 'Uploading…' : draft.avatar ? 'Photo uploaded.' : 'Upload a clear portrait.'}</p>
+              </div>
             </div>
 
-            <div className="mt-4">
-              <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">Bio</label>
-              <textarea
-                rows={3}
-                value={draft.bio ?? ''}
-                onChange={(e) => set('bio', e.target.value)}
-                className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10"
-              />
+            {draft.accountType === 'CORPORATE' ? (
+              <>
+                <SectionTitle className="mt-6">Agency profile</SectionTitle>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Agency / company name *" value={draft.agencyName ?? ''} onChange={(v) => set('agencyName', v)} />
+                  <Field label="Business type (optional)" value={draft.agencyBusinessType ?? ''} onChange={(v) => set('agencyBusinessType', v)} placeholder="Property consultancy, brokerage…" />
+                  <Field label="Office address (optional)" value={draft.officeAddress ?? ''} onChange={(v) => set('officeAddress', v)} placeholder="Building, street, bairro, city" />
+                  <Field label="Public agency email" type="email" value={draft.agencyEmail ?? ''} onChange={(v) => set('agencyEmail', v)} />
+                  <Field label="Website (https://)" value={draft.agencyWebsite ?? ''} onChange={(v) => set('agencyWebsite', v)} />
+                </div>
+                <TextArea label="Services offered (optional; separate with commas or new lines)" value={draft.agencyServicesText ?? ''} onChange={(v) => set('agencyServicesText', v)} />
+                <TextArea label="Areas served (optional; separate with commas or new lines)" value={draft.agencyAreasServedText ?? ''} onChange={(v) => set('agencyAreasServedText', v)} />
+                <TextArea label="About the agency (optional)" value={draft.agencyAbout ?? ''} onChange={(v) => set('agencyAbout', v)} />
+              </>
+            ) : (
+              <>
+                <SectionTitle className="mt-6">Professional profile</SectionTitle>
+                <TextArea label="Specializations (optional; separate with commas or new lines)" value={draft.specializationsText ?? ''} onChange={(v) => set('specializationsText', v)} />
+                <TextArea label="Professional biography" value={draft.bio ?? ''} onChange={(v) => set('bio', v)} />
+              </>
+            )}
+
+            <div className="mt-5 rounded-xl border border-[#e3e6ea] bg-white p-4">
+              <p className="text-[13px] font-semibold text-[#263b56]">Account access</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {['Create and manage own listings', 'Receive and respond to enquiries', 'Use agent dashboard'].map((permission) => (
+                  <span key={permission} className="rounded-full bg-[#f1f3f5] px-2.5 py-1 text-[11px] font-medium text-[#526174]">{permission}</span>
+                ))}
+              </div>
+              <p className="mt-2 text-[12px] leading-5 text-[#74777f]">Listing publication and corporate directory visibility follow the account’s plan and approval status.</p>
             </div>
+
+            {mode === 'edit' && (
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Rating (0–5)" type="number" value={String(Number.isFinite(draft.rating) ? draft.rating : 0)} onChange={(v) => set('rating', Number.isFinite(Number(v)) ? Number(v) : 0)} />
+                <Field label="Review count" type="number" value={String(Number.isFinite(draft.reviewCount) ? draft.reviewCount : 0)} onChange={(v) => set('reviewCount', Number.isFinite(Number(v)) ? Number(v) : 0)} />
+              </div>
+            )}
 
             <div className="mt-5 flex flex-wrap items-center gap-5">
               <Toggle label="Verified" checked={!!draft.isVerified} onChange={(v) => set('isVerified', v)} />
@@ -390,7 +534,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                   onChange={(v) => set('emailVerified', v)}
                 />
               )}
-              <div className="flex items-center gap-2">
+              {mode === 'edit' && <div className="flex items-center gap-2">
                 <label className="text-[12px] font-medium text-[#5b616b]">Role</label>
                 <select
                   value={draft.role ?? 'AGENT'}
@@ -400,7 +544,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                   <option value="AGENT">Agent</option>
                   <option value="ADMIN">Admin</option>
                 </select>
-              </div>
+              </div>}
             </div>
 
             <div className="mt-7 flex justify-end gap-2.5">
@@ -409,7 +553,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
               </button>
               <button
                 onClick={save}
-                disabled={isSaving}
+                disabled={isSaving || uploadingAvatar}
                 className="rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#0a2f5c] disabled:opacity-50"
               >
                 {isSaving ? 'Saving…' : mode === 'create' ? 'Create agent' : 'Save changes'}
@@ -423,9 +567,9 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
 }
 
 function Field({
-  label, value, onChange, type = 'text', disabled = false,
+  label, value, onChange, type = 'text', disabled = false, placeholder,
 }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean;
+  label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; placeholder?: string;
 }) {
   return (
     <div>
@@ -434,11 +578,27 @@ function Field({
         type={type}
         value={value}
         disabled={disabled}
+        placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 disabled:bg-[#f5f6f8] disabled:opacity-70"
+        maxLength={type === 'tel' ? 30 : undefined}
+        autoComplete={type === 'tel' ? 'tel' : undefined}
+        className="w-full min-w-0 rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] font-medium text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10 disabled:bg-[#f5f6f8] disabled:opacity-70"
       />
     </div>
   );
+}
+
+function TextArea({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="mt-4">
+      <label className="mb-1 block text-[12px] font-medium text-[#5b616b]">{label}</label>
+      <textarea rows={4} value={value} onChange={(event) => onChange(event.target.value)} className="w-full resize-y rounded-lg border border-[#e3e6ea] bg-white px-3 py-2 text-[13px] text-[#002045] outline-none focus:border-[#002045]/30 focus:ring-2 focus:ring-[#002045]/10" />
+    </div>
+  );
+}
+
+function SectionTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <h4 className={`mb-3 text-[13px] font-semibold uppercase tracking-wide text-[#596b80] ${className}`}>{children}</h4>;
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {

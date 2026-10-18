@@ -62,10 +62,36 @@ export const MOZAMBIQUE_PROVINCES = [
   'Nampula', 'Niassa', 'Sofala', 'Tete', 'Zambézia',
 ] as const;
 
+const PLACE_KEY = (place: string) => place.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+
+const CITY_PROVINCE: Record<string, (typeof MOZAMBIQUE_PROVINCES)[number]> = {
+  'maputo city': 'Maputo City', maputo: 'Maputo City',
+  'maputo province': 'Maputo Province', matola: 'Maputo Province', boane: 'Maputo Province', marracuene: 'Maputo Province', manhica: 'Maputo Province', namaacha: 'Maputo Province',
+  'cabo delgado': 'Cabo Delgado', pemba: 'Cabo Delgado', montepuez: 'Cabo Delgado',
+  gaza: 'Gaza', 'xai-xai': 'Gaza', chibuto: 'Gaza', chokwe: 'Gaza',
+  inhambane: 'Inhambane', 'inhambane city': 'Inhambane', vilanculos: 'Inhambane', maxixe: 'Inhambane', tofo: 'Inhambane',
+  manica: 'Manica', chimoio: 'Manica',
+  nampula: 'Nampula', 'nampula city': 'Nampula', nacala: 'Nampula', 'ilha de mocambique': 'Nampula',
+  niassa: 'Niassa', lichinga: 'Niassa',
+  sofala: 'Sofala', beira: 'Sofala', dondo: 'Sofala',
+  tete: 'Tete', 'tete city': 'Tete',
+  zambezia: 'Zambézia', quelimane: 'Zambézia', mocuba: 'Zambézia',
+};
+
+/** Return the province for a selected province or a common city/town name. */
+export function provinceForPlace(place: string | null | undefined) {
+  if (!place) return null;
+  return CITY_PROVINCE[PLACE_KEY(place)] ?? null;
+}
+
+export function isMozambiqueProvince(place: string | null | undefined) {
+  return Boolean(place && MOZAMBIQUE_PROVINCES.some((province) => PLACE_KEY(province) === PLACE_KEY(place)));
+}
+
 /** Provinces plus commonly used cities, since listings may be entered either way. */
 export const CITIES = [
   ...MOZAMBIQUE_PROVINCES,
-  'Maputo', 'Matola', 'Beira', 'Pemba', 'Nampula City', 'Quelimane', 'Tete City',
+  'Maputo', 'Matola', 'Beira', 'Pemba', 'Nampula City', 'Lichinga', 'Quelimane', 'Tete City',
   'Inhambane City', 'Vilanculos', 'Xai-Xai', 'Chimoio',
 ] as const;
 
