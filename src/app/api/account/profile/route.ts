@@ -31,8 +31,8 @@ export async function PATCH(request: Request) {
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return NextResponse.json({ error: 'Invalid profile data.' }, { status: 400 });
     }
-    const name = typeof body.name === 'string' ? body.name.trim() : undefined;
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : undefined;
+    const name: string | undefined = typeof body.name === 'string' ? body.name.trim() : undefined;
+    const email: string | undefined = typeof body.email === 'string' ? body.email.trim().toLowerCase() : undefined;
     const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
     const newPassword = typeof body.newPassword === 'string' ? body.newPassword : '';
 
