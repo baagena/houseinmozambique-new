@@ -1,0 +1,5 @@
+ALTER TABLE "Agent"
+  ADD COLUMN IF NOT EXISTS "officeAddress" TEXT,
+  ADD COLUMN IF NOT EXISTS "agencyName" TEXT,
+  ADD COLUMN IF NOT EXISTS "agencyPhone" TEXT,
+  ADD COLUMN IF NOT EXISTS "corporateStatus" TEXT;

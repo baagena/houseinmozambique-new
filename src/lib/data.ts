@@ -59,11 +59,12 @@ export async function getProperties(filters: {
   maxPrice?: number;
   bedrooms?: number;
   bathrooms?: number;
+  agentId?: string;
   skip?: number;
   take?: number;
   sort?: 'newest' | 'oldest' | 'price_asc' | 'price_desc';
 } = {}) {
-  const { listingType, city, propertyType, minPrice, maxPrice, bedrooms, bathrooms, skip, take, sort } = filters;
+  const { listingType, city, propertyType, minPrice, maxPrice, bedrooms, bathrooms, agentId, skip, take, sort } = filters;
 
   const orderBy =
     sort === 'oldest' ? { createdAt: 'asc' as const } :
@@ -74,6 +75,7 @@ export async function getProperties(filters: {
   const rows = await prisma.property.findMany({
     where: {
       status: 'PUBLISHED', // Only show published by default
+      ...(agentId && { hostId: agentId }),
       ...(listingType && { listingType }),
       ...(city && { city: { contains: city, mode: 'insensitive' } }),
       ...(propertyType && propertyType.length > 0 && { type: { in: propertyType } }),
@@ -160,7 +162,16 @@ export async function getPropertyById(id: string) {
  * never clicked the link (often junk), and staff can confirm one by hand
  * from Manage agents.
  */
-const DIRECTORY_VISIBLE = { role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null } } as const;
+const DIRECTORY_VISIBLE = {
+  role: 'AGENT', isHidden: false, emailVerifiedAt: { not: null },
+  // Corporate requests are held out of public pages until an admin verifies
+  // payment and grants the paid subscription.
+  OR: [
+    { corporateStatus: null },
+    { corporateStatus: 'ACTIVE' },
+    ...(process.env.NODE_ENV === 'production' ? [] : [{ corporateStatus: 'DEMO' }]),
+  ],
+};
 
 export async function getAgents() {
   // `include` returns every scalar column alongside the relation, which put the

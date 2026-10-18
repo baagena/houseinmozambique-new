@@ -8,7 +8,7 @@ export interface Property {
   neighborhood?: string | null;
   price: number;
   priceUnit: 'sale' | 'monthly' | 'nightly';
-  type: 'Villa' | 'Apartment' | 'Land' | 'Penthouse' | 'Studio' | 'Bungalow' | 'Lodge';
+  type: string;
   listingType: 'Buy' | 'Rent' | 'Short Stay' | 'Auction';
   bedrooms: number;
   bathrooms: number;

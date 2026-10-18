@@ -9,18 +9,27 @@ import HomeClient, { type CategoryCount, type CityCount } from '@/components/hom
 import JsonLd from '@/components/seo/JsonLd';
 import { faqJsonLd, HOME_FAQS } from '@/lib/seo';
 import { sanitizeProperties } from '@/lib/mobile-serialize';
+import { MOZAMBIQUE_PROVINCES } from '@/lib/listing-copy';
 
 /**
- * Cities shown in the "Explore Mozambique" grid. The counts are read from the
- * live listings below — only cities that actually have properties are rendered.
+ * Province tiles shown in the "Explore Mozambique" grid. Counts come from
+ * published listings, and all provinces remain visible while the directory grows.
  */
 const CITY_IMAGES: Record<string, string> = {
   Maputo: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=900&auto=format&fit=crop',
+  'Maputo City': 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=900&auto=format&fit=crop',
+  'Maputo Province': 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=900&auto=format&fit=crop',
   Beira: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=900&auto=format&fit=crop',
+  Sofala: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=900&auto=format&fit=crop',
   Pemba: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=900&auto=format&fit=crop',
+  'Cabo Delgado': 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=900&auto=format&fit=crop',
+  Gaza: 'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?q=80&w=900&auto=format&fit=crop',
   Inhambane: 'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?q=80&w=900&auto=format&fit=crop',
   Nampula: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=900&auto=format&fit=crop',
+  'Niassa': 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=900&auto=format&fit=crop',
   Tete: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=900&auto=format&fit=crop',
+  Manica: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=900&auto=format&fit=crop',
+  Zambézia: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=900&auto=format&fit=crop',
   Matola: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=900&auto=format&fit=crop',
   Quelimane: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=900&auto=format&fit=crop',
 };
@@ -95,11 +104,7 @@ export default async function HomePage() {
     if (!p.city) continue;
     cityCounts.set(p.city, (cityCounts.get(p.city) || 0) + 1);
   }
-  const cityNames = new Set([...Object.keys(CITY_IMAGES), ...cityCounts.keys()]);
-  const cities: CityCount[] = [...cityNames]
-    .sort((a, b) => (cityCounts.get(b) || 0) - (cityCounts.get(a) || 0) || a.localeCompare(b))
-    .slice(0, 8)
-    .map((name) => ({
+  const cities: CityCount[] = MOZAMBIQUE_PROVINCES.map((name) => ({
       name,
       count: cityCounts.get(name) || 0,
       image: CITY_IMAGES[name] || FALLBACK_CITY_IMAGE,

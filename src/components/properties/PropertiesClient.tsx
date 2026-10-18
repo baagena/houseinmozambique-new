@@ -9,6 +9,7 @@ import AdBanner from '@/components/ads/AdBanner';
 import { Property } from '@/types';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
+import { PROPERTY_TYPES } from '@/lib/listing-copy';
 
 interface Ad {
   id: string;
@@ -24,7 +25,6 @@ interface Props {
   ads?: Ad[];
 }
 
-const PROPERTY_TYPES = ['House', 'Villa', 'Apartment', 'Penthouse', 'Office', 'Land', 'Lodge', 'Studio', 'Bungalow'];
 const PAGE_SIZE = 12;
 const PAGE_HERO =
   'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=1800&auto=format&fit=crop';

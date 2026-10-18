@@ -15,6 +15,7 @@ model Agent {
   initials               String
   title                  String
   location               String
+  officeAddress          String?
   phone                  String?
   rating                 Float           @default(0)
   reviewCount            Int             @default(0)
@@ -29,6 +30,17 @@ model Agent {
   bio                    String?
   yearsExperience        Int?
   specializations        String[]
+  // Corporate account request details. Access stays pending until staff verify
+  // payment and grant a subscription from the admin agent record.
+  agencyName             String?
+  agencyPhone            String?
+    agencyBusinessType     String?
+    agencyAbout            String?
+    agencyServices         String[]        @default([])
+    agencyAreasServed      String[]        @default([])
+    agencyWebsite          String?
+    agencyEmail            String?
+    corporateStatus        String? // PENDING, ACTIVE, DECLINED, DEMO (development-only preview)
   email                  String          @unique
   password               String
   emailVerifiedAt        DateTime?

@@ -263,7 +263,7 @@ export default function HomeClient({
                     alt={city.name}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 680px) 100vw, (max-width: 1320px) 33vw, 25vw"
+                    sizes="(max-width: 680px) 50vw, (max-width: 1000px) 33vw, (max-width: 1320px) 25vw, 16vw"
                   />
                   <span className="city__label">
                     <b>{city.name}</b>

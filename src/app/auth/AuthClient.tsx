@@ -71,7 +71,9 @@ function AuthForm() {
   
   // Two self-service partitions: professional agents and private owners. Owners
   // skip the professional profile steps but get the same listing controls.
-  const [accountType, setAccountType] = useState<'AGENT' | 'OWNER'>('AGENT');
+  const [accountType, setAccountType] = useState<'AGENT' | 'OWNER' | 'CORPORATE'>(
+    searchParams.get('accountType') === 'CORPORATE' ? 'CORPORATE' : 'AGENT',
+  );
 
   const [formData, setFormData] = useState({
     email: '',
@@ -80,14 +82,26 @@ function AuthForm() {
     // Step 2 Professional
     title: 'Premier Agent',
     location: '',
+    phone: '',
+    officeAddress: '',
     yearsExperience: 1,
     // Step 3 Narrative
     bio: '',
     specializations: [] as string[],
+    agencyName: '',
+    agencyPhone: '',
+    agencyBusinessType: '',
+    agencyAbout: '',
+    agencyServices: [] as string[],
+    agencyAreasServed: '',
+    agencyWebsite: '',
+    agencyEmail: '',
+    avatarDataUrl: '',
   });
 
   const [error, setError] = useState<string | null>(null);
   const [verificationMessage, setVerificationMessage] = useState('');
+  const [isReadingPhoto, setIsReadingPhoto] = useState(false);
 
   const redirect = searchParams.get('redirect') || '/';
   const plan = searchParams.get('plan');
@@ -97,8 +111,42 @@ function AuthForm() {
      which reads as a broken site rather than as a link already used. */
   const linkError = searchParams.get('error');
 
+  const handleAgentPhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Choose a JPG, PNG, or WebP headshot.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Your headshot must be 5 MB or smaller.');
+      input.value = '';
+      return;
+    }
+
+    setError(null);
+    setIsReadingPhoto(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((current) => ({ ...current, avatarDataUrl: String(reader.result || '') }));
+      setIsReadingPhoto(false);
+    };
+    reader.onerror = () => {
+      setError('We could not read that photo. Please choose another image.');
+      setIsReadingPhoto(false);
+      input.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (tab === 'signup' && accountType !== 'OWNER' && (isReadingPhoto || !formData.avatarDataUrl)) {
+      setError(isReadingPhoto ? 'Please wait while your profile photo is prepared.' : 'Upload your profile photo to continue.');
+      return;
+    }
     setIsLoading(true);
     setError(null);
     setVerificationMessage('');
@@ -247,6 +295,14 @@ function AuthForm() {
         : [...prev.specializations, spec]
     }));
   };
+
+  const CORPORATE_SERVICES = ['Property consultancy', 'Investment guidance', 'Property management', 'Market research', 'Valuation', 'Brokerage', 'Commercial real estate'];
+  const toggleAgencyService = (service: string) => setFormData((current) => ({
+    ...current,
+    agencyServices: current.agencyServices.includes(service)
+      ? current.agencyServices.filter((item) => item !== service)
+      : [...current.agencyServices, service],
+  }));
 
   // Private owners have no professional profile to fill in, so their sign-up is shorter.
   const totalSteps = accountType === 'OWNER' ? 2 : 3;
@@ -526,7 +582,7 @@ function AuthForm() {
                         <label className="block text-[13px] font-medium text-[#5b616b]">
                           {lang === 'en' ? 'I am registering as' : 'Estou a registar-me como'}
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           {([
                             {
                               value: 'AGENT' as const,
@@ -539,6 +595,12 @@ function AuthForm() {
                               icon: 'key',
                               label: lang === 'en' ? 'Private owner' : 'Proprietário privado',
                               hint: lang === 'en' ? 'Listing my own property' : 'Listar o meu imóvel',
+                            },
+                            {
+                              value: 'CORPORATE' as const,
+                              icon: 'domain',
+                              label: lang === 'en' ? 'Corporate agency' : 'Agência imobiliária',
+                              hint: lang === 'en' ? 'Register your agency' : 'Registe a sua agência',
                             },
                           ]).map((option) => (
                             <button
@@ -597,11 +659,19 @@ function AuthForm() {
                   {/* Step 2: Professional Details */}
                   {step === 2 && (
                     <div className="space-y-4">
-                      {accountType === 'AGENT' && (
+                      {accountType === 'CORPORATE' && (
+                        <div className="space-y-4 rounded-lg border border-[#e3e6ea] bg-white p-4">
+                          <p className="text-sm text-[#5E6B7A]">Add the agency name and the contact number clients should use.</p>
+                          <input required maxLength={120} className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] text-sm" placeholder="Agency or company name" value={formData.agencyName} onChange={(e) => setFormData({...formData, agencyName: e.target.value})} />
+                          <input required type="tel" maxLength={30} className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] text-sm" placeholder="Contact phone / WhatsApp (include country code, e.g. +258)" value={formData.agencyPhone} onChange={(e) => setFormData({...formData, agencyPhone: e.target.value})} />
+                        </div>
+                      )}
+                      {accountType !== 'OWNER' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.profRoleLabel}</label>
                           <select
+                            required
                             className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                             value={formData.title}
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -613,6 +683,9 @@ function AuthForm() {
                           <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expLabel}</label>
                           <input
                             type="number"
+                            required
+                            min={0}
+                            max={80}
                             className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] tabular-nums outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                             value={formData.yearsExperience}
                             onChange={(e) => setFormData({...formData, yearsExperience: parseInt(e.target.value)})}
@@ -620,26 +693,81 @@ function AuthForm() {
                         </div>
                       </div>
                       )}
+                      {accountType === 'AGENT' && (
+                        <div className="space-y-1.5">
+                          <label className="block text-[13px] font-medium text-[#5b616b]">Public contact phone / WhatsApp</label>
+                          <input required type="tel" autoComplete="tel" maxLength={30} title="Enter a phone number with country code, for example +258 84 123 4567" className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#13233F]" placeholder="+258 84 123 4567" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                        </div>
+                      )}
                       <div className="space-y-1.5">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.locationLabel}</label>
                         <input
                           type="text"
                           required
+                          maxLength={100}
                           className="w-full h-11 px-3.5 rounded-lg border border-[#e3e6ea] bg-white text-[14px] font-medium text-[#13233F] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10"
                           placeholder="e.g. Maputo City, Polana"
                           value={formData.location}
                           onChange={(e) => setFormData({...formData, location: e.target.value})}
                         />
                       </div>
+                      {accountType !== 'OWNER' && (
+                        <div className="space-y-1.5">
+                          <label className="block text-[13px] font-medium text-[#5b616b]">Exact office / contact address</label>
+                          <textarea required maxLength={400} rows={2} autoComplete="street-address" className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#13233F] outline-none focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none" placeholder="Office or building, street, bairro, city and province" value={formData.officeAddress} onChange={(e) => setFormData({...formData, officeAddress: e.target.value})} />
+                          <p className="text-[11px] text-[#74777f]">This address appears on your public agent profile so clients can find your office.</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Step 3: Narrative */}
-                  {step === 3 && accountType === 'AGENT' && (
+                  {step === 3 && accountType !== 'OWNER' && (
                     <div className="space-y-5">
+                      <div className="space-y-3 rounded-xl border border-[#e3e6ea] bg-white p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[#f1f3f5]">
+                            {formData.avatarDataUrl ? (
+                              <Image src={formData.avatarDataUrl} alt="Agent headshot preview" fill sizes="80px" unoptimized className="object-cover" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-[#9aa0a8]"><Icon name="person" size={32} /></div>
+                            )}
+                          </div>
+                          <div>
+                            <label htmlFor="agent-headshot" className="block text-[13px] font-semibold text-[#13233F]">Your profile photo <span className="text-red-600">*</span></label>
+                            <p className="mt-1 text-[11px] leading-relaxed text-[#74777f]">Upload a clear photo of yourself so clients recognize the agent they contact. Avoid logos and group photos.</p>
+                          </div>
+                        </div>
+                        <input id="agent-headshot" type="file" required accept="image/jpeg,image/png,image/webp" disabled={isReadingPhoto} onChange={handleAgentPhotoChange} className="block w-full text-[12px] text-[#5E6B7A] file:mr-3 file:rounded-lg file:border-0 file:bg-[#13233F] file:px-4 file:py-2 file:font-medium file:text-white hover:file:bg-[#0a2f5c]" />
+                        <p className="text-[10px] text-[#74777f]">JPG, PNG, or WebP · up to 5 MB {isReadingPhoto ? '· preparing photo…' : ''}</p>
+                      </div>
+                      {accountType === 'CORPORATE' && (
+                        <section className="space-y-4 rounded-xl border border-[#e3e6ea] bg-white p-4">
+                          <div>
+                            <h3 className="text-sm font-semibold text-[#13233F]">Agency profile</h3>
+                            <p className="mt-1 text-[11px] text-[#74777f]">Help clients understand your company and the services you offer.</p>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <select required value={formData.agencyBusinessType} onChange={(e) => setFormData({...formData, agencyBusinessType: e.target.value})} className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] bg-white text-sm">
+                              <option value="">Choose business type</option><option>Real estate agency</option><option>Property consultancy</option><option>Property management</option><option>Property developer</option><option>Independent brokerage</option>
+                            </select>
+                            <input type="email" maxLength={254} value={formData.agencyEmail} onChange={(e) => setFormData({...formData, agencyEmail: e.target.value})} placeholder="Public business email (optional)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm" />
+                            <input type="url" maxLength={300} value={formData.agencyWebsite} onChange={(e) => setFormData({...formData, agencyWebsite: e.target.value})} placeholder="Website (optional, https://...)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm sm:col-span-2" />
+                          </div>
+                          <textarea required minLength={30} maxLength={2000} rows={4} value={formData.agencyAbout} onChange={(e) => setFormData({...formData, agencyAbout: e.target.value})} placeholder="About the agency: experience, approach, qualifications, languages, and who you help" className="w-full px-3 py-3 rounded-lg border border-[#e3e6ea] text-sm resize-y" />
+                          <input required maxLength={500} value={formData.agencyAreasServed} onChange={(e) => setFormData({...formData, agencyAreasServed: e.target.value})} placeholder="Areas served, separated by commas (e.g. Maputo, Matola, Beira)" className="w-full h-11 px-3 rounded-lg border border-[#e3e6ea] text-sm" />
+                          <div>
+                            <p className="mb-2 text-xs font-medium text-[#5b616b]">Services offered <span className="text-red-600">*</span></p>
+                            <div className="flex flex-wrap gap-2">{CORPORATE_SERVICES.map((service) => <button key={service} type="button" onClick={() => toggleAgencyService(service)} className={`rounded-full px-3 py-1.5 text-xs ${formData.agencyServices.includes(service) ? 'bg-[#13233F] text-white' : 'bg-[#f1f3f5] text-[#5b616b]'}`}>{service}</button>)}</div>
+                          </div>
+                        </section>
+                      )}
                       <div className="space-y-1.5">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.bioLabel}</label>
                         <textarea
+                          required
+                          minLength={20}
+                          maxLength={2000}
                           rows={4}
                           className="w-full px-3.5 py-3 rounded-lg border border-[#e3e6ea] bg-white text-[14px] text-[#5E6B7A] outline-none transition-colors focus:border-[#13233F]/30 focus:ring-2 focus:ring-[#13233F]/10 resize-none"
                           placeholder="Tell us a little about your experience and how you help clients…"
@@ -649,6 +777,7 @@ function AuthForm() {
                       </div>
                       <div className="space-y-2">
                         <label className="block text-[13px] font-medium text-[#5b616b]">{t.auth.expertiseLabel}</label>
+                        <p className="text-[11px] text-[#74777f]">Choose at least one area so clients can see which properties and locations you know best.</p>
                         <div className="flex flex-wrap gap-1.5">
                           {SPECIALIZATION_KEYS.map(k => (
                             <button
@@ -686,11 +815,11 @@ function AuthForm() {
                     ) : (
                       <button
                         onClick={handleAuth}
-                        disabled={isLoading}
+                        disabled={isLoading || isReadingPhoto}
                         className="flex-[2] h-11 bg-[#13233F] text-white text-[14px] font-medium rounded-lg transition-colors hover:bg-[#0a2f5c] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                         {isLoading ? 'Submitting…' : t.auth.completeRegistration}
-                        {!isLoading && <Icon name="how_to_reg" size={18} />}
+                         {isReadingPhoto ? 'Preparing photo…' : isLoading ? 'Submitting…' : t.auth.completeRegistration}
+                        {!isLoading && !isReadingPhoto && <Icon name="how_to_reg" size={18} />}
                       </button>
                     )}
                   </div>

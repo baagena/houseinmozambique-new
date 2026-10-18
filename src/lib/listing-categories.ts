@@ -22,6 +22,15 @@
 
 export type CategoryKey = 'House' | 'Apartment' | 'Land' | 'Commercial' | 'Beach house';
 
+/** Map the public-facing type choices onto the wizard's shared detail sets. */
+export function categoryFor(type: string): CategoryKey {
+  if (type === 'Land' || type === 'Plot of Land') return 'Land';
+  if (['Commercial', 'Warehouse', 'Office', 'Shop'].includes(type)) return 'Commercial';
+  if (['Apartment', 'Penthouse', 'Studio'].includes(type)) return 'Apartment';
+  if (type === 'Beach house') return 'Beach house';
+  return 'House';
+}
+
 /** Fields that only some categories ask for. Blank/0 means "not answered". */
 export interface CategoryAnswers {
   // --- built categories -----------------------------------------------------
@@ -203,7 +212,7 @@ export const REQUIRES_INTERIOR_SHOTS: Record<CategoryKey, boolean> = {
   House: false, Apartment: false, 'Beach house': false, Commercial: false, Land: false,
 };
 
-export const isBuilt = (t: string) => t !== 'Land';
+export const isBuilt = (t: string) => categoryFor(t) !== 'Land';
 
 /**
  * Upper bounds for the area fields, used for a warning and never a hard block.

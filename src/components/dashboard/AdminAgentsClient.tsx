@@ -29,6 +29,9 @@ export interface AdminAgent {
   email: string;
   role: string;
   propertyCount: number;
+  agencyName?: string;
+  agencyPhone?: string;
+  corporateStatus?: string;
 }
 
 type Draft = Partial<AdminAgent> & { password?: string; emailVerified?: boolean };
@@ -221,6 +224,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     <div className="leading-tight">
                       <p className="text-[13px] font-medium text-[#002045]">{agent.name}</p>
                       <p className="text-[12px] text-[#9aa0a8]">{agent.email}</p>
+                      {agent.corporateStatus && <p className="mt-1 text-[12px] font-medium text-[#845326]">Corporate request: {agent.agencyName} · {agent.corporateStatus.toLowerCase()}{agent.agencyPhone ? ` · ${agent.agencyPhone}` : ''}</p>}
                       {agent.avatar && (
                         <a
                           href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}

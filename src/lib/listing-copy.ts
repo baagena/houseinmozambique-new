@@ -20,8 +20,8 @@
 import { SITE_HOST } from './site';
 import {
   CATEGORY_LABEL_EN, CATEGORY_LABEL_PT, FEATURE_SCOPE,
-  isBuilt,
-  type CategoryAnswers, type CategoryKey,
+  categoryFor, isBuilt,
+  type CategoryAnswers,
 } from './listing-categories';
 
 export * from './listing-categories';
@@ -50,10 +50,23 @@ export interface ListingAnswers extends CategoryAnswers {
   interior: number;
 }
 
-export const PROPERTY_TYPES = ['House', 'Apartment', 'Land', 'Commercial', 'Beach house'] as const;
+export const PROPERTY_TYPES = [
+  'Dwelling', 'Commercial', 'Warehouse', 'Office', 'Shop', 'Residential',
+  'Apartment', 'House', 'Farm / Country Estate', 'Plot of Land', 'Building',
+  // Keep existing types available for older listings and established searches.
+  'Villa', 'Land', 'Beach house', 'Penthouse', 'Studio', 'Bungalow', 'Lodge',
+] as const;
 
+export const MOZAMBIQUE_PROVINCES = [
+  'Cabo Delgado', 'Gaza', 'Inhambane', 'Manica', 'Maputo City', 'Maputo Province',
+  'Nampula', 'Niassa', 'Sofala', 'Tete', 'Zambézia',
+] as const;
+
+/** Provinces plus commonly used cities, since listings may be entered either way. */
 export const CITIES = [
-  'Maputo', 'Matola', 'Beira', 'Nampula', 'Pemba', 'Inhambane', 'Vilanculos', 'Xai-Xai',
+  ...MOZAMBIQUE_PROVINCES,
+  'Maputo', 'Matola', 'Beira', 'Pemba', 'Nampula City', 'Quelimane', 'Tete City',
+  'Inhambane City', 'Vilanculos', 'Xai-Xai', 'Chimoio',
 ] as const;
 
 /**
@@ -127,7 +140,7 @@ export function featureGroupsFor(propertyType: string) {
       ...g,
       items: g.items.filter((f) => {
         const scope = FEATURE_SCOPE[f];
-        return !scope || scope.includes(propertyType as CategoryKey);
+        return !scope || scope.includes(categoryFor(propertyType));
       }),
     }))
     .filter((g) => g.items.length > 0);
@@ -183,7 +196,7 @@ export function groupAmenities(amenities: string[]) {
 export const featuresInScope = (a: ListingAnswers) =>
   a.features.filter((f) => {
     const scope = FEATURE_SCOPE[f];
-    return !scope || scope.includes(a.propertyType as CategoryKey);
+    return !scope || scope.includes(categoryFor(a.propertyType));
   });
 
 export const FEATURES = FEATURE_GROUPS.flatMap((g) => g.items);
@@ -198,6 +211,14 @@ export const FEATURES = FEATURE_GROUPS.flatMap((g) => g.items);
  * missing a type the other had.
  */
 export const PT_TYPE: Record<string, string> = {
+  Dwelling: 'Habitação',
+  Residential: 'Imóvel residencial',
+  Warehouse: 'Armazém',
+  Office: 'Escritório',
+  Shop: 'Loja',
+  'Farm / Country Estate': 'Quinta / propriedade rural',
+  'Plot of Land': 'Talhão',
+  Building: 'Edifício',
   House: 'Moradia',
   Apartment: 'Apartamento',
   Land: 'Terreno',
@@ -448,7 +469,7 @@ export function qualityBand(score: number): 'good' | 'warn' | 'crit' {
 }
 
 export function generateListing(a: ListingAnswers): GeneratedListing {
-  const isLand = a.propertyType === 'Land';
+  const isLand = categoryFor(a.propertyType) === 'Land';
   const forWord = a.listingType === 'sale' ? 'Sale' : a.listingType === 'rent' ? 'Rent' : 'Short Stay';
   const forSlug = a.listingType === 'sale' ? 'for-sale' : a.listingType === 'rent' ? 'for-rent' : 'short-stay';
   const ptFor = a.listingType === 'sale' ? 'à venda' : a.listingType === 'rent' ? 'para arrendar' : 'para férias';
@@ -658,7 +679,7 @@ export function generateListing(a: ListingAnswers): GeneratedListing {
   /* The pitch follows the intent. A tenant is not buying an investment, and
    * telling them about "potencial de investimento" addresses the wrong person —
    * the old copy said it on every listing, including the rentals. */
-  const isCommercial = a.propertyType === 'Commercial';
+  const isCommercial = categoryFor(a.propertyType) === 'Commercial';
   const ptBenefit = isCommercial
     ? 'um espaço bem localizado e com bom potencial de rendimento'
     : a.listingType === 'sale' ? 'conforto, conveniência e um excelente potencial de investimento'
@@ -796,7 +817,7 @@ export function generateListing(a: ListingAnswers): GeneratedListing {
       ptBits.push(`tem ${a.suites} ${a.suites === 1 ? 'suíte' : 'suítes'}`);
       enBits.push(`has ${a.suites} ${a.suites === 1 ? 'en-suite bedroom' : 'en-suite bedrooms'}`);
     }
-    if (a.propertyType === 'Commercial' && a.commercialUse) {
+    if (isCommercial && a.commercialUse) {
       ptBits.push(`está preparado para ${CATEGORY_LABEL_PT.commercialUse[a.commercialUse]}`);
       enBits.push(`is set up for ${CATEGORY_LABEL_EN.commercialUse[a.commercialUse]}`);
     }

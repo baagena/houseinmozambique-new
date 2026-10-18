@@ -27,19 +27,25 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
   }
 
   // Plans the team can sell by hand: everything except the free tier.
-  const [plans, entitlement] = await Promise.all([
+  const [plans, entitlement, corporate] = await Promise.all([
     prisma.pricingPlan.findMany({
       where: { isActive: true, kind: { not: 'addon' }, NOT: { priceMinor: 0, ctaMode: 'checkout' } },
       orderBy: { sortOrder: 'asc' },
       select: { slug: true, namePt: true, nameEn: true, kind: true, pricePt: true, unitPt: true },
     }),
     getEntitlementState(agent.id, agent.role),
+    prisma.agent.findUnique({
+      where: { id },
+      select: { email: true, agencyName: true, agencyPhone: true, officeAddress: true, corporateStatus: true, agencyBusinessType: true, agencyAbout: true, agencyServices: true, agencyAreasServed: true, agencyWebsite: true, agencyEmail: true },
+    }),
   ]);
 
   const totalProperties = agent.properties?.length || 0;
   const liveCount = agent.properties?.filter((p) => p.status === 'PUBLISHED').length || 0;
   const pendingCount = agent.properties?.filter((p) => p.status === 'PENDING').length || 0;
   const rejectedCount = agent.properties?.filter((p) => p.status === 'REJECTED').length || 0;
+  const agencyPhoneDigits = corporate?.agencyPhone?.replace(/\D/g, '') ?? '';
+  const agencyWhatsapp = agencyPhoneDigits.startsWith('258') ? agencyPhoneDigits : agencyPhoneDigits.startsWith('0') ? `258${agencyPhoneDigits.slice(1)}` : `258${agencyPhoneDigits}`;
 
   return (
     <div className="space-y-10">
@@ -79,6 +85,26 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
         currentPlan={entitlement.planName}
         credits={entitlement.credits}
       />
+
+      {corporate?.corporateStatus && (
+        <section className="rounded-3xl border border-[#f2f4f6] bg-white p-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#845326] mb-2">Corporate request · {corporate.corporateStatus.toLowerCase()}</p>
+          <h2 className="text-xl font-bold text-[#002045]">{corporate.agencyName}</h2>
+          {corporate.agencyBusinessType && <p className="mt-1 text-sm text-[#5E6B7A]">{corporate.agencyBusinessType}</p>}
+          {corporate.agencyAbout && <p className="mt-3 max-w-3xl text-sm leading-6 text-[#5E6B7A]">{corporate.agencyAbout}</p>}
+          {corporate.agencyServices.length > 0 && <p className="mt-3 text-sm text-[#5E6B7A]">Services: {corporate.agencyServices.join(' · ')}</p>}
+          {corporate.agencyAreasServed.length > 0 && <p className="mt-2 text-sm text-[#5E6B7A]">Areas: {corporate.agencyAreasServed.join(' · ')}</p>}
+          {corporate.officeAddress && <p className="mt-2 text-sm text-[#5E6B7A]">Office: {corporate.officeAddress}</p>}
+          {corporate.agencyWebsite && <a className="mt-2 inline-block text-sm text-[#845326] underline" href={corporate.agencyWebsite} target="_blank" rel="noreferrer">{corporate.agencyWebsite}</a>}
+          <div className="mt-3 flex flex-wrap gap-3 text-sm">
+            <a className="text-[#845326] underline" href={`mailto:${corporate.email}`}>Email {corporate.email}</a>
+            {corporate.agencyEmail && <a className="text-[#845326] underline" href={`mailto:${corporate.agencyEmail}`}>Public agency email {corporate.agencyEmail}</a>}
+            {corporate.agencyPhone && <a className="text-[#845326] underline" href={`tel:${corporate.agencyPhone}`}>Call {corporate.agencyPhone}</a>}
+            {corporate.agencyPhone && <a className="text-[#845326] underline" href={`https://wa.me/${agencyWhatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
+          </div>
+          {corporate.corporateStatus === 'PENDING' && <p className="mt-3 text-sm text-[#5E6B7A]">Review the business details and contact the agency directly to arrange payment. Grant the matching paid subscription above after payment is received; this activates the company profile in the public directory.</p>}
+        </section>
+      )}
 
       {agent.avatar && (
         <div className="flex items-center gap-5 rounded-3xl border border-[#f2f4f6] bg-white p-6 shadow-sm">

@@ -19,9 +19,8 @@ import { wizardPropertyFields } from '@/lib/listing-wizard-payload';
 import {
   CITIES, PROPERTY_TYPES, PT_TYPE,
   featureGroupsFor, generateListing, publishBlockers, slugify,
-  AREA_SANITY, CATEGORY_QUESTIONS, CHOICES, EMPTY_CATEGORY_ANSWERS,
+  AREA_SANITY, CATEGORY_QUESTIONS, CHOICES, EMPTY_CATEGORY_ANSWERS, categoryFor,
   NUMERIC_FIELDS, isBuilt,
-  type CategoryKey,
   type GeneratedListing, type ListingAnswers, type ListingIntent,
 } from '@/lib/listing-copy';
 
@@ -875,7 +874,7 @@ function numField(w: WizardCopy, key: string): { label: string; hint?: string } 
 }
 
 function StepNumbers({ a, set, w }: { a: ListingAnswers; set: Setter; w: WizardCopy }) {
-  const type = a.propertyType as CategoryKey;
+  const type = categoryFor(a.propertyType);
   const fields = NUMERIC_FIELDS[type] ?? NUMERIC_FIELDS.House;
   const sanity = AREA_SANITY[type] ?? AREA_SANITY.House;
 
@@ -953,7 +952,7 @@ function StepNumbers({ a, set, w }: { a: ListingAnswers; set: Setter; w: WizardC
 
 /** The questions only this category is asked. */
 function StepCategory({ a, set, w }: { a: ListingAnswers; set: Setter; w: WizardCopy }) {
-  const type = a.propertyType as CategoryKey;
+  const type = categoryFor(a.propertyType);
   const qs = CATEGORY_QUESTIONS[type] ?? [];
   const land = !isBuilt(a.propertyType);
 

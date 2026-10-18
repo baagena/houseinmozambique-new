@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:backup": "node scripts/backup-db.mjs",
     "db:restore": "node scripts/restore-db.mjs",
+    "db:seed-corporate-demo": "tsx prisma/seed-corporate-demo.ts --confirm-demo-seed",
     "check:contrast": "node scripts/validate-contrast.mjs",
     "review:account": "node scripts/create-review-account.mjs"
   },

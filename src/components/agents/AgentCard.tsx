@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import Icon from '@/components/ui/Icon';
 
@@ -7,64 +8,33 @@ interface AgentCardProps {
   className?: string;
 }
 
-/**
- * Directory card — logo, name + verified tick, role, phone, location and
- * listing count. Deliberately compact; the detail lives on the profile.
- */
+/** Compact directory card: portrait, identity, a short introduction and two actions. */
 export default function AgentCard({ agent, className = '' }: AgentCardProps) {
-  const listings = agent._count?.properties ?? agent.listingCount;
-  const shareAgent = async () => {
-    const url = `${window.location.origin}/agents#${agent.id}`;
-    if (navigator.share) {
-      await navigator.share({ title: agent.name, url });
-    } else {
-      await navigator.clipboard.writeText(url);
-    }
-  };
+  const corporate = Boolean(agent.agencyName);
+  const displayName = agent.agencyName || agent.name;
+  const contactPhone = agent.agencyPhone || agent.phone;
+  const contactHref = contactPhone ? `tel:${contactPhone}` : `/agents/${agent.id}#get-in-touch`;
+  const introduction = corporate
+    ? agent.agencyServices?.slice(0, 3).join(' · ')
+    : agent.bio;
 
   return (
-    <article className={`adv ${className}`} id={agent.id}>
-      <span className="adv__logo">
-        {agent.avatar ? (
-          <a href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`} target="_blank" rel="noreferrer" title="Download agent photo">
-            <SafeImage src={agent.avatar} alt={agent.name} fill className="object-cover" sizes="62px" />
-          </a>
-        ) : (
-          agent.initials
-        )}
-      </span>
+    <article className={`adv ${className} items-center`}>
+      <Link href={`/agents/${agent.id}`} className="adv__logo" style={{ width: 92, height: 112, borderRadius: 12 }} aria-label={`View ${displayName} profile`}>
+        {agent.avatar ? <SafeImage src={agent.avatar} alt={agent.name} fill className="object-cover" sizes="92px" /> : <span>{agent.initials}</span>}
+      </Link>
 
       <div className="min-w-0 flex-1">
-        <div className="name">
-          <span className="truncate">{agent.name}</span>
-          {agent.isVerified && (
-            <Icon name="verified" size={16} className="vtick" title="Verified" />
-          )}
+        <div className="flex items-center gap-2">
+          <Link href={`/agents/${agent.id}`} className="truncate font-semibold text-[var(--ink)] hover:text-[var(--gold-deep)]">{displayName}</Link>
+          {agent.isVerified && <Icon name="verified" size={16} className="vtick" title="Verified" />}
         </div>
-        <div className="role">{agent.title}</div>
-
-        {agent.phone && (
-          <a href={`tel:${agent.phone}`} className="meta hover:text-[var(--gold-deep)]">
-            <Icon name="call" size={15} />
-            <span className="truncate">{agent.phone}</span>
-          </a>
-        )}
-        <div className="meta">
-          <Icon name="location_on" size={15} />
-          <span className="truncate">{agent.location}</span>
+        <p className="mt-1 text-sm text-[var(--hm-muted)]">{corporate ? agent.agencyBusinessType || 'Real Estate Agency' : agent.title} · {agent.location}</p>
+        {introduction && <p className="mt-1 line-clamp-1 text-sm leading-5 text-[var(--hm-text)]">{introduction}</p>}
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Link href={`/agents/${agent.id}`} className="btn btn--ghost btn--sm">View Profile</Link>
+          <a href={contactHref} className="btn btn--gold btn--sm"><Icon name="call" size={16} />Contact Agent</a>
         </div>
-        {typeof listings === 'number' && (
-          <div className="meta">
-            <Icon name="apartment" size={15} />
-            <span className="mono">{listings} listings</span>
-          </div>
-        )}
-
-        {agent.bio && <p className="muted mt-3 line-clamp-2 text-[0.84rem]">{agent.bio}</p>}
-        <button type="button" onClick={shareAgent} className="meta mt-3 hover:text-(--gold-deep)" title="Share agent profile">
-          <Icon name="share" size={15} />
-          <span>Share profile</span>
-        </button>
       </div>
     </article>
   );

@@ -20,6 +20,7 @@ interface Props {
     location?: string;
     propertyType?: string;
     isFeatured?: string;
+    agent?: string;
   }>;
 }
 
@@ -28,7 +29,7 @@ export default async function PropertiesPage({ searchParams }: Props) {
   
   // Fetch initial properties based on URL params if needed, 
   // but for the current interactive UI, we fetch all and let the client filter.
-  const allProperties = await getProperties();
+  const allProperties = await getProperties({ agentId: params.agent });
   const ads = await prisma.advertisement.findMany({
     where: { isActive: true },
     orderBy: [{ position: 'asc' }, { sortOrder: 'asc' }],

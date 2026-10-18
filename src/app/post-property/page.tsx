@@ -7,6 +7,7 @@ import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
 import Icon from '@/components/ui/Icon';
+import { CITIES, PROPERTY_TYPES, categoryFor } from '@/lib/listing-copy';
 
 /**
  * Paid plans only. The Standard tier is advertised as free on /pricing, so it
@@ -70,7 +71,7 @@ function compressImage(file: File): Promise<string> {
   });
 }
 
-const propertyTypes = ['House', 'Commercial', 'Villa', 'Apartment', 'Penthouse', 'Land', 'Bungalow', 'Lodge'];
+const propertyTypes = PROPERTY_TYPES;
 const amenities = [
   'WiFi',
   'Pool',
@@ -217,7 +218,7 @@ function PostPropertyContent() {
   }, [city, contactMethods, listingType, neighborhood, photos.length, price, propertyType, t]);
 
   const priceUnit = listingType === 'Rent' ? 'monthly' : listingType === 'Short Stay' ? 'nightly' : 'sale';
-  const needsRooms = propertyType !== 'Land' && propertyType !== 'Commercial';
+  const needsRooms = !['Land', 'Commercial'].includes(categoryFor(propertyType));
 
   const buildDescription = () => {
     const lines = [description.trim()];
@@ -543,7 +544,7 @@ function PostPropertyContent() {
           <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
             <h2 className="mb-6 text-lg font-semibold text-[#13233F]">{t.postProperty.locationCityLabel}</h2>
             <div className="grid gap-5 md:grid-cols-2">
-              <FieldInput label={t.postProperty.locationCityLabel} value={city} onChange={setCity} placeholder="Maputo" />
+              <FieldSelect label="Province or city" value={city} onChange={setCity} options={CITIES} />
               <FieldInput label={t.postProperty.neighborhoodLabel} value={neighborhood} onChange={setNeighborhood} placeholder="Sommerschield" />
               <FieldInput label={t.postProperty.addressLabel} value={address} onChange={setAddress} placeholder={t.postProperty.addressPlaceholder} className="md:col-span-2" />
               <FieldInput label="Latitude" value={latitude} onChange={setLatitude} placeholder="-25.9692" />
@@ -735,7 +736,7 @@ function FieldSelect({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: readonly string[];
 }) {
   return (
     <label>

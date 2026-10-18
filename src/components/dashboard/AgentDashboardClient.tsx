@@ -44,6 +44,8 @@ export interface AttentionListing {
 
 interface Props {
   agentName: string;
+  needsProfilePhoto: boolean;
+  corporate: { agencyName: string; status: string } | null;
   stats: {
     liveListings: number;
     pendingListings: number;
@@ -110,7 +112,7 @@ function initials(name: string): string {
 }
 
 export default function AgentDashboardClient({
-  agentName, stats, leads, overdueLeads, attention, channels, compare,
+  agentName, corporate, needsProfilePhoto, stats, leads, overdueLeads, attention, channels, compare,
 }: Props) {
   const t = useLanguage().t.dashboard.agent;
   const waiting = leads.filter((l) => !l.answered);
@@ -129,6 +131,28 @@ export default function AgentDashboardClient({
           {t.newListing}
         </Link>
       </div>
+
+      {corporate && (
+        <div className={`alert ${corporate.status === 'ACTIVE' ? 'good' : 'warn'}`}>
+          <Icon name="domain" size={18} />
+          <div>
+            <div className="a-title">{corporate.agencyName} · {corporate.status === 'ACTIVE' ? 'Corporate account active' : 'Corporate account awaiting payment confirmation'}</div>
+            <div className="a-sub">{corporate.status === 'ACTIVE' ? 'Your agency profile is listed publicly.' : 'Our team will contact you by your preferred channel to arrange payment. Your agency profile will be published once payment is confirmed.'}</div>
+          </div>
+          <Link href="/dashboard/agent/billing" className="btn" style={{ textDecoration: 'none' }}>Billing</Link>
+        </div>
+      )}
+
+      {needsProfilePhoto && (
+        <div className="alert warn">
+          <Icon name="person" size={18} />
+          <div>
+            <div className="a-title">Add a profile photo</div>
+            <div className="a-sub">A clear photo helps clients recognize the agent they are contacting.</div>
+          </div>
+          <Link href="/dashboard/agent/profile" className="btn" style={{ textDecoration: 'none' }}>Upload photo</Link>
+        </div>
+      )}
 
       {waiting.length > 0 && (
         <div className={`alert ${overdueLeads > 0 ? 'crit' : 'warn'}`}>

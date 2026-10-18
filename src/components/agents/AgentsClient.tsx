@@ -27,10 +27,15 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
     return allAgents.filter(
       (a) =>
         a.name?.toLowerCase().includes(q) ||
+        a.agencyName?.toLowerCase().includes(q) ||
         a.location?.toLowerCase().includes(q) ||
+        a.officeAddress?.toLowerCase().includes(q) ||
         a.title?.toLowerCase().includes(q)
     );
   }, [allAgents, query]);
+  const corporateAgents = filtered.filter((agent) => agent.agencyName);
+  const individualAgents = filtered.filter((agent) => !agent.agencyName);
+  const featuredIndividuals = featured.filter((agent) => !agent.agencyName);
 
   return (
     <>
@@ -47,15 +52,31 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
         </div>
       </section>
 
-      {featured.length > 0 && (
+      <section className="section">
+          <div className="wrap">
+            <div className="section-title-row">
+              <div><h2>Corporate agencies</h2><p className="muted">Professional property businesses, their services, and the areas they cover.</p></div>
+              <span className="mono text-[0.76rem] text-[var(--hm-muted)]">{corporateAgents.length}</span>
+            </div>
+            {corporateAgents.length > 0 ? <div className="grid gap-3 md:grid-cols-2">{corporateAgents.map((agent) => <AgentCard key={agent.id} agent={agent} />)}</div> : (
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white px-6 py-8 text-center shadow-sm">
+                <h3 className="text-lg font-semibold text-[#13233F]">{query ? 'No agencies match your search' : 'Find your next property partner'}</h3>
+                <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--hm-muted)]">{query ? 'Try another company name, service area, or business type.' : 'Agency profiles appear here after the business details are completed and the account is approved.'}</p>
+                {!query && <Link href="/auth?tab=signup&accountType=CORPORATE" className="btn btn--gold btn--sm mt-5">Register your agency <Icon name="arrow_forward" size={16} /></Link>}
+              </div>
+            )}
+          </div>
+      </section>
+
+      {featuredIndividuals.length > 0 && (
         <section className="section">
           <div className="wrap">
             <div className="section-title-row">
               <h2>{t.agents.featuredExperts}</h2>
-              <span className="mono text-[0.76rem] text-[var(--hm-muted)]">{featured.length}</span>
+              <span className="mono text-[0.76rem] text-[var(--hm-muted)]">{featuredIndividuals.length}</span>
             </div>
             <div className="dir-grid">
-              {featured.map((agent) => (
+              {featuredIndividuals.map((agent) => (
                 <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
@@ -65,13 +86,13 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
 
       {/* Flush only under the featured section; without one it would sit
           against the hero. */}
-      <section className={featured.length > 0 ? 'section pt0' : 'section'}>
+      <section className={featuredIndividuals.length > 0 || corporateAgents.length > 0 ? 'section pt0' : 'section'}>
         <div className="wrap">
           <div className="inv-head">
             <div>
               <h2>{t.agents.professionalDirectory}</h2>
               <p className="count">
-                {filtered.length} {t.nav.agents.toLowerCase()}
+                {individualAgents.length} {t.nav.agents.toLowerCase()}
               </p>
             </div>
             <div className="w-full max-w-[320px]">
@@ -89,9 +110,9 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
             </div>
           </div>
 
-          {filtered.length > 0 ? (
+          {individualAgents.length > 0 ? (
             <div className="dir-grid">
-              {filtered.slice(0, visible).map((agent) => (
+              {individualAgents.slice(0, visible).map((agent) => (
                 <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
@@ -105,7 +126,7 @@ export default function AgentsClient({ featured, allAgents }: AgentsClientProps)
             </div>
           )}
 
-          {visible < filtered.length && (
+          {visible < individualAgents.length && (
             <div className="inv-load">
               <button className="btn btn--ghost" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
                 {t.agents.showMore}

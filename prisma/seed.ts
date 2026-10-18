@@ -22,7 +22,10 @@ async function main() {
 
     await prisma.agent.upsert({
       where: { id: agent.id },
-      update: { password: hashedPassword },
+      update: {
+        password: hashedPassword,
+        ...(agent.role === 'AGENT' ? { emailVerifiedAt: new Date(), isHidden: false, isVerified: true } : {}),
+      },
       create: {
         id: agent.id,
         name: agent.name,
@@ -40,6 +43,7 @@ async function main() {
         email: (agent as any).email,
         password: hashedPassword,
         role: (agent as any).role || 'AGENT',
+        ...(agent.role === 'AGENT' ? { emailVerifiedAt: new Date(), isHidden: false, isVerified: true } : {}),
       },
     });
   }

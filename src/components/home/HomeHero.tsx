@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
+import { PROPERTY_TYPES } from '@/lib/listing-copy';
 
 const HERO_IMG = '/hero-marina.jpg';
 
@@ -14,8 +15,6 @@ const TABS = [
   { value: 'Short Stay', key: 'shortStay' },
   { value: 'Auction', key: 'auction' },
 ] as const;
-
-const PROPERTY_TYPES = ['House', 'Villa', 'Apartment', 'Penthouse', 'Office', 'Land', 'Lodge', 'Studio', 'Bungalow'];
 
 /** Round MZN bands — kept in Meticais so the copy never mixes currencies. */
 const PRICE_CAPS = [500_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000];

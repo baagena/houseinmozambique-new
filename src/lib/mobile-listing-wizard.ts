@@ -8,8 +8,8 @@
 import { wizardCopy } from '@/components/dashboard/listing-wizard-copy';
 import {
   AMENITY_LABEL_PT, CATEGORY_QUESTIONS, CHOICES, CITIES, EMPTY_CATEGORY_ANSWERS, NUMERIC_FIELDS,
-  PROPERTY_TYPES, PT_TYPE, REQUIRES_INTERIOR_SHOTS, featureGroupsFor, isBuilt, publishBlockers,
-  type CategoryKey, type ListingAnswers,
+  PROPERTY_TYPES, PT_TYPE, REQUIRES_INTERIOR_SHOTS, categoryFor, featureGroupsFor, isBuilt, publishBlockers,
+  type ListingAnswers,
 } from '@/lib/listing-copy';
 import type { ListingContact } from '@/lib/listing-wizard-payload';
 
@@ -84,7 +84,7 @@ export function wizardSchema(lang: string) {
     if (typeof value === 'string') text[key] = value;
   }
 
-  const types = PROPERTY_TYPES as readonly CategoryKey[];
+  const types = PROPERTY_TYPES as readonly string[];
   return {
     steps: w.steps,
     text,
@@ -96,11 +96,13 @@ export function wizardSchema(lang: string) {
     ],
     propertyTypes: types.map((t) => ({ value: t, label: pt ? PT_TYPE[t] ?? t : t })),
     cities: CITIES,
-    categories: Object.fromEntries(types.map((t) => [t, {
+    categories: Object.fromEntries(types.map((t) => {
+      const category = categoryFor(t);
+      return [t, {
       built: isBuilt(t),
-      requiresInterior: REQUIRES_INTERIOR_SHOTS[t],
-      numericFields: NUMERIC_FIELDS[t],
-      questions: CATEGORY_QUESTIONS[t].map((q) => ({
+      requiresInterior: REQUIRES_INTERIOR_SHOTS[category],
+      numericFields: NUMERIC_FIELDS[category],
+      questions: CATEGORY_QUESTIONS[category].map((q) => ({
         key: q,
         label: w.question[q],
         choices: CHOICES[q].map((c) => ({ value: c, label: w.choice[c] ?? c })),
@@ -110,7 +112,8 @@ export function wizardSchema(lang: string) {
         label: pt ? g.labelPt : g.label,
         items: g.items.map((f) => ({ value: f, label: pt && AMENITY_LABEL_PT[f] ? capFirst(AMENITY_LABEL_PT[f]) : f })),
       })),
-    }])),
+    }];
+    })),
   };
 }
 

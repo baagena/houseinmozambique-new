@@ -26,7 +26,7 @@ export async function POST(request: Request, { params }: Params) {
   const note = typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '';
 
   const [agent, plan] = await Promise.all([
-    prisma.agent.findUnique({ where: { id }, select: { id: true } }),
+    prisma.agent.findUnique({ where: { id }, select: { id: true, corporateStatus: true } }),
     prisma.pricingPlan.findUnique({ where: { slug: planSlug }, select: { kind: true } }),
   ]);
   if (!agent) return NextResponse.json({ error: 'Agent not found.' }, { status: 404 });
@@ -40,6 +40,14 @@ export async function POST(request: Request, { params }: Params) {
     note: note || `Granted by ${admin.name}`,
   });
 
+  // A corporate account is published only after staff confirm payment and
+  // grant its paid subscription. One-off listing credits do not activate it.
+  if (agent.corporateStatus && plan.kind === 'subscription') {
+    await prisma.agent.update({ where: { id }, data: { corporateStatus: 'ACTIVE', isVerified: true } });
+  }
+
   revalidatePath(`/dashboard/admin/agents/${id}`);
+  revalidatePath('/agents');
+  revalidatePath(`/agents/${id}`);
   return NextResponse.json({ success: true });
 }

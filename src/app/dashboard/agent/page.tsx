@@ -22,6 +22,10 @@ export default async function AgentDashboard() {
 
   const agent = await getAgentById(agentId);
   if (!agent) redirect('/auth');
+  const corporate = await prisma.agent.findUnique({
+    where: { id: agentId },
+    select: { agencyName: true, corporateStatus: true },
+  });
 
   const dayAgo = hoursAgo(24);
   const monthAgo = hoursAgo(24 * 30);
@@ -102,6 +106,11 @@ export default async function AgentDashboard() {
   return (
     <AgentDashboardClient
       agentName={agent.name}
+      needsProfilePhoto={agent.role === 'AGENT' && !agent.avatar}
+      corporate={corporate?.corporateStatus ? {
+        agencyName: corporate.agencyName ?? '',
+        status: corporate.corporateStatus,
+      } : null}
       stats={{
         liveListings: myProperties.filter((p) => p.status === 'PUBLISHED').length,
         pendingListings: myProperties.filter((p) => p.status !== 'PUBLISHED').length,

@@ -34,6 +34,9 @@ export default async function AdminAgentsPage() {
     email: agent.email,
     role: agent.role,
     propertyCount: (agent as { _count?: { properties?: number } })._count?.properties ?? 0,
+    agencyName: agent.agencyName ?? '',
+    agencyPhone: agent.agencyPhone ?? '',
+    corporateStatus: agent.corporateStatus ?? '',
   }));
 
   return <AdminAgentsClient initialAgents={agents} />;

@@ -15,9 +15,7 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/Icon';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-
-const CITIES = ['Maputo', 'Matola', 'Beira', 'Nampula', 'Tete', 'Quelimane', 'Pemba', 'Inhambane', 'Xai-Xai', 'Chimoio'];
-const TYPES = ['House', 'Apartment', 'Land', 'Studio', 'Villa', 'Commercial'];
+import { CITIES, PROPERTY_TYPES } from '@/lib/listing-copy';
 
 export default function PropertyRequestForm() {
   const { lang } = useLanguage();
@@ -111,7 +109,7 @@ export default function PropertyRequestForm() {
             <span>{pt ? 'Tipo de imóvel' : 'Property type'}</span>
             <select value={form.propertyType} onChange={(e) => set('propertyType', e.target.value)}>
               <option value="">{pt ? 'Qualquer' : 'Any'}</option>
-              {TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+              {PROPERTY_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
             </select>
           </label>
         </div>
