@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { setSessionCookie } from '@/lib/session';
+import { sendSignInNotification } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (agent.role !== 'ADMIN' && !agent.emailVerifiedAt) {
+    if (!agent.emailVerifiedAt) {
       return NextResponse.json(
         { error: 'Please verify your email before signing in.', requiresVerification: true },
         { status: 403 }
@@ -51,6 +52,20 @@ export async function POST(request: Request) {
     });
 
     setSessionCookie(response, agent.id);
+
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ipAddress = forwardedFor?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || undefined;
+    try {
+      await sendSignInNotification({
+        name: agent.name,
+        email: agent.email,
+        role: agent.role,
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || undefined,
+      });
+    } catch (notificationError) {
+      console.error('Sign-in notification email failed:', notificationError);
+    }
 
     return response;
   } catch (error) {

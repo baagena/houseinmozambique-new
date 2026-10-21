@@ -101,7 +101,7 @@ export async function PATCH(request: Request) {
 
     if (emailChanged && verificationToken) {
       try {
-        await sendAgentVerificationEmail({ name: updated.name, email: updated.email, token: verificationToken });
+        await sendAgentVerificationEmail({ name: updated.name, email: updated.email, token: verificationToken, reason: 'email-change' });
       } catch (emailError) {
         console.error('Profile email verification send failed:', emailError);
         await prisma.agent.updateMany({

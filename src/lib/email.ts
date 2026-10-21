@@ -97,6 +97,33 @@ export async function sendAdminNotificationEmail(options: EmailOptions) {
   return sendEmail({ ...options, from: options.from || NOTIFICATION_FROM_EMAIL });
 }
 
+export async function sendSignInNotification(data: {
+  name: string;
+  email: string;
+  role: string;
+  ipAddress?: string;
+  userAgent?: string;
+}) {
+  const rows: [string, string][] = [
+    ['Name', data.name],
+    ['Email', data.email],
+    ['Role', data.role],
+    ['Time', new Date().toISOString()],
+  ];
+  if (data.ipAddress) rows.push(['IP address', data.ipAddress]);
+  if (data.userAgent) rows.push(['Device', data.userAgent]);
+  const details = rows.map(([label, value]) =>
+    `<tr><td style="padding:8px 12px;color:#74777f">${escapeEmailHtml(label)}</td><td style="padding:8px 12px;color:#002045">${escapeEmailHtml(value)}</td></tr>`
+  ).join('');
+
+  return sendAdminNotificationEmail({
+    to: ADMIN_EMAIL,
+    subject: `Account sign-in: ${data.email}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto"><h1 style="color:#002045">A user signed in</h1><table style="border-collapse:collapse">${details}</table></div>`,
+    text: `A user signed in\n\n${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}`,
+  });
+}
+
 export async function sendContactNotificationEmail(data: {
   name: string;
   email: string;
@@ -321,6 +348,7 @@ export async function sendAgentVerificationEmail(agent: {
   name: string;
   email: string;
   token?: string;
+  reason?: 'registration' | 'email-change';
   /**
    * Where to land them once the link is clicked — normally the page they were
    * trying to reach when they were asked to register. Someone who set out to
@@ -336,23 +364,23 @@ export async function sendAgentVerificationEmail(agent: {
     to: agent.email,
     exactRecipient: true,
     from: AUTH_FROM_EMAIL,
-    subject: 'Verify your House in Mozambique account',
+    subject: agent.reason === 'email-change' ? 'Verify your new House in Mozambique email' : 'Verify your House in Mozambique account',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto;">
-        <h1 style="color: #002045;">Verify Your Agent Registration</h1>
+        <h1 style="color: #002045;">${agent.reason === 'email-change' ? 'Verify Your New Email Address' : 'Verify Your Agent Registration'}</h1>
         <p style="color: #43474e;">Hello ${agent.name},</p>
-        <p style="color: #43474e;">Thanks for registering as an agent on House in Mozambique.</p>
-        <p style="color: #43474e;">Please confirm your email address so your account is secure.</p>
+        <p style="color: #43474e;">${agent.reason === 'email-change' ? 'You requested to change the email address on your House in Mozambique account.' : 'Thanks for registering on House in Mozambique.'}</p>
+        <p style="color: #43474e;">Please confirm this address to finish ${agent.reason === 'email-change' ? 'the change' : 'setting up your account'}.</p>
         <p><a href="${verificationUrl}" style="background:#002045;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;">Confirm and sign in</a></p>
-        <p style="color: #43474e;">One of our team members will review your profile and approve your account shortly.</p>
+        ${agent.reason === 'email-change' ? '' : '<p style="color: #43474e;">One of our team members will review your profile and approve your account shortly.</p>'}
         <p style="color: #74777f;">If you did not sign up, please ignore this email.</p>
       </div>
     `,
-    text: `Verify Your Agent Registration
+    text: `${agent.reason === 'email-change' ? 'Verify Your New Email Address' : 'Verify Your Agent Registration'}
 
 Hello ${agent.name},
 
-Thanks for registering as an agent on House in Mozambique.
+${agent.reason === 'email-change' ? 'You requested to change the email address on your House in Mozambique account.' : 'Thanks for registering on House in Mozambique.'}
 
 Confirm your email address: ${verificationUrl}
 
