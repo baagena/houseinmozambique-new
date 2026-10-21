@@ -15,7 +15,8 @@ export default function SafeImage({
   ...rest
 }: Omit<ImageProps, 'src'> & { src?: string | null }) {
   const [failed, setFailed] = useState(false);
-  const usable = typeof src === 'string' && src.trim().length > 0;
+  const normalizedSrc = typeof src === 'string' ? src.trim() : '';
+  const usable = isSupportedImageSource(normalizedSrc);
 
   if (!usable || failed) {
     return (
@@ -32,10 +33,26 @@ export default function SafeImage({
   return (
     <Image
       {...rest}
-      src={src}
+      src={normalizedSrc}
       alt={alt}
       className={className}
       onError={() => setFailed(true)}
     />
   );
+}
+
+function isSupportedImageSource(src: string) {
+  if (!src) return false;
+  if (src.startsWith('/') && !src.startsWith('//')) return true;
+
+  try {
+    const url = new URL(src);
+    return url.protocol === 'https:' && [
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'lh3.googleusercontent.com',
+    ].includes(url.hostname);
+  } catch {
+    return false;
+  }
 }

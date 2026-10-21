@@ -203,7 +203,7 @@ export async function getAgents() {
  */
 export async function getAgentsForAdmin() {
   return await prisma.agent.findMany({
-    where: { role: 'AGENT' },
+    where: { role: { in: ['AGENT', 'ADMIN'] } },
     orderBy: { rating: 'desc' },
     select: {
       ...AGENT_ADMIN_LIST,

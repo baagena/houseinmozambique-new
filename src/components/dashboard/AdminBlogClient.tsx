@@ -109,18 +109,10 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
 
     setIsUploadingCover(true);
     try {
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          if (typeof reader.result === 'string') {
-            resolve(reader.result);
-          } else {
-            reject(new Error('Unable to read file as base64.'));
-          }
-        };
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        throw new Error('Choose a JPG, PNG, or WebP cover image.');
+      }
+      const base64 = await prepareCoverImage(file);
 
       const uploadResult = await uploadSingleImage(base64, 'houseinmozambique/blogs');
       if (!uploadResult.success) {
@@ -134,6 +126,37 @@ export default function AdminBlogClient({ posts }: { posts: AdminBlogPost[] }) {
       setIsUploadingCover(false);
     }
   };
+
+  function prepareCoverImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Unable to read the selected image.'));
+      reader.onload = () => {
+        if (typeof reader.result !== 'string') {
+          reject(new Error('Unable to read the selected image.'));
+          return;
+        }
+        const image = new window.Image();
+        image.onerror = () => reject(new Error('The selected file is not a readable image.'));
+        image.onload = () => {
+          const maxDimension = 1800;
+          const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          const context = canvas.getContext('2d');
+          if (!context) {
+            reject(new Error('Unable to prepare the selected image.'));
+            return;
+          }
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        image.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   const savePost = async () => {
     setError('');
