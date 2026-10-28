@@ -20,12 +20,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // Mirrors the web dashboard: an approved listing stays live through an edit,
     // so its owner never needs an administrator to put it back.
-    const status =
-      property.status === 'SUSPENDED'
+    const closedStatuses = ['SOLD', 'RENTED', 'UNAVAILABLE'];
+    const status = closedStatuses.includes(property.status)
+      ? property.status
+      : property.status === 'SUSPENDED'
         ? 'SUSPENDED'
         : property.approvedAt
-        ? 'PUBLISHED'
-        : 'PENDING';
+          ? 'PUBLISHED'
+          : 'PENDING';
 
     const updated = await prisma.property.update({
       where: { id },

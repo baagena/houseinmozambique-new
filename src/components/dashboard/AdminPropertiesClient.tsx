@@ -14,6 +14,9 @@ const STATUS_FILTERS = [
   { key: 'PENDING', label: 'Pending' },
   { key: 'REJECTED', label: 'Rejected' },
   { key: 'SUSPENDED', label: 'Suspended' },
+  { key: 'SOLD', label: 'Sold' },
+  { key: 'RENTED', label: 'Rented' },
+  { key: 'UNAVAILABLE', label: 'Unavailable' },
 ] as const;
 
 type StatusKey = (typeof STATUS_FILTERS)[number]['key'];
@@ -43,6 +46,9 @@ const STATUS_PILL: Record<string, { cls: string; icon: string; label: string }> 
   PENDING: { cls: 'warn', icon: 'schedule', label: 'Pending' },
   REJECTED: { cls: 'crit', icon: 'close', label: 'Rejected' },
   SUSPENDED: { cls: 'muted', icon: 'error', label: 'Suspended' },
+  SOLD: { cls: 'crit', icon: 'check_circle', label: 'Sold' },
+  RENTED: { cls: 'info', icon: 'home', label: 'Rented' },
+  UNAVAILABLE: { cls: 'muted', icon: 'error', label: 'Unavailable' },
 };
 function statusPill(status: string) {
   const s = STATUS_PILL[status] ?? { cls: 'muted', icon: 'info', label: status };
@@ -240,7 +246,12 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                     <td>{statusPill(p.status)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <div className="row-actions">
-                        <AdminPropertyActions propertyId={p.id} currentStatus={p.status} onEdit={() => open(p)} />
+                        <AdminPropertyActions
+                          propertyId={p.id}
+                          currentStatus={p.status}
+                          onEdit={() => open(p)}
+                          onStatusChange={(status) => setProperties((current) => current.map((item) => item.id === p.id ? { ...item, status } : item))}
+                        />
                       </div>
                     </td>
                   </tr>
