@@ -9,6 +9,7 @@ import {
   publishDraft,
   republishAgentProperty,
   suspendAgentProperty,
+  markAgentPropertyUnavailable,
 } from '@/actions/properties';
 import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
 
@@ -35,6 +36,9 @@ const STATUS_LABELS: Record<string, { label: string; dot: string; text: string }
   PUBLISHED: { label: 'Live', dot: 'bg-emerald-500', text: 'text-emerald-600' },
   REJECTED: { label: 'Rejected', dot: 'bg-red-500', text: 'text-red-500' },
   SUSPENDED: { label: 'Suspended', dot: 'bg-[#9aa0a8]', text: 'text-[#74777f]' },
+  SOLD: { label: 'Sold', dot: 'bg-red-500', text: 'text-red-500' },
+  RENTED: { label: 'Rented', dot: 'bg-sky-500', text: 'text-sky-600' },
+  UNAVAILABLE: { label: 'Unavailable', dot: 'bg-[#9aa0a8]', text: 'text-[#74777f]' },
   PENDING: { label: 'Awaiting Review', dot: 'bg-[#fab983]', text: 'text-[#845326]' },
   // A draft is the agent's own, unpublished and unmetered — it is not a
   // lesser version of "live", so it gets its own neutral colour rather than
@@ -79,6 +83,11 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
   /* Publishing a draft runs the same quota check as creating a listing — it is
    * the same act as far as the plan is concerned. */
   const handlePublishDraft = (id: string) => run(id, () => publishDraft(id));
+  const handleMarkUnavailable = (id: string, status: 'SOLD' | 'RENTED' | 'UNAVAILABLE') => {
+    const labels = { SOLD: 'sold', RENTED: 'rented', UNAVAILABLE: 'unavailable' };
+    if (!confirm(`Mark this listing as ${labels[status]}? It will disappear from public search results.`)) return;
+    return run(id, () => markAgentPropertyUnavailable(id, status));
+  };
 
   return (
     <div className="space-y-3">
@@ -111,6 +120,7 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
             {properties.map((property) => {
               const status = STATUS_LABELS[property.status] ?? STATUS_LABELS.PENDING;
               const isSuspended = property.status === 'SUSPENDED';
+              const isClosed = ['SOLD', 'RENTED', 'UNAVAILABLE'].includes(property.status);
               const isDraft = property.status === 'DRAFT';
               const isBusy = busyId === property.id;
 
@@ -171,7 +181,7 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                       </Link>
                       {/* Visibility is the thing an agent wants to buy once a
                           listing is live and they can see how it is doing. */}
-                      {!isDraft && !isSuspended && (
+                      {!isDraft && !isSuspended && !isClosed && (
                         <Link
                           href={`/dashboard/agent/boost/${property.id}`}
                           className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#845326] uppercase hover:bg-[#faf5ed] hover:text-[#002045] transition-colors"
@@ -188,7 +198,7 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                         >
                           Publish
                         </button>
-                      ) : isSuspended ? (
+                      ) : isSuspended || isClosed ? (
                         <button
                           type="button"
                           disabled={isBusy}
@@ -198,14 +208,21 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                           Reactivate
                         </button>
                       ) : (
-                        <button
-                          type="button"
-                          disabled={isBusy}
-                          onClick={() => handleSuspend(property.id)}
-                          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#845326] uppercase hover:bg-[#faf5ed] hover:text-[#002045] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Suspend
-                        </button>
+                        <>
+                          {property.status === 'PUBLISHED' && <>
+                            <button type="button" disabled={isBusy} onClick={() => handleMarkUnavailable(property.id, 'SOLD')} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-600 uppercase hover:bg-red-50 disabled:opacity-50">Mark sold</button>
+                            <button type="button" disabled={isBusy} onClick={() => handleMarkUnavailable(property.id, 'RENTED')} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-sky-700 uppercase hover:bg-sky-50 disabled:opacity-50">Mark rented</button>
+                            <button type="button" disabled={isBusy} onClick={() => handleMarkUnavailable(property.id, 'UNAVAILABLE')} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#74777f] uppercase hover:bg-[#f7f9fb] disabled:opacity-50">Mark unavailable</button>
+                          </>}
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => handleSuspend(property.id)}
+                            className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#845326] uppercase hover:bg-[#faf5ed] hover:text-[#002045] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Suspend
+                          </button>
+                        </>
                       )}
                       <button
                         type="button"

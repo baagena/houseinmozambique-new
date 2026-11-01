@@ -113,7 +113,7 @@ export default async function AgentDashboard() {
       } : null}
       stats={{
         liveListings: myProperties.filter((p) => p.status === 'PUBLISHED').length,
-        pendingListings: myProperties.filter((p) => p.status !== 'PUBLISHED').length,
+        pendingListings: myProperties.filter((p) => !['PUBLISHED', 'SOLD', 'RENTED', 'UNAVAILABLE'].includes(p.status)).length,
         views: myProperties.reduce((sum, p) => sum + (p.views ?? 0), 0),
         contactClicks: myProperties.reduce((sum, p) => sum + (p.contactClicks ?? 0), 0),
         leadsThisMonth: myInquiries.filter((i) => i.createdAt >= monthAgo).length,

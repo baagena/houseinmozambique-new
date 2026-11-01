@@ -143,8 +143,8 @@ export async function republishAgentProperty(id: string) {
       return { success: false, error: owned.error };
     }
 
-    if (owned.property.status !== 'SUSPENDED') {
-      return { success: false, error: 'Only a suspended listing can be reactivated.' };
+    if (!['SUSPENDED', 'SOLD', 'RENTED', 'UNAVAILABLE'].includes(owned.property.status)) {
+      return { success: false, error: 'Only a paused or unavailable listing can be reactivated.' };
     }
 
     /*
@@ -177,6 +177,27 @@ export async function republishAgentProperty(id: string) {
   } catch (error: any) {
     console.error('Failed to republish agent property:', error);
     return { success: false, error: error.message || 'Reactivation failed.' };
+  }
+}
+
+/** Marks an approved listing as no longer available without deleting its history. */
+export async function markAgentPropertyUnavailable(
+  id: string,
+  status: 'SOLD' | 'RENTED' | 'UNAVAILABLE',
+) {
+  try {
+    const owned = await requireOwnedProperty(id);
+    if ('error' in owned) return { success: false, error: owned.error };
+    if (!owned.property.approvedAt) {
+      return { success: false, error: 'Only an approved listing can be marked unavailable.' };
+    }
+
+    const property = await prisma.property.update({ where: { id }, data: { status } });
+    revalidateListing(id);
+    return { success: true, property };
+  } catch (error: any) {
+    console.error('Failed to update listing availability:', error);
+    return { success: false, error: error.message || 'Availability update failed.' };
   }
 }
 
@@ -442,12 +463,14 @@ export async function updateProperty(id: string, formData: any, imageUrls: strin
     // An already-approved listing stays live when its owner edits it, so updates
     // do not need an administrator. Anything not yet approved keeps waiting, and
     // a suspended listing stays suspended until the owner reactivates it.
-    const status =
-      property.status === 'SUSPENDED'
+    const unavailableStatuses = ['SOLD', 'RENTED', 'UNAVAILABLE'];
+    const status = unavailableStatuses.includes(property.status)
+      ? property.status
+      : property.status === 'SUSPENDED'
         ? 'SUSPENDED'
         : property.approvedAt
-        ? 'PUBLISHED'
-        : 'PENDING';
+          ? 'PUBLISHED'
+          : 'PENDING';
 
     /*
      * Remember the old price when it actually moves.

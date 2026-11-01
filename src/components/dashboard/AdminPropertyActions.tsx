@@ -12,13 +12,14 @@ interface Props {
   currentStatus: string;
   onView?: () => void;
   onEdit?: () => void;
+  onStatusChange?: (status: string) => void;
 }
 
-export default function AdminPropertyActions({ propertyId, currentStatus, onView, onEdit }: Props) {
+export default function AdminPropertyActions({ propertyId, currentStatus, onView, onEdit, onStatusChange }: Props) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
-  const handleStatusUpdate = async (newStatus: 'PUBLISHED' | 'REJECTED') => {
+  const handleStatusUpdate = async (newStatus: 'PUBLISHED' | 'REJECTED' | 'SOLD' | 'RENTED' | 'UNAVAILABLE') => {
     setIsPending(true);
     try {
       const res = await fetch(`/api/admin/property/${propertyId}/status`, {
@@ -31,6 +32,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         alert(res.error);
         return;
       }
+      onStatusChange?.(newStatus);
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -133,6 +135,9 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
             Edit property
           </button>
         )}
+        <button onClick={() => handleStatusUpdate('SOLD')} disabled={isPending} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-600 uppercase hover:bg-red-50 disabled:opacity-50">Mark sold</button>
+        <button onClick={() => handleStatusUpdate('RENTED')} disabled={isPending} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-sky-700 uppercase hover:bg-sky-50 disabled:opacity-50">Mark rented</button>
+        <button onClick={() => handleStatusUpdate('UNAVAILABLE')} disabled={isPending} className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#74777f] uppercase hover:bg-[#f7f9fb] disabled:opacity-50">Mark unavailable</button>
         <button
           onClick={() => handleStatusUpdate('REJECTED')}
           disabled={isPending}
@@ -171,7 +176,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
           disabled={isPending}
           className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#002045] uppercase hover:bg-[#f7f9fb] disabled:opacity-50"
         >
-          Restore
+          Restore / mark available
         </button>
     </DashboardActionMenu>
   );

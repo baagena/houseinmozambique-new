@@ -14,7 +14,7 @@ export async function POST(request: Request, { params }: Params) {
   const { id } = await params;
   const { status } = await request.json();
 
-  if (!['PUBLISHED', 'REJECTED', 'PENDING'].includes(status)) {
+  if (!['PUBLISHED', 'REJECTED', 'PENDING', 'SOLD', 'RENTED', 'UNAVAILABLE'].includes(status)) {
     return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
   }
 

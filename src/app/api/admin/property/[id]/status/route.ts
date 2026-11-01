@@ -13,7 +13,9 @@ export async function POST(request: Request, { params }: Params) {
 
     const body = await request.json();
     const { status } = body;
-    if (!status) return NextResponse.json({ error: 'Missing status' }, { status: 400 });
+    if (!['PUBLISHED', 'REJECTED', 'PENDING', 'SOLD', 'RENTED', 'UNAVAILABLE'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
+    }
 
     const existing = await prisma.property.findUnique({ where: { id }, include: { host: true } });
     if (!existing) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -37,6 +39,12 @@ export async function POST(request: Request, { params }: Params) {
       }
     }
 
+    revalidatePath('/dashboard/admin/properties');
+    revalidatePath('/dashboard/admin/approvals');
+    revalidatePath('/dashboard/agent/listings');
+    revalidatePath('/properties');
+    revalidatePath(`/properties/${id}`);
+    revalidatePath('/');
     return NextResponse.json({ success: true, property });
   } catch (err: any) {
     console.error('API admin/property status error', err);
@@ -56,7 +64,7 @@ export async function PATCH(request: Request, { params }: Params) {
     const { id } = await params;
     const { status } = await request.json();
 
-    if (!['PUBLISHED', 'REJECTED', 'PENDING'].includes(status)) {
+    if (!['PUBLISHED', 'REJECTED', 'PENDING', 'SOLD', 'RENTED', 'UNAVAILABLE'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
     }
 
