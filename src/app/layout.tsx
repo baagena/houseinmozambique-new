@@ -18,7 +18,7 @@ import {
 import { SITE_URL } from '@/lib/site';
 import { requestLang } from '@/lib/request-lang';
 import { EN_PREFIX } from '@/lib/site-lang';
-import { GoogleAnalytics } from '@next/third-parties/google';
+import SiteAnalytics from '@/components/analytics/SiteAnalytics';
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await requestLang();
@@ -93,7 +93,7 @@ export default async function RootLayout({
         </LanguageProvider>
 
         {process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          <SiteAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
       </body>
     </html>

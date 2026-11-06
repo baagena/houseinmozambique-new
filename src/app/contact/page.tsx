@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
+import { trackContact } from '@/lib/analytics';
 
 const CONTACT_IMAGE =
   'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop';
@@ -63,6 +64,7 @@ export default function ContactPage() {
       });
 
       if (res.ok) {
+        trackContact('form');
         setSubmitted(true);
         setFormData({ name: '', email: '', subject: '', message: '' });
       } else {
