@@ -92,6 +92,20 @@ export async function getProperties(filters: {
   return rows.map(brandHost);
 }
 
+/** Other published listings of the same kind (sale, rent…), newest first. */
+export async function getSimilarProperties(
+  property: { id: string; listingType: string },
+  take: number,
+) {
+  const rows = await prisma.property.findMany({
+    where: { status: 'PUBLISHED', listingType: property.listingType, id: { not: property.id } },
+    include: { host: HOST_PUBLIC, subscription: LIFECYCLE_SUB },
+    orderBy: { createdAt: 'desc' },
+    take,
+  });
+  return rows.map(brandHost);
+}
+
 export async function countProperties(filters: {
   listingType?: string;
   city?: string;

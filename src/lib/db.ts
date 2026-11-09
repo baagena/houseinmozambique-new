@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { purgeAfterWrite } from './public-cache';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
@@ -42,15 +43,34 @@ function createClient(): VersionedClient {
   return client;
 }
 
-let prisma: VersionedClient;
+let base: VersionedClient;
 try {
   const cached = globalForPrisma.prisma;
   const isStale = cached && cached.__schemaVersion !== SCHEMA_VERSION;
-  prisma = !cached || isStale ? createClient() : cached;
-  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+  base = !cached || isStale ? createClient() : cached;
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = base;
 } catch (err) {
   console.error('src/lib/db.ts: failed to instantiate PrismaClient', err);
   throw err;
 }
+
+/*
+ * Public pages are cached (see src/app/[lang]/layout.tsx). Every write goes
+ * through here, so this is the one place that tells the cache what changed —
+ * whichever web route, mobile route, server action or helper made the write.
+ * The rules for what counts are in ./public-cache.ts.
+ */
+const prisma = base.$extends({
+  name: 'public-cache-purge',
+  query: {
+    $allModels: {
+      async $allOperations({ model, operation, args, query }) {
+        const result = await query(args);
+        purgeAfterWrite(model, operation, args as { data?: unknown });
+        return result;
+      },
+    },
+  },
+});
 
 export { prisma };

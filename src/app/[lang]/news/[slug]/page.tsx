@@ -13,6 +13,11 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+/* Rendered on first visit, then cached; edits purge it (lib/public-cache.ts). */
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);

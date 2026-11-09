@@ -59,24 +59,23 @@ export function mergeOverrides(lang: Language, overrides: FlatContent): Record<s
 
 /**
  * Load all content overrides from the database, grouped by language as flat
- * dot-path maps. Returns empty maps (never throws) if the table is unreachable
- * so the public site keeps rendering the in-code defaults.
+ * dot-path maps.
+ *
+ * A failed read throws. The public pages are cached, and an empty result
+ * would have been cached with them: the in-code defaults in place of what
+ * staff wrote, for up to an hour. When a cached page's refresh throws, Next
+ * keeps serving the previous version instead.
  */
 export async function getContentOverrides(): Promise<ContentOverrides> {
-  const empty: ContentOverrides = { en: {}, pt: {} };
-  try {
-    const rows = await prisma.siteContent.findMany({
-      select: { key: true, lang: true, value: true },
-    });
-    for (const row of rows) {
-      const lang = row.lang === 'pt' ? 'pt' : 'en';
-      empty[lang][row.key] = row.value;
-    }
-    return empty;
-  } catch (error) {
-    console.error('getContentOverrides: failed to load site content', error);
-    return empty;
+  const grouped: ContentOverrides = { en: {}, pt: {} };
+  const rows = await prisma.siteContent.findMany({
+    select: { key: true, lang: true, value: true },
+  });
+  for (const row of rows) {
+    const lang = row.lang === 'pt' ? 'pt' : 'en';
+    grouped[lang][row.key] = row.value;
   }
+  return grouped;
 }
 
 /** The full default content as flat maps — used by the admin editor for fallbacks. */

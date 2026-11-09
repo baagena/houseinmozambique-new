@@ -1,21 +1,26 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getPropertyById, getProperties } from '@/lib/data';
+import { getPropertyById, getSimilarProperties } from '@/lib/data';
 import PropertyDetailClient from '@/components/properties/PropertyDetailClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildMetadata, realEstateListingJsonLd, breadcrumbJsonLd } from '@/lib/seo';
-import { localizedPath } from '@/lib/site-lang';
-import { requestLang } from '@/lib/request-lang';
+import { localizedPath, toSiteLang } from '@/lib/site-lang';
 import { formatPrice } from '@/lib/utils';
 import { listingHeadline } from '@/lib/listing-copy';
 import { resolvePropertyRef } from '@/lib/property-slug';
-import { getSession } from '@/lib/session';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ lang: string; id: string }>;
 }
 
-export const dynamic = 'force-dynamic';
+/*
+ * No listing is built ahead of time; each is rendered on its first visit and
+ * then served from the cache (an empty list is what turns that on). Edits
+ * purge it — see src/lib/db.ts.
+ */
+export function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id: ref } = await params;
@@ -82,7 +87,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
-  const { id: ref } = await params;
+  const { id: ref, lang } = await params;
 
   const resolved = await resolvePropertyRef(ref);
   if (!resolved) notFound();
@@ -100,7 +105,7 @@ export default async function PropertyDetailPage({ params }: Props) {
    * `permanentRedirect()` is the one that transfers it.
    */
   // To the slug in the language asked for: /en/properties/<id> stays English.
-  if (resolved.shouldRedirect) permanentRedirect(localizedPath(resolved.canonicalPath, await requestLang()));
+  if (resolved.shouldRedirect) permanentRedirect(localizedPath(resolved.canonicalPath, toSiteLang(lang)));
 
   const id = resolved.id;
   const property = await getPropertyById(id);
@@ -110,25 +115,22 @@ export default async function PropertyDetailPage({ params }: Props) {
   /*
    * Only published listings are public. Drafts, listings waiting for review,
    * rejected and suspended ones used to render for anyone holding the link
-   * (the mobile API already refused them). Their own agent and staff can still
-   * open them, to check what they submitted.
+   * (the mobile API already refused them).
+   *
+   * This page is cached and shared by every visitor, so it cannot ask who is
+   * looking. Their own agent and staff open the others through
+   * /dashboard/preview/<id>, which does.
    */
-  if (property.status !== 'PUBLISHED') {
-    const session = await getSession();
-    const canPreview = session && (session.role === 'ADMIN' || session.id === property.hostId);
-    if (!canPreview) notFound();
-  }
+  if (property.status !== 'PUBLISHED') notFound();
 
   /* Views are no longer counted here — see src/lib/property-views.ts. The
      page sends a beacon once it has loaded in a browser. */
 
-  const allProperties = await getProperties();
   /* Four, to fill the row the grid now lays out. Three left a gap at the end
      of the line and one — which is what the rent listings actually had — read
-     as a rendering fault rather than a short list. */
-  const similar = allProperties
-    .filter((p) => p.id !== property.id && p.listingType === property.listingType)
-    .slice(0, 4);
+     as a rendering fault rather than a short list. Fetched as four, not as
+     every listing on the site filtered down to four. */
+  const similar = await getSimilarProperties(property, 4);
 
   const jsonLd = [
     realEstateListingJsonLd(property),

@@ -1,11 +1,38 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { getProperties } from '@/lib/data';
 import { prisma } from '@/lib/db';
-export const dynamic = 'force-dynamic';
 import PropertiesClient from '@/components/properties/PropertiesClient';
 import { Suspense } from 'react';
 import { buildMetadata } from '@/lib/seo';
 import { sanitizeProperties } from '@/lib/mobile-serialize';
+import { PUBLIC_DATA_TAG } from '@/lib/public-cache';
+
+/*
+ * The one public page still rendered per visit: it reads the filters in the
+ * address (?type=, ?agent=) on the server. Its data is cached instead, so a
+ * visit renders but does not query. The cache is purged with the pages (see
+ * lib/public-cache.ts). Dates arrive as strings this way, which the listing
+ * components already accept.
+ */
+/* Said outright: nothing is rendered at build time any more, so Next would
+   not otherwise learn that this page reads the address until a visit failed. */
+export const dynamic = 'force-dynamic';
+
+const getListingData = unstable_cache(
+  async (agentId: string | undefined) => {
+    const [properties, ads] = await Promise.all([
+      getProperties({ agentId }),
+      prisma.advertisement.findMany({
+        where: { isActive: true },
+        orderBy: [{ position: 'asc' }, { sortOrder: 'asc' }],
+      }),
+    ]);
+    return { properties: sanitizeProperties(properties), ads };
+  },
+  ['properties-page'],
+  { tags: [PUBLIC_DATA_TAG], revalidate: 3600 },
+);
 
 export const metadata: Metadata = buildMetadata({
   title: 'Properties for Sale, Rent & Short Stay in Mozambique',
@@ -27,13 +54,8 @@ interface Props {
 export default async function PropertiesPage({ searchParams }: Props) {
   const params = await searchParams;
   
-  // Fetch initial properties based on URL params if needed, 
-  // but for the current interactive UI, we fetch all and let the client filter.
-  const allProperties = await getProperties({ agentId: params.agent });
-  const ads = await prisma.advertisement.findMany({
-    where: { isActive: true },
-    orderBy: [{ position: 'asc' }, { sortOrder: 'asc' }],
-  });
+  // Every listing, filtered in the browser; ?agent= narrows it on the server.
+  const { properties, ads } = await getListingData(params.agent || undefined);
 
   return (
     <Suspense
@@ -55,7 +77,7 @@ export default async function PropertiesPage({ searchParams }: Props) {
       }
     >
       <PropertiesClient
-        initialProperties={sanitizeProperties(allProperties) as any}
+        initialProperties={properties as any}
         initialType={params.type}
         initialLocation={params.location}
         ads={ads as any}

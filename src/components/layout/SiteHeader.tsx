@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { logout } from '@/lib/auth';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
@@ -120,10 +120,32 @@ function TopbarAd({ ad }: { ad: TopAd | null }) {
   );
 }
 
+/*
+ * The query string, read in its own Suspense boundary.
+ *
+ * Public pages are prerendered and cached, and a component that reads
+ * useSearchParams() during a prerender is left out of the HTML down to the
+ * nearest Suspense boundary. When the whole header read it, the cached pages
+ * shipped without a header, which only appeared once the page's JavaScript
+ * ran. Only this listener waits for the browser now.
+ */
+function QueryListener({ onChange }: { onChange: (type: string, query: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onChange(searchParams.get('type') || '', searchParams.toString());
+  }, [searchParams, onChange]);
+  return null;
+}
+
 function SiteHeaderContent() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const [activeType, setActiveType] = useState('');
+  const [query, setQuery] = useState('');
+  const onQuery = useCallback((type: string, q: string) => {
+    setActiveType(type);
+    setQuery(q);
+  }, []);
   const { lang, setLang, t } = useLanguage();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -204,7 +226,7 @@ function SiteHeaderContent() {
   useEffect(() => {
     setCategoriesOpen(false);
     setMobileOpen(false);
-  }, [pathname, searchParams]);
+  }, [pathname, query]);
 
   // The mobile sheet takes over the viewport — stop the page behind it scrolling.
   useEffect(() => {
@@ -231,13 +253,16 @@ function SiteHeaderContent() {
       .slice(0, 2)
       .toUpperCase() || 'U';
   const dashboardHref = userRole === 'ADMIN' ? '/dashboard/admin' : '/dashboard/agent';
-  const activeType = searchParams.get('type') || '';
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname?.startsWith(href);
 
   return (
     <>
+      <Suspense fallback={null}>
+        <QueryListener onChange={onQuery} />
+      </Suspense>
+
       {/* ── Brand + ad bar (white, scrolls away) ── */}
       <div className="topbar">
         <div className="wrap topbar__in">
@@ -465,9 +490,5 @@ function SiteHeaderContent() {
 }
 
 export default function SiteHeader() {
-  return (
-    <Suspense fallback={null}>
-      <SiteHeaderContent />
-    </Suspense>
-  );
+  return <SiteHeaderContent />;
 }

@@ -11,6 +11,11 @@ import { agentMatchesProfileSegment, getAgentProfilePath, getAgentProfileSlug } 
 
 type Props = { params: Promise<{ id: string }> };
 
+/* Rendered on first visit, then cached; edits purge it (lib/public-cache.ts). */
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id: segment } = await params;
   const candidates = await prisma.agent.findMany({ where: getDirectoryVisibleWhere(), select: { id: true, name: true, agencyName: true, location: true, agencyAbout: true, bio: true } });

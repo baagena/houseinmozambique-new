@@ -17,7 +17,7 @@ interface SessionUser {
   email: string;
 }
 
-export default function DashboardLayout({
+export default function DashboardShell({
   children,
 }: {
   children: React.ReactNode;

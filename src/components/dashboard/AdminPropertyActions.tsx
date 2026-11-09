@@ -68,7 +68,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
     return (
       <DashboardActionMenu>
         <Link
-          href={`/properties/${propertyId}`}
+          href={`/preview/${propertyId}`}
           target="_blank"
           rel="noreferrer"
           className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#315f8d] uppercase hover:bg-[#edf5fb]"
@@ -156,7 +156,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
   return (
     <DashboardActionMenu>
       <Link
-        href={`/properties/${propertyId}`}
+        href={`/preview/${propertyId}`}
         target="_blank"
         rel="noreferrer"
         className="rounded-md px-3 py-2 text-left text-[10px] font-black text-[#315f8d] uppercase hover:bg-[#edf5fb]"

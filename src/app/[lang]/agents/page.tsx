@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { getAgents, getFeaturedAgents } from '@/lib/data';
 import AgentsClient from '@/components/agents/AgentsClient';

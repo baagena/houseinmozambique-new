@@ -1,11 +1,48 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { PUBLIC_DATA_TAG } from '@/lib/public-cache';
 import { EN_PREFIX } from '@/lib/site-lang';
 import { getDirectoryVisibleWhere } from '@/lib/data';
 import { getAgentProfileSlug } from '@/lib/agent-profile-url';
 
+/*
+ * Rendered per request from cached queries (lib/public-cache.ts purges them
+ * after edits). Not prerendered: that would have `next build` query the
+ * database, which deploys have never depended on.
+ */
 export const dynamic = 'force-dynamic';
+
+/* A failed read throws rather than returning the static routes alone, which
+   would have been cached as a sitemap without a single listing. */
+const getSitemapRows = unstable_cache(
+  async () => {
+    const now = new Date();
+    return Promise.all([
+      prisma.property.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { id: true, slug: true, updatedAt: true, images: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 5000,
+      }),
+      prisma.blogPost.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { slug: true, updatedAt: true, publishedAt: true, coverImage: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 5000,
+      }),
+      prisma.agent.findMany({
+        where: getDirectoryVisibleWhere(now),
+        select: { id: true, name: true, agencyName: true, updatedAt: true, avatar: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 5000,
+      }),
+    ]);
+  },
+  ['sitemap-rows'],
+  { tags: [PUBLIC_DATA_TAG], revalidate: 3600 },
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -30,58 +67,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  let dynamicRoutes: MetadataRoute.Sitemap = [];
+  // Dates come back from the cache as strings; the sitemap takes either.
+  const [properties, posts, agents] = await getSitemapRows();
 
-  try {
-    const [properties, posts, agents] = await Promise.all([
-      prisma.property.findMany({
-        where: { status: 'PUBLISHED' },
-        select: { id: true, slug: true, updatedAt: true, images: true },
-        orderBy: { updatedAt: 'desc' },
-        take: 5000,
-      }),
-      prisma.blogPost.findMany({
-        where: { status: 'PUBLISHED' },
-        select: { slug: true, updatedAt: true, publishedAt: true, coverImage: true },
-        orderBy: { updatedAt: 'desc' },
-        take: 5000,
-      }),
-      prisma.agent.findMany({
-        where: getDirectoryVisibleWhere(now),
-        select: { id: true, name: true, agencyName: true, updatedAt: true, avatar: true },
-        orderBy: { updatedAt: 'desc' },
-        take: 5000,
-      }),
-    ]);
-
-    dynamicRoutes = [
-      ...properties.map((p) => ({
-        // The readable address, which is also the canonical one. Listing the
-        // id here would hand search the URL the page redirects away from.
-        url: `${SITE_URL}/properties/${p.slug ?? p.id}`,
-        lastModified: p.updatedAt,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-        images: p.images?.length ? [p.images[0]] : undefined,
-      })),
-      ...posts.map((post) => ({
-        url: `${SITE_URL}/news/${post.slug}`,
-        lastModified: post.updatedAt || post.publishedAt || now,
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-        images: post.coverImage ? [post.coverImage] : undefined,
-      })),
-      ...agents.map((agent) => ({
-        url: `${SITE_URL}/agents/${getAgentProfileSlug(agent)}`,
-        lastModified: agent.updatedAt,
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-        images: agent.avatar ? [agent.avatar] : undefined,
-      })),
-    ];
-  } catch (error) {
-    console.error('sitemap: failed to load dynamic routes', error);
-  }
+  const dynamicRoutes: MetadataRoute.Sitemap = [
+    ...properties.map((p) => ({
+      // The readable address, which is also the canonical one. Listing the
+      // id here would hand search the URL the page redirects away from.
+      url: `${SITE_URL}/properties/${p.slug ?? p.id}`,
+      lastModified: p.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+      images: p.images?.length ? [p.images[0]] : undefined,
+    })),
+    ...posts.map((post) => ({
+      url: `${SITE_URL}/news/${post.slug}`,
+      lastModified: post.updatedAt || post.publishedAt || now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      images: post.coverImage ? [post.coverImage] : undefined,
+    })),
+    ...agents.map((agent) => ({
+      url: `${SITE_URL}/agents/${getAgentProfileSlug(agent)}`,
+      lastModified: agent.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      images: agent.avatar ? [agent.avatar] : undefined,
+    })),
+  ];
 
   return [...staticRoutes, ...dynamicRoutes].flatMap(withEnglish);
 }

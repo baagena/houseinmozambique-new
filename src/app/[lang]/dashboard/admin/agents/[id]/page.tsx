@@ -144,7 +144,7 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
                   <span className={property.status === 'PUBLISHED' ? 'text-emerald-600' : property.status === 'PENDING' ? 'text-[#845326]' : 'text-red-500'}>
                     {property.status}
                   </span>
-                  <Link href={`/properties/${property.id}`} className="text-[#002045] hover:underline">
+                  <Link href={`/preview/${property.id}`} className="text-[#002045] hover:underline">
                     Preview
                   </Link>
                 </div>
