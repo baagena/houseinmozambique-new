@@ -185,8 +185,8 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
           <span className="hint">Sorted by newest</span>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
+        <div className="admin-properties-table-wrap" style={{ overflowX: 'auto' }}>
+          <table className="admin-properties-table">
             <thead>
               <tr>
                 <th>Listing</th>
@@ -196,7 +196,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                 <th>Performance</th>
                 <th>Quality</th>
                 <th>Status</th>
-                <th />
+                <th className="admin-properties-actions-heading">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -247,7 +247,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                       </div>
                     </td>
                     <td>{statusPill(p.status)}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="admin-properties-actions-cell" style={{ textAlign: 'right' }}>
                       <div className="row-actions">
                         <AdminPropertyActions
                           propertyId={p.id}
