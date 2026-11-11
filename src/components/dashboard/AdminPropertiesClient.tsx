@@ -253,6 +253,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                           propertyId={p.id}
                           currentStatus={p.status}
                           onEdit={() => open(p)}
+                          onDelete={() => setProperties((current) => current.filter((item) => item.id !== p.id))}
                           onStatusChange={(status) => setProperties((current) => current.map((item) => item.id === p.id ? { ...item, status } : item))}
                         />
                       </div>
