@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Icon from '@/components/ui/Icon';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { trackContact } from '@/lib/analytics';
 
 /**
  * Arranging a viewing.
@@ -131,6 +132,8 @@ export default function ViewingRequest({
         }),
       });
       if (!res.ok) throw new Error('Could not send the request.');
+
+      trackContact('viewing');
 
       void fetch(`/api/property/${propertyId}/engagement`, {
         method: 'POST',

@@ -20,6 +20,8 @@ class Property {
   final String? address;
   final double price;
   final String priceUnit; // sale, monthly, nightly
+  /// "MZN" or "USD" — the currency the listing was quoted in.
+  final String currency;
   final String type; // Villa, Apartment, ...
   final String listingType; // Buy, Rent, Short Stay
   final int bedrooms;
@@ -53,6 +55,7 @@ class Property {
     this.address,
     required this.price,
     required this.priceUnit,
+    this.currency = 'MZN',
     required this.type,
     required this.listingType,
     required this.bedrooms,
@@ -91,7 +94,10 @@ class Property {
     return description;
   }
 
-  /// e.g. "1,800 MT/month", "85,000 MT", "180 MT/night"
+  /// "MT " for Meticais, "US\$ " for dollars.
+  String get currencySymbol => currency == 'USD' ? 'US\$ ' : 'MT ';
+
+  /// e.g. "MT 1,800/month", "US\$ 85,000", "MT 180/night"
   String priceLabel(String currencySymbol) {
     final formatted = _formatNumber(price);
     switch (priceUnit) {
@@ -130,6 +136,7 @@ class Property {
       address: json['address'] as String?,
       price: (json['price'] as num?)?.toDouble() ?? 0,
       priceUnit: json['priceUnit'] as String? ?? 'sale',
+      currency: (json['currency'] as String?)?.toUpperCase() == 'USD' ? 'USD' : 'MZN',
       type: json['type'] as String? ?? '',
       listingType: json['listingType'] as String? ?? '',
       bedrooms: json['bedrooms'] as int? ?? 0,

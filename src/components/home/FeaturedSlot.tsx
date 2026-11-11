@@ -43,6 +43,7 @@ export interface FeaturedProperty {
   images: string[];
   price: number;
   priceUnit: string;
+  currency?: string;
   type: string;
   listingType: string;
   bedrooms: number;
@@ -218,12 +219,12 @@ export default function FeaturedSlot({
         {lede && !(kind === 'EDITOR' && shownNote) && <p className="fs__lede">{lede}</p>}
 
         <div className="fs__price">
-          <strong>{formatPrice(property.price, property.priceUnit)}</strong>
+          <strong>{formatPrice(property.price, property.priceUnit, property.currency)}</strong>
           {property.priceUnit === 'monthly' && <small>{p.perMonth}</small>}
           {property.priceUnit === 'nightly' && <small>{p.perNight}</small>}
           {perSqm && (
             <span className="fs__persqm">
-              {formatPrice(perSqm, 'sale')} / m²
+              {formatPrice(perSqm, 'sale', property.currency)} / m²
             </span>
           )}
         </div>

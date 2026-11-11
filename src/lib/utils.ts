@@ -1,19 +1,30 @@
 import { Property } from '@/types';
 
-/** Prices across the platform are quoted in Meticais and rendered as "MT 1,250,000". */
+/** Meticais are rendered as "MT 1,250,000" — the label locals read on a price. */
 export const CURRENCY_LABEL = 'MT';
 
-export function formatPrice(price: number, unit: string): string {
-  const formatted = `${CURRENCY_LABEL} ${new Intl.NumberFormat('en-US', {
+export type ListingCurrency = 'MZN' | 'USD';
+
+/** Anything that is not explicitly USD is Meticais, the platform's default. */
+export function normalizeCurrency(value: unknown): ListingCurrency {
+  return typeof value === 'string' && value.trim().toUpperCase() === 'USD' ? 'USD' : 'MZN';
+}
+
+/** "MT" for Meticais, "US$" for dollars. */
+export function currencyLabel(currency?: string | null): string {
+  return normalizeCurrency(currency) === 'USD' ? 'US$' : CURRENCY_LABEL;
+}
+
+/**
+ * A listing price in the currency the agent quoted it in.
+ *
+ * `unit` is accepted for the callers that pass it; the period ("/ month") is
+ * drawn by the caller, not here.
+ */
+export function formatPrice(price: number, _unit?: string, currency?: string | null): string {
+  return `${currencyLabel(currency)} ${new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
   }).format(price)}`;
-
-  switch (unit) {
-    case 'monthly': return `${formatted}`;
-    case 'nightly': return `${formatted}`;
-    case 'sale': return formatted;
-    default: return formatted;
-  }
 }
 
 export function getInitials(name: string): string {

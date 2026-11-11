@@ -16,6 +16,7 @@ import { useState } from 'react';
 import Icon from '@/components/ui/Icon';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { CITIES, PROPERTY_TYPES } from '@/lib/listing-copy';
+import { trackContact } from '@/lib/analytics';
 
 export default function PropertyRequestForm() {
   const { lang } = useLanguage();
@@ -56,6 +57,7 @@ export default function PropertyRequestForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not send that.');
+      trackContact('request');
       setRef(data.ref);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send that.');

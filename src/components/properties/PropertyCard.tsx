@@ -195,7 +195,7 @@ export default function PropertyCard({
             <span className="mono mt-1 truncate text-[0.7rem] text-[var(--hm-muted)]">{place}</span>
           )}
           <span className="rowcard__price">
-            {formatPrice(property.price, property.priceUnit)}
+            {formatPrice(property.price, property.priceUnit, property.currency)}
             {period && <small className="ml-1 text-[0.68rem] text-[var(--hm-muted)]">{period}</small>}
           </span>
         </span>
@@ -276,7 +276,7 @@ export default function PropertyCard({
 
       <div className="lc__body">
         <p className="lc__prow">
-          <span className="lc__price">{formatPrice(property.price, property.priceUnit)}</span>
+          <span className="lc__price">{formatPrice(property.price, property.priceUnit, property.currency)}</span>
           {period && <span className="lc__per">{period}</span>}
           {/* A reduction is the strongest buying signal a marketplace holds,
               and it reads as good news because for the buyer it is. */}

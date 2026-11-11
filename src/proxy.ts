@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { LANG_HEADER, isEnglishPath, stripLangPrefix } from '@/lib/site-lang';
+import { PT_PREFIX, isEnglishPath, stripPtPrefix } from '@/lib/site-lang';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,6 +10,27 @@ const corsHeaders = {
 
 function isCorsPath(pathname: string) {
   return pathname.startsWith('/api/mobile/') || pathname === '/api/inquiries';
+}
+
+/*
+ * Routes that live outside src/app/[lang] and are served as they are: API
+ * routes, files (public/, sitemap.xml, robots.txt), and the file-convention
+ * routes at the app root whose address has no extension (the Open Graph
+ * image). Everything else is a page.
+ *
+ * Files are checked here as well as in the matcher below: the matcher let
+ * through the social icons, whose names hold spaces, commas and "=", and
+ * rewriting those onto /pt/... answered them with the 404 page.
+ */
+function isUnlocalized(pathname: string) {
+  return (
+    /\.[a-zA-Z0-9]+$/.test(pathname) ||
+    pathname === '/api' ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/opengraph-image') ||
+    pathname.startsWith('/_vercel') ||
+    pathname.startsWith('/__')
+  );
 }
 
 export function proxy(request: NextRequest) {
@@ -27,19 +48,26 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  /* The language header is ours alone: dropped from every request, then set
-     only for the /en addresses (see lib/site-lang.ts). */
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.delete(LANG_HEADER);
+  if (isUnlocalized(pathname)) return NextResponse.next();
 
-  if (isEnglishPath(pathname)) {
-    requestHeaders.set(LANG_HEADER, 'en');
+  /*
+   * Pages live under src/app/[lang] (see lib/site-lang.ts). English keeps its
+   * public /en prefix, which is already the internal path. Portuguese has no
+   * prefix in public, so /x is served by /pt/x.
+   */
+  if (isEnglishPath(pathname)) return NextResponse.next();
+
+  // /pt/... is internal only: one address per page, so send it to the real one.
+  const unprefixed = stripPtPrefix(pathname);
+  if (unprefixed !== null) {
     const url = request.nextUrl.clone();
-    url.pathname = stripLangPrefix(pathname);
-    return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+    url.pathname = unprefixed;
+    return NextResponse.redirect(url, 308);
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  const url = request.nextUrl.clone();
+  url.pathname = pathname === '/' ? PT_PREFIX : `${PT_PREFIX}${pathname}`;
+  return NextResponse.rewrite(url);
 }
 
 export const config = {

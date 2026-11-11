@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import AdminPropertyActions from './AdminPropertyActions';
 import Icon from '@/components/ui/Icon';
+import { currencyLabel } from '@/lib/utils';
 
 interface AdminPayment {
   id: string;
@@ -32,6 +33,7 @@ interface PendingProperty {
   address: string | null;
   price: number;
   priceUnit: string;
+  currency?: string;
   type: string;
   listingType: string;
   bedrooms: number;
@@ -83,12 +85,13 @@ function timeAgo(date: string): string {
   return `${mins}m ago`;
 }
 
-function formatPrice(price: number, unit: string): string {
+function formatPrice(price: number, unit: string, currency?: string): string {
+  const label = currencyLabel(currency);
   const formatted = price >= 1000000
-    ? `MT ${(price / 1000000).toFixed(1)}M`
+    ? `${label} ${(price / 1000000).toFixed(1)}M`
     : price >= 1000
-    ? `MT ${(price / 1000).toFixed(0)}k`
-    : `MT ${price.toLocaleString()}`;
+    ? `${label} ${(price / 1000).toFixed(0)}k`
+    : `${label} ${price.toLocaleString()}`;
   if (unit === 'monthly') return `${formatted}/mo`;
   if (unit === 'nightly') return `${formatted}/nt`;
   return formatted;
@@ -137,6 +140,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
           address: editForm.address,
           price: editForm.price,
           priceUnit: editForm.priceUnit,
+          currency: editForm.currency ?? 'MZN',
           type: editForm.type,
           listingType: editForm.listingType,
           bedrooms: editForm.bedrooms,
@@ -300,7 +304,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                   </div>
                 </div>
                 <div className="text-left md:text-right shrink-0 space-y-2.5">
-                  <p className="text-[15px] font-semibold text-[#002045]">{formatPrice(listing.price, listing.priceUnit)}</p>
+                  <p className="text-[15px] font-semibold text-[#002045]">{formatPrice(listing.price, listing.priceUnit, listing.currency)}</p>
                   <AdminPropertyActions
                     propertyId={listing.id}
                     currentStatus="PENDING"
@@ -447,7 +451,7 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <DetailField label="Price" editing={isEditing} value={currentProperty.price} onChange={(value) => updateEdit('price', Number(value))} display={formatPrice(currentProperty.price, currentProperty.priceUnit)} type="number" />
+                  <DetailField label="Price" editing={isEditing} value={currentProperty.price} onChange={(value) => updateEdit('price', Number(value))} display={formatPrice(currentProperty.price, currentProperty.priceUnit, currentProperty.currency)} type="number" />
                   <DetailField label="Area" editing={isEditing} value={currentProperty.area} onChange={(value) => updateEdit('area', Number(value))} display={`${currentProperty.area} m2`} type="number" />
                   <DetailField label="Bedrooms" editing={isEditing} value={currentProperty.bedrooms} onChange={(value) => updateEdit('bedrooms', Number(value))} display={String(currentProperty.bedrooms)} type="number" />
                   <DetailField label="Bathrooms" editing={isEditing} value={currentProperty.bathrooms} onChange={(value) => updateEdit('bathrooms', Number(value))} display={String(currentProperty.bathrooms)} type="number" />
@@ -468,6 +472,13 @@ export default function AdminApprovalsClient({ pendingProperties, newAgents }: P
                         <option value="sale">Sale</option>
                         <option value="monthly">Monthly</option>
                         <option value="nightly">Nightly</option>
+                      </select>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-[#f2f4f6] p-4 bg-[#fafbfc]">
+                      <p className="text-[10px] uppercase tracking-widest text-[#74777f] font-black">Currency</p>
+                      <select value={currentProperty.currency ?? 'MZN'} onChange={(event) => updateEdit('currency', event.target.value)} className="mt-2 w-full rounded-lg border border-[#f2f4f6] px-3 py-2 font-black text-[#002045] outline-none">
+                        <option value="MZN">MZN (MT)</option>
+                        <option value="USD">USD (US$)</option>
                       </select>
                     </div>
                   </div>

@@ -87,6 +87,10 @@ model Property {
   address         String?
   price           Float
   priceUnit       String // "sale", "monthly", "nightly"
+  /// "MZN" or "USD" — the currency the agent or admin quoted `price` in. The
+  /// wizard always asked for it, but nothing stored it, so every listing used
+  /// to render as Meticais whatever was chosen.
+  currency        String    @default("MZN")
   type            String // "Villa", "Apartment", etc.
   listingType     String // "Buy", "Rent", "Short Stay"
   bedrooms        Int

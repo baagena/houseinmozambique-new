@@ -28,6 +28,7 @@ export function wizardPropertyFields(answers: ListingAnswers, g: GeneratedListin
     longitude: answers.lng,
     address: answers.bairro,
     price: answers.price,
+    currency: answers.currency === 'USD' ? 'USD' : 'MZN',
     priceUnit:
       answers.listingType === 'sale' ? 'sale' : answers.listingType === 'rent' ? 'monthly' : 'nightly',
     propertyType: answers.propertyType,

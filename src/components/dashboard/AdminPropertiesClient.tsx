@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AdminPropertyActions from './AdminPropertyActions';
 import Icon from '@/components/ui/Icon';
+import { currencyLabel } from '@/lib/utils';
 import { listingQuality } from '@/lib/listing-quality';
 
 /** Status chips, in the reference's order. */
@@ -33,11 +34,11 @@ function typeColor(type: string): string {
   return TYPE_SLOT[type] ?? 'var(--d-ink)';
 }
 
-const mzn = (n: number) => `MT ${Math.round(n).toLocaleString('en-US')}`;
-function fmtPrice(price: number, unit: string): string {
-  if (unit === 'monthly') return `${mzn(price)}/mo`;
-  if (unit === 'nightly') return `${mzn(price)}/nt`;
-  return mzn(price);
+const money = (n: number, currency?: string) => `${currencyLabel(currency)} ${Math.round(n).toLocaleString('en-US')}`;
+function fmtPrice(price: number, unit: string, currency?: string): string {
+  if (unit === 'monthly') return `${money(price, currency)}/mo`;
+  if (unit === 'nightly') return `${money(price, currency)}/nt`;
+  return money(price, currency);
 }
 
 /** Status is never colour-alone — every pill carries an icon and a word. */
@@ -69,6 +70,7 @@ export interface AdminProperty {
   address: string;
   price: number;
   priceUnit: string;
+  currency: string;
   type: string;
   listingType: string;
   bedrooms: number;
@@ -126,6 +128,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
           address: editing.address,
           price: editing.price,
           priceUnit: editing.priceUnit,
+          currency: editing.currency,
           type: editing.type,
           listingType: editing.listingType,
           bedrooms: editing.bedrooms,
@@ -222,7 +225,7 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                     </td>
                     <td><span className="tag">{p.listingType}</span></td>
                     <td>{p.hostName}</td>
-                    <td className="tabular" style={{ fontWeight: 600 }}>{fmtPrice(p.price, p.priceUnit)}</td>
+                    <td className="tabular" style={{ fontWeight: 600 }}>{fmtPrice(p.price, p.priceUnit, p.currency)}</td>
                     <td className="tabular" style={{ color: 'var(--d-text-2)' }}>
                       {p.views.toLocaleString('en-US')} views · {p.contactClicks} contacts
                     </td>
@@ -305,6 +308,10 @@ export default function AdminPropertiesClient({ initialProperties }: { initialPr
                 <SelectField label="Listing type" value={editing.listingType} onChange={(v) => set('listingType', v)} options={['Buy', 'Rent', 'Short Stay', 'Auction']} />
                 <TextField label="Property type" value={editing.type} onChange={(v) => set('type', v)} />
                 <SelectField label="Price unit" value={editing.priceUnit} onChange={(v) => set('priceUnit', v)} options={['sale', 'monthly', 'nightly']} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <SelectField label="Currency" value={editing.currency} onChange={(v) => set('currency', v)} options={['MZN', 'USD']} />
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

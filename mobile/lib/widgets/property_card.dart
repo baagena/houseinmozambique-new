@@ -170,7 +170,7 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
             ),
             const SizedBox(height: 4),
             Text(
-              property.priceLabel('MT '),
+              property.priceLabel(property.currencySymbol),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary),
