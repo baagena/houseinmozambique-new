@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
    * before it existed still fall back to the body slice.
    */
   const locationLabel = [property.neighborhood, property.city].filter(Boolean).join(', ');
-  const price = formatPrice(property.price, property.priceUnit);
+  const price = formatPrice(property.price, property.priceUnit, property.currency);
   const headline = listingHeadline(property, 'pt');
   /*
    * The place goes in once. A generated headline already ends in the bairro and

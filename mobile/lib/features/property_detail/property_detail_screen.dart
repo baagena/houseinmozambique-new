@@ -293,7 +293,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(property.priceLabel('MT '), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    Text(property.priceLabel(property.currencySymbol), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -563,7 +563,7 @@ class _StickyContactBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    property.priceLabel('MT '),
+                    property.priceLabel(property.currencySymbol),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),

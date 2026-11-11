@@ -7,6 +7,7 @@ import PaymentForm from '@/components/dashboard/PaymentForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createProperty, updateProperty, uploadSingleImage } from '@/actions/properties';
 import Icon from '@/components/ui/Icon';
+import { formatPrice, normalizeCurrency } from '@/lib/utils';
 import { CITIES, PROPERTY_TYPES, categoryFor } from '@/lib/listing-copy';
 
 /**
@@ -94,7 +95,7 @@ const contactOptions = [
 
 function PostPropertyContent() {
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [contactMethods, setContactMethods] = useState<string[]>(['dashboard']);
@@ -115,6 +116,7 @@ function PostPropertyContent() {
   const [bathrooms, setBathrooms] = useState('');
   const [area, setArea] = useState('');
   const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState<'MZN' | 'USD'>('MZN');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [agentPhone, setAgentPhone] = useState('');
@@ -183,6 +185,7 @@ function PostPropertyContent() {
         setBathrooms(String(property.bathrooms ?? ''));
         setArea(String(property.area ?? ''));
         setPrice(String(property.price ?? ''));
+        setCurrency(normalizeCurrency(property.currency));
         setPropertyType(property.type ?? 'House');
         setListingType(property.listingType ?? 'Buy');
         setSelectedAmenities(property.amenities ?? []);
@@ -211,11 +214,11 @@ function PostPropertyContent() {
       { label: t.postProperty.classificationLabel, value: propertyType },
       { label: t.postProperty.locationCityLabel, value: city || t.postProperty.targetNotSet },
       { label: t.postProperty.neighborhoodLabel, value: neighborhood || t.postProperty.targetNotSet },
-      { label: t.postProperty.valuationLabel, value: price ? `MT ${Number(price).toLocaleString()}` : t.postProperty.valuationMissing },
+      { label: t.postProperty.valuationLabel, value: price ? formatPrice(Number(price), 'sale', currency) : t.postProperty.valuationMissing },
       { label: t.postProperty.photographyLabel, value: `${photos.length} uploaded` },
       { label: 'Agent contact', value: contactMethods.map((method) => contactOptions.find((option) => option.id === method)?.label).filter(Boolean).join(', ') },
     ];
-  }, [city, contactMethods, listingType, neighborhood, photos.length, price, propertyType, t]);
+  }, [city, contactMethods, currency, listingType, neighborhood, photos.length, price, propertyType, t]);
 
   const priceUnit = listingType === 'Rent' ? 'monthly' : listingType === 'Short Stay' ? 'nightly' : 'sale';
   const needsRooms = !['Land', 'Commercial'].includes(categoryFor(propertyType));
@@ -336,6 +339,7 @@ function PostPropertyContent() {
         address: address.trim() || null,
         price,
         priceUnit,
+        currency,
         propertyType,
         listingType,
         bedrooms: needsRooms ? bedrooms : '0',
@@ -528,6 +532,7 @@ function PostPropertyContent() {
               {needsRooms && <FieldInput label={t.postProperty.bathsLabel} type="number" value={bathrooms} onChange={setBathrooms} placeholder="2" />}
               <FieldInput label={t.postProperty.areaLabel} type="number" value={area} onChange={setArea} placeholder="320" />
               <FieldInput label={t.postProperty.valuationLabel} type="number" value={price} onChange={setPrice} placeholder="450000" />
+              <FieldSelect label={lang === 'pt' ? 'Moeda' : 'Currency'} value={currency} onChange={(v) => setCurrency(normalizeCurrency(v))} options={['MZN', 'USD']} />
               <label className="md:col-span-2">
                 <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#5E6B7A]">{t.postProperty.narrativeLabel}</span>
                 <textarea

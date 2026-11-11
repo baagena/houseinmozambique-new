@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/db';
+import { normalizeCurrency } from '@/lib/utils';
 import { getSession } from '@/lib/session';
 import { consumeCredit, planForNewListing } from '@/lib/entitlements';
 import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
@@ -371,6 +372,7 @@ export async function createProperty(formData: any, imageUrls: string[]) {
         address: formData.address,
         price: parseFloat(formData.price),
         priceUnit: formData.priceUnit,
+        currency: normalizeCurrency(formData.currency),
         type: formData.propertyType,
         listingType: formData.listingType,
         bedrooms: Math.max(0, parseInt(formData.bedrooms?.toString() || '0', 10)),
@@ -497,6 +499,8 @@ export async function updateProperty(id: string, formData: any, imageUrls: strin
         address: formData.address,
         price: nextPrice,
         priceUnit: formData.priceUnit,
+        // Only when the form sent one, so an older client cannot reset a USD listing.
+        ...(formData.currency !== undefined && { currency: normalizeCurrency(formData.currency) }),
         type: formData.propertyType,
         listingType: formData.listingType,
         bedrooms: Math.max(0, parseInt(formData.bedrooms?.toString() || '0', 10)),

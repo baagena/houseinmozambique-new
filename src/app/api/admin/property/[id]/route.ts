@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { normalizeCurrency } from '@/lib/utils';
 import { requireAdmin } from '@/lib/session';
 
 interface Params {
@@ -46,6 +47,7 @@ export async function PATCH(request: Request, { params }: Params) {
         address: body.address || null,
         price,
         priceUnit: body.priceUnit || 'sale',
+        ...(body.currency !== undefined && { currency: normalizeCurrency(body.currency) }),
         type: body.type,
         listingType: body.listingType,
         bedrooms,

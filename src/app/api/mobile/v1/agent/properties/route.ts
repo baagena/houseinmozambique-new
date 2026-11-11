@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { normalizeCurrency } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { requireBearerAgent } from '@/lib/mobile-auth';
 import { sendPropertySubmissionNotification } from '@/lib/email';
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
         address: formData.address,
         price: parseFloat(formData.price),
         priceUnit: formData.priceUnit,
+        currency: normalizeCurrency(formData.currency),
         type: formData.propertyType,
         listingType: formData.listingType,
         bedrooms: parseInt(formData.bedrooms.toString()),

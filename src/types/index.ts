@@ -8,6 +8,8 @@ export interface Property {
   neighborhood?: string | null;
   price: number;
   priceUnit: 'sale' | 'monthly' | 'nightly';
+  /** "MZN" or "USD". Older rows and fixtures without it are Meticais. */
+  currency?: string;
   type: string;
   listingType: 'Buy' | 'Rent' | 'Short Stay' | 'Auction';
   bedrooms: number;

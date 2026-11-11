@@ -173,6 +173,7 @@ interface ListingInput {
   description: string;
   price: number;
   priceUnit: string;
+  currency?: string | null;
   city: string;
   neighborhood?: string | null;
   type: string;
@@ -206,7 +207,7 @@ export function realEstateListingJsonLd(p: ListingInput) {
     offers: {
       '@type': 'Offer',
       price: Math.round(p.price),
-      priceCurrency: PRICE_CURRENCY,
+      priceCurrency: p.currency === 'USD' ? 'USD' : PRICE_CURRENCY,
       availability: 'https://schema.org/InStock',
       url,
       ...(sellerName ? { seller: { '@type': 'Organization', name: sellerName } } : {}),

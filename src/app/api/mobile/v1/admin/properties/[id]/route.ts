@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { normalizeCurrency } from '@/lib/utils';
 import { requireBearerAdmin, AGENT_PUBLIC_SELECT } from '@/lib/mobile-auth';
 
 interface Params {
@@ -37,6 +38,7 @@ export async function PATCH(request: Request, { params }: Params) {
       address: body.address || null,
       price,
       priceUnit: body.priceUnit || 'sale',
+      ...(body.currency !== undefined && { currency: normalizeCurrency(body.currency) }),
       type: body.type,
       listingType: body.listingType,
       bedrooms,

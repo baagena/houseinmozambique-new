@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { normalizeCurrency } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { requireBearerAgent } from '@/lib/mobile-auth';
 
@@ -40,6 +41,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         address: formData.address,
         price: parseFloat(formData.price),
         priceUnit: formData.priceUnit,
+        ...(formData.currency !== undefined && { currency: normalizeCurrency(formData.currency) }),
         type: formData.propertyType,
         listingType: formData.listingType,
         bedrooms: parseInt(formData.bedrooms.toString()),

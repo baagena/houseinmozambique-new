@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import Icon from '@/components/ui/Icon';
 import { prisma } from '@/lib/db';
+import { formatPrice } from '@/lib/utils';
 import { AGENT_PUBLIC } from '@/lib/dto';
 import { buildMetadata } from '@/lib/seo';
 import { getDirectoryVisibleWhere } from '@/lib/data';
@@ -39,7 +40,7 @@ export default async function AgentProfilePage({ params }: Props) {
       corporateStatus: true,
       properties: {
         where: { status: 'PUBLISHED' }, orderBy: { createdAt: 'desc' }, take: 6,
-        select: { id: true, title: true, city: true, location: true, price: true, priceUnit: true, type: true, bedrooms: true, bathrooms: true, area: true, images: true, listingType: true },
+        select: { id: true, title: true, city: true, location: true, price: true, priceUnit: true, currency: true, type: true, bedrooms: true, bathrooms: true, area: true, images: true, listingType: true },
       },
       _count: { select: { properties: { where: { status: 'PUBLISHED' } } } },
     },
@@ -101,7 +102,7 @@ export default async function AgentProfilePage({ params }: Props) {
 
             {!corporate && <section className="rounded-3xl border border-[#e7eae6] bg-white p-5 shadow-sm sm:p-7">
               <div className="mb-5 flex items-end justify-between"><div><h2 className="text-xl font-semibold">Properties by {corporate ? agent.agencyName : agent.name}</h2><p className="mt-1 text-sm text-[var(--hm-muted)]">Current listings represented by this {corporate ? 'agency' : 'professional'}.</p></div><Link href={`/properties?agent=${encodeURIComponent(agent.id)}`} className="hidden items-center gap-1 text-sm font-semibold text-[var(--gold-deep)] sm:inline-flex">View all <Icon name="arrow_forward" size={16} /></Link></div>
-              {agent.properties.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{agent.properties.map((property) => <Link key={property.id} href={`/properties/${property.id}`} className="overflow-hidden rounded-2xl border border-[var(--line)] transition hover:-translate-y-0.5 hover:shadow-md"><div className="relative aspect-[4/3] bg-[var(--paper)]">{property.images[0] && <SafeImage src={property.images[0]} alt={property.title} fill className="object-cover" sizes="(max-width: 768px) 90vw, 350px" />}</div><div className="p-4"><p className="line-clamp-1 font-semibold">{property.title}</p><p className="mt-1 text-xs text-[var(--hm-muted)]">{property.location}, {property.city}</p><p className="mt-3 font-semibold text-[var(--gold-deep)]">{property.price.toLocaleString()} MZN <span className="text-xs font-normal text-[var(--hm-muted)]">{property.priceUnit === 'monthly' ? '/ month' : property.priceUnit === 'nightly' ? '/ night' : ''}</span></p></div></Link>)}</div> : <div className="rounded-2xl bg-[var(--paper)] p-6 text-sm text-[var(--hm-muted)]">No active listings are available right now. Contact the professional for current opportunities.</div>}
+              {agent.properties.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{agent.properties.map((property) => <Link key={property.id} href={`/properties/${property.id}`} className="overflow-hidden rounded-2xl border border-[var(--line)] transition hover:-translate-y-0.5 hover:shadow-md"><div className="relative aspect-[4/3] bg-[var(--paper)]">{property.images[0] && <SafeImage src={property.images[0]} alt={property.title} fill className="object-cover" sizes="(max-width: 768px) 90vw, 350px" />}</div><div className="p-4"><p className="line-clamp-1 font-semibold">{property.title}</p><p className="mt-1 text-xs text-[var(--hm-muted)]">{property.location}, {property.city}</p><p className="mt-3 font-semibold text-[var(--gold-deep)]">{formatPrice(property.price, property.priceUnit, property.currency)} <span className="text-xs font-normal text-[var(--hm-muted)]">{property.priceUnit === 'monthly' ? '/ month' : property.priceUnit === 'nightly' ? '/ night' : ''}</span></p></div></Link>)}</div> : <div className="rounded-2xl bg-[var(--paper)] p-6 text-sm text-[var(--hm-muted)]">No active listings are available right now. Contact the professional for current opportunities.</div>}
             </section>}
           </div>
 

@@ -23,6 +23,7 @@ export default async function AdminPropertiesPage() {
     address: p.address ?? '',
     price: p.price,
     priceUnit: p.priceUnit,
+    currency: p.currency,
     type: p.type,
     listingType: p.listingType,
     bedrooms: p.bedrooms,

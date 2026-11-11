@@ -74,6 +74,7 @@ export async function POST(request: Request) {
         address: fields.address,
         price: fields.price,
         priceUnit: fields.priceUnit,
+        currency: fields.currency,
         type: fields.propertyType,
         listingType: fields.listingType,
         bedrooms: fields.bedrooms,

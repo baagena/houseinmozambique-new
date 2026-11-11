@@ -12,6 +12,7 @@ import {
   markAgentPropertyUnavailable,
 } from '@/actions/properties';
 import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
+import { formatPrice } from '@/lib/utils';
 
 type AgentListing = {
   id: string;
@@ -21,6 +22,7 @@ type AgentListing = {
   listingType?: string;
   price: number;
   priceUnit: string;
+  currency?: string;
   status: string;
   images: string[];
   views?: number;
@@ -145,7 +147,7 @@ export default function AgentListingsTable({ properties }: AgentListingsTablePro
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-black text-[#002045]">MT {property.price.toLocaleString()}</p>
+                    <p className="text-sm font-black text-[#002045]">{formatPrice(property.price, property.priceUnit, property.currency)}</p>
                     <p className="text-[9px] text-[#845326] font-bold uppercase tracking-widest">
                       {property.priceUnit === 'sale' ? 'Purchase' : 'Per month'}
                     </p>

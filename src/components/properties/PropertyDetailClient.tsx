@@ -65,6 +65,7 @@ interface SimilarProperty {
   location: string;
   price: number;
   priceUnit: string;
+  currency?: string;
   images: string[];
   isNew?: boolean;
   rating?: number | null;
@@ -399,7 +400,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
         </h1>
         {/* The price sits at body size, in the run of facts. Not shouted. */}
         <div className="specline">
-          <i><b>{formatPrice(property.price, property.priceUnit)}{period && <> {period}</>}</b></i>
+          <i><b>{formatPrice(property.price, property.priceUnit, property.currency)}{period && <> {period}</>}</b></i>
           {property.bedrooms > 0 && <i>{property.bedrooms} {t.property.beds ?? 'bedrooms'}</i>}
           {property.bathrooms > 0 && <i>{property.bathrooms} {t.property.baths ?? 'bathrooms'}</i>}
           {property.area > 0 && <i>{property.area} m²</i>}
@@ -503,7 +504,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
       <div className="wrap">
         <div className="actbar">
           <div className="who">
-            <div className="pr">{formatPrice(property.price, property.priceUnit)}{period && <small> {period}</small>}</div>
+            <div className="pr">{formatPrice(property.price, property.priceUnit, property.currency)}{period && <small> {period}</small>}</div>
             <div className="sub">
               {[property.neighborhood, property.city].filter(Boolean).join(', ')}
               {listed !== null && (
@@ -753,7 +754,7 @@ export default function PropertyDetailClient({ property, similar }: PropertyDeta
       {/* Sticky mobile bar — the price and the one action, on a phone. */}
       <div className="mobile-bar">
         <div className="mp">
-          {formatPrice(property.price, property.priceUnit)}
+          {formatPrice(property.price, property.priceUnit, property.currency)}
           {period && <small>{period}</small>}
         </div>
         {whatsappHref && (

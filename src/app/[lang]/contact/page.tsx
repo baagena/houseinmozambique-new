@@ -14,27 +14,27 @@ const SOCIALS = [
   {
     href: 'https://www.facebook.com/share/1CQYNNJEAG/?mibextid=wwXIfr',
     label: 'Facebook',
-    icon: '/Platform=Facebook,%20Color=Original.svg',
+    icon: '/social/facebook.svg',
   },
   {
     href: 'https://www.instagram.com/houseinmozambique?igsh=MXZ2eXMwZzBqano3NA%3D%3D&utm_source=qr',
     label: 'Instagram',
-    icon: '/Platform=Instagram,%20Color=Original.svg',
+    icon: '/social/instagram.svg',
   },
   {
     href: 'https://youtube.com/@houseinmozambique?si=ZS5ltZYL65cRMpmU',
     label: 'YouTube',
-    icon: '/Platform=YouTube,%20Color=Original.svg',
+    icon: '/social/youtube.svg',
   },
   {
     href: 'https://www.tiktok.com/@house_in_mozambique?_r=1&_t=ZS-96vgKrmit98',
     label: 'TikTok',
-    icon: '/Platform=TikTok,%20Color=Original.svg',
+    icon: '/social/tiktok.svg',
   },
   {
     href: 'https://x.com/ebeb29238037?s=11',
     label: 'X',
-    icon: '/Platform=X%20(Twitter),%20Color=Original.svg',
+    icon: '/social/x.svg',
   },
 ];
 
