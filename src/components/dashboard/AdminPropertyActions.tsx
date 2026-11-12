@@ -13,9 +13,10 @@ interface Props {
   onView?: () => void;
   onEdit?: () => void;
   onStatusChange?: (status: string) => void;
+  onDelete?: () => void;
 }
 
-export default function AdminPropertyActions({ propertyId, currentStatus, onView, onEdit, onStatusChange }: Props) {
+export default function AdminPropertyActions({ propertyId, currentStatus, onView, onEdit, onStatusChange, onDelete }: Props) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
@@ -49,12 +50,12 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
 
     setIsPending(true);
     try {
-      // Use server action deleteProperty as fallback for delete (keeps same behavior)
       const res = await serverDeleteProperty(propertyId);
       if (!res.success) {
         alert(res.error);
         return;
       }
+      onDelete?.();
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -105,13 +106,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         >
           {isPending ? 'Processing...' : 'Publish'}
         </button>
-        <button
-          onClick={handleDelete}
-          disabled={isPending}
-          className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-500 uppercase hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
-        >
-          Delete Permanent
-        </button>
+        <DeleteAction onClick={handleDelete} disabled={isPending} />
       </DashboardActionMenu>
     );
   }
@@ -145,6 +140,7 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         >
           Suspend
         </button>
+        <DeleteAction onClick={handleDelete} disabled={isPending} />
         <span className="flex items-center gap-1 rounded-md px-3 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
           <Icon name="verified" size={14} />
           Live
@@ -178,6 +174,20 @@ export default function AdminPropertyActions({ propertyId, currentStatus, onView
         >
           Restore / mark available
         </button>
+      <DeleteAction onClick={handleDelete} disabled={isPending} />
     </DashboardActionMenu>
+  );
+}
+
+function DeleteAction({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-md px-3 py-2 text-left text-[10px] font-black text-red-600 uppercase hover:bg-red-50 disabled:opacity-50"
+    >
+      Delete listing
+    </button>
   );
 }
