@@ -17,6 +17,9 @@ import '../../repositories/agent_dashboard_repository.dart';
 import '../../repositories/payment_repository.dart';
 import '../../repositories/property_repository.dart';
 import 'listing_wizard.dart';
+import '../../services/firebase_services.dart';
+import '../../widgets/sheets.dart';
+import 'plan_gate.dart';
 
 // Kept identical to the website's post-property form (src/app/post-property/page.tsx)
 // so listings created from either app end up structured the same way.
@@ -117,10 +120,16 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   bool _loading = false;
   bool _submitting = false;
 
-  late _Phase _phase = widget.isEditing || !showsPaidPlans
-      ? _Phase.details
-      : _Phase.plan;
-  String _selectedPlan = 'standard';
+  /// New listings start on the plan check (a spinner), then go straight to
+  /// the form unless the plan is full. Editing never checks.
+  late _Phase _phase = widget.isEditing ? _Phase.details : _Phase.plan;
+
+  /// Null while the check runs, or when it could not be made.
+  PlanStatus? _plan;
+  // Plans are no longer picked here: the plan check (plan_gate.dart) sends
+  // full plans to Billing, so new listings always submit on the account's
+  // own plan and the old in-form payment step is not reached.
+  final String _selectedPlan = 'standard';
   String _paymentTab = 'mobile';
   bool _agreedToTerms = false;
 
@@ -136,8 +145,36 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     if (widget.isEditing) {
       _loadExisting();
     } else {
+      _checkPlan();
       _payerNameController.text =
           ref.read(authControllerProvider).agent?.name ?? '';
+    }
+  }
+
+  Future<void> _checkPlan() async {
+    final agent = ref.read(authControllerProvider).agent;
+    if (agent?.isAdmin == true) {
+      // Admins post without plans or payment: no network round trip needed.
+      setState(() {
+        _plan = const PlanStatus(access: PlanAccess.admin);
+        _phase = _Phase.details;
+      });
+      return;
+    }
+    try {
+      final data = await ref.read(agentDashboardRepositoryProvider).getEntitlement();
+      if (!mounted) return;
+      final status = PlanStatus.from(agent?.role ?? 'AGENT', data);
+      setState(() {
+        _plan = status;
+        // A full plan only stops people where paid plans can be offered;
+        // on iOS the listing goes to review like before (store_policy.dart).
+        _phase = status.access == PlanAccess.full && showsPaidPlans ? _Phase.plan : _Phase.details;
+      });
+    } catch (_) {
+      // Could not check: let them post. The team reviews every listing, and
+      // a failed check must never lock someone out of the form.
+      if (mounted) setState(() => _phase = _Phase.details);
     }
   }
 
@@ -253,26 +290,6 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  void _selectPlan(String planId) {
-    final plan = _planTiers.firstWhere((p) => p.id == planId);
-    if (!plan.selectable) {
-      final router = GoRouter.of(context);
-      // This sheet can be the only route on the stack (e.g. right after a
-      // login redirect); popping then would leave a black screen behind.
-      if (router.canPop()) {
-        router.pop();
-      } else {
-        router.go('/profile');
-      }
-      router.push('/contact');
-      return;
-    }
-    setState(() {
-      _selectedPlan = planId;
-      _phase = _Phase.details;
-    });
   }
 
   Future<void> _onWizardComplete(WizardSubmission submission) async {
@@ -394,6 +411,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       } else {
         result = await repo.createProperty(formData, _images);
       }
+      if (!widget.isEditing) Analytics.listingSubmitted();
       ref.invalidate(myPropertiesProvider);
       if (mounted) {
         final router = GoRouter.of(context);
@@ -424,7 +442,25 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     }
   }
 
-  void _closeForm() {
+  /// Every way out (close button, tap outside, drag down) comes through here.
+  /// A listing takes minutes to fill in, so leaving asks first.
+  Future<void> _closeForm() async {
+    if (_submitting) return;
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('listingForm.discardTitle'.tr()),
+        content: Text('listingForm.discardBody'.tr()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('listingForm.keepEditing'.tr())),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('listingForm.discard'.tr(), style: const TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (leave != true || !mounted) return;
     if (context.canPop()) {
       context.pop();
     } else {
@@ -434,38 +470,27 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: AnimatedPadding(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.95,
-          minChildSize: 0.5,
-          maxChildSize: 0.98,
-          expand: false,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child:
+    return RouteSheet(
+      initialSize: 0.95,
+      maxSize: 0.98,
+      onClose: _closeForm,
+      builder: (context, scrollController) =>
+
                   _loading && widget.isEditing && _titleController.text.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : switch (_phase) {
-                      _Phase.plan => _buildPlanPhase(scrollController),
+                      _Phase.plan => PlanGateView(
+                        scrollController: scrollController,
+                        status: _plan,
+                        onClose: _closeForm,
+                        showPaidOptions: showsPaidPlans,
+                      ),
                       _Phase.details when !widget.isEditing => ListingWizard(
                         scrollController: scrollController,
                         submitLabel: _planAmount == 0
                             ? 'dashboard.submit'.tr()
                             : 'dashboard.continueToPayment'.tr(),
-                        onExit: showsPaidPlans
-                            ? () => setState(() => _phase = _Phase.plan)
-                            : null,
+                        banner: _planBanner(),
                         onClose: _closeForm,
                         onComplete: _onWizardComplete,
                         initial: _wizardSubmission,
@@ -473,11 +498,17 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
                       _Phase.details => _buildDetailsPhase(scrollController),
                       _Phase.payment => _buildPaymentPhase(scrollController),
                     },
-            );
-          },
-        ),
-      ),
     );
+  }
+
+  /// Admins always see that their listing goes live at once. Plan details
+  /// appear only where paid plans can be shown (not on iOS).
+  Widget? _planBanner() {
+    final plan = _plan;
+    if (plan == null) return null;
+    if (plan.access == PlanAccess.admin) return PlanBanner(status: plan, showUpgrade: false);
+    if (!showsPaidPlans) return null;
+    return PlanBanner(status: plan, showUpgrade: true);
   }
 
   Widget _sheetHandle() => Padding(
@@ -503,43 +534,6 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
       ],
     ),
   );
-
-  Widget _buildPlanPhase(ScrollController scrollController) {
-    return ListView(
-      controller: scrollController,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-      children: [
-        _sheetHandle(),
-        Text(
-          'dashboard.selectPlanTitle'.tr(),
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'dashboard.selectPlanSubtitle'.tr(),
-          style: const TextStyle(
-            color: AppColors.onSurfaceVariant,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 20),
-        ..._planTiers.map(
-          (plan) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _PlanCard(
-              name: plan.nameKey.tr(),
-              price: plan.priceKey.tr(),
-              description: plan.descKey.tr(),
-              cta: plan.ctaKey.tr(),
-              badge: plan.highlighted ? 'plans.premiumBadge'.tr() : null,
-              highlighted: plan.highlighted,
-              onTap: () => _selectPlan(plan.id),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildDetailsPhase(ScrollController scrollController) {
     return Form(
@@ -642,7 +636,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
             decoration: InputDecoration(
               labelText: 'dashboard.propertyTitle'.tr(),
             ),
-            validator: (v) => v == null || v.isEmpty ? ' ' : null,
+            validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -651,7 +645,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
             decoration: InputDecoration(
               labelText: 'dashboard.description'.tr(),
             ),
-            validator: (v) => v == null || v.isEmpty ? ' ' : null,
+            validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null,
           ),
           const SizedBox(height: 12),
           Row(
@@ -697,7 +691,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           TextFormField(
             controller: _cityController,
             decoration: InputDecoration(labelText: 'dashboard.city'.tr()),
-            validator: (v) => v == null || v.isEmpty ? ' ' : null,
+            validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -717,7 +711,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(labelText: 'dashboard.price'.tr()),
             validator: (v) =>
-                v == null || double.tryParse(v) == null ? ' ' : null,
+                v == null || double.tryParse(v) == null ? 'common.required'.tr() : null,
           ),
           const SizedBox(height: 12),
           Row(
@@ -1010,106 +1004,6 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
               : Text('dashboard.publishAd'.tr()),
         ),
       ],
-    );
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  final String name;
-  final String price;
-  final String description;
-  final String cta;
-  final String? badge;
-  final bool highlighted;
-  final VoidCallback onTap;
-
-  const _PlanCard({
-    required this.name,
-    required this.price,
-    required this.description,
-    required this.cta,
-    required this.badge,
-    required this.highlighted,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: highlighted ? AppColors.primary : AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: highlighted ? Colors.white : AppColors.onSurface,
-                  ),
-                ),
-              ),
-              if (badge != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    badge!,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            price,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: highlighted ? Colors.white : AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 12.5,
-              color: highlighted ? Colors.white70 : AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: highlighted
-                ? ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
-                    ),
-                    onPressed: onTap,
-                    child: Text(cta),
-                  )
-                : OutlinedButton(onPressed: onTap, child: Text(cta)),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -25,6 +25,24 @@ class StatusBadge extends StatelessWidget {
     'AGENT': _teal,
     'CUSTOMER': _gray,
     'DRAFT': _gray,
+    // Payments, subscriptions and credits
+    'COMPLETED': _green,
+    'AVAILABLE': _green,
+    'SUBMITTED': _blue,
+    'GRACE': _amber,
+    'FAILED': _red,
+    'CANCELLED': _gray,
+    'CONSUMED': _gray,
+    'EXPIRED': _gray,
+    // Listings
+    'SUSPENDED': _amber,
+    'SOLD': _teal,
+    'RENTED': _teal,
+    'UNAVAILABLE': _gray,
+    // Buyer requests
+    'OPEN': _green,
+    'MATCHED': _teal,
+    'CLOSED': _gray,
   };
 
   @override

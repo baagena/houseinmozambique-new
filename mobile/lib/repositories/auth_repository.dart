@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/network/api_client.dart';
 import '../models/agent.dart';
+import '../core/network/api_config.dart';
 
 class AuthRepository {
   final ApiClient _client;
@@ -24,6 +25,8 @@ class AuthRepository {
     int? yearsExperience,
     String? bio,
     List<String>? specializations,
+    /// Extra fields for the account type (e.g. the agency of a CORPORATE sign-up).
+    Map<String, dynamic>? extra,
   }) async {
     final res = await _client.dio.post('/auth/register', data: {
       'email': email,
@@ -37,6 +40,7 @@ class AuthRepository {
       if (yearsExperience != null) 'yearsExperience': yearsExperience,
       if (bio != null) 'bio': bio,
       if (specializations != null) 'specializations': specializations,
+      ...?extra,
     });
     final data = res.data as Map<String, dynamic>;
     return (data['token'] as String, Agent.fromJson(data['agent'] as Map<String, dynamic>));
@@ -50,6 +54,12 @@ class AuthRepository {
   Future<void> deleteAccount(String password) async {
     await _client.dio.delete('/auth/me', data: {'password': password});
   }
+
+  /// Emails a reset link (the website's own route; the link opens the site's
+  /// reset page). The server answers the same whether or not the address has
+  /// an account.
+  Future<void> forgotPassword(String email) =>
+      _client.dio.post('${ApiConfig.rootUrl}/api/auth/forgot-password', data: {'email': email});
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository(ref.watch(apiClientProvider)));

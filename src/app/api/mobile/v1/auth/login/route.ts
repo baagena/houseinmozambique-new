@@ -5,7 +5,12 @@ import { signAgentToken, AGENT_SELF_SELECT } from '@/lib/mobile-auth';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    // Phone keyboards capitalise the first letter and leave trailing spaces;
+    // emails are stored trimmed and lower-case (as the website does), so
+    // match that, or "Admin@…" is told its password is wrong.
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const password = body.password;
 
     if (!email || !password) {
       return NextResponse.json(

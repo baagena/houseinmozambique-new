@@ -88,10 +88,14 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
                       onTap: () => ref.read(favoritesControllerProvider.notifier).toggle(property.id),
                       child: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
+                        // Saved: red heart on white, so it stands out on any photo.
+                        decoration: BoxDecoration(
+                          color: isFavorite ? Colors.white : Colors.black38,
+                          shape: BoxShape.circle,
+                        ),
                         child: Icon(
                           isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? AppColors.tertiaryContainer : Colors.white,
+                          color: isFavorite ? AppColors.favorite : Colors.white,
                           size: 18,
                         ),
                       ),
@@ -156,7 +160,7 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
             ),
             const SizedBox(height: 8),
             Text(
-              property.localizedTitle(context.locale.languageCode),
+              property.localizedTitle(Localizations.localeOf(context).languageCode),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),

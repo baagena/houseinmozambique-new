@@ -30,22 +30,31 @@ import '../../features/admin/admin_ads_screen.dart';
 import '../../features/admin/admin_blog_screen.dart';
 import '../../features/admin/admin_activities_screen.dart';
 import '../../features/admin/admin_settings_screen.dart';
+import '../../features/agent_dashboard/agent_requests_screen.dart';
+import '../../features/agent_dashboard/agent_billing_screen.dart';
+import '../../features/agent_dashboard/boost_listing_screen.dart';
+import '../../features/admin/admin_leads_screen.dart';
+import '../../features/admin/admin_requests_screen.dart';
+import '../../features/admin/admin_payments_screens.dart';
+import '../../features/admin/admin_pricing_screen.dart';
+import '../../features/admin/admin_subscribers_screen.dart';
+import '../../features/admin/admin_content_screen.dart';
 import '../../widgets/app_shell.dart';
+import '../utils/store_policy.dart';
+import '../../services/firebase_services.dart';
 import '../../controllers/auth_controller.dart';
 
-CustomTransitionPage<void> _fadeThroughPage(Widget child) {
-  return CustomTransitionPage(
-    child: child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(opacity: animation, child: child);
-    },
-    transitionDuration: const Duration(milliseconds: 220),
-  );
-}
+/// A normal pushed page. It uses the platform's own transition from the
+/// theme (app_theme.dart), which is what makes back-swipes interactive: the
+/// page follows the finger on Android (predictive back) and iPhone (edge
+/// swipe). The previous custom fade turned the iPhone swipe off entirely and
+/// on Android gave no feedback until the finger was lifted.
+Page<void> _fadeThroughPage(Widget child) => MaterialPage<void>(child: child);
 
 CustomTransitionPage<void> _slideUpPage(Widget child) {
   return CustomTransitionPage(
     opaque: false,
+    barrierColor: Colors.black54,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)
@@ -59,13 +68,20 @@ CustomTransitionPage<void> _slideUpPage(Widget child) {
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
       final agent = ref.read(authControllerProvider).agent;
-      if (state.matchedLocation.startsWith('/admin')) {
+      final loc = state.matchedLocation;
+      if (loc.startsWith('/admin')) {
         if (agent == null || !agent.isAdmin) return '/profile';
+        // Payments and prices never show on iOS (store_policy.dart).
+        if (!showsPaidPlans && (loc.startsWith('/admin/payments') || loc == '/admin/pricing')) return '/admin';
+      }
+      if (loc == '/dashboard' || loc.startsWith('/dashboard/')) {
+        if (agent == null || !agent.isAgent) return '/profile';
+        if (!showsPaidPlans && (loc == '/dashboard/billing' || loc.endsWith('/boost'))) return '/dashboard';
       }
       // Agent-only bottom-nav tabs.
       if (state.matchedLocation == '/my-listings' || state.matchedLocation == '/my-leads') {
@@ -185,6 +201,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _slideUpPage(ListingFormScreen(propertyId: state.pathParameters['id'])),
       ),
       GoRoute(
+        path: '/dashboard/listings/:id/boost',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(BoostListingScreen(propertyId: state.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/dashboard/requests',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AgentRequestsScreen()),
+      ),
+      GoRoute(
+        path: '/dashboard/billing',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AgentBillingScreen()),
+      ),
+      GoRoute(
         path: '/dashboard/leads',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _fadeThroughPage(const LeadsScreen()),
@@ -230,10 +261,55 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fadeThroughPage(const AdminActivitiesScreen()),
       ),
       GoRoute(
+        path: '/admin/leads',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminLeadsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/requests',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminRequestsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/payments',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminPaymentsLedgerScreen()),
+      ),
+      GoRoute(
+        path: '/admin/payments/verify',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminVerifyPaymentsScreen()),
+      ),
+      GoRoute(
+        path: '/admin/pricing',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminPricingScreen()),
+      ),
+      GoRoute(
+        path: '/admin/subscribers',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminSubscribersScreen()),
+      ),
+      GoRoute(
+        path: '/admin/content',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadeThroughPage(const AdminContentScreen()),
+      ),
+      GoRoute(
         path: '/admin/settings',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _fadeThroughPage(const AdminSettingsScreen()),
       ),
     ],
   );
+  // Analytics: one screen_view per screen, named by its route pattern
+  // ("/property/:id"), so ids never reach Google Analytics.
+  void track() {
+    try {
+      Analytics.screen(router.routerDelegate.currentConfiguration.fullPath);
+    } catch (_) {}
+  }
+  router.routerDelegate.addListener(track);
+  ref.onDispose(() => router.routerDelegate.removeListener(track));
+  return router;
 });

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../repositories/admin_repository.dart';
+import 'admin_grant_plan_sheet.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
 
@@ -80,6 +81,10 @@ class AdminApprovalsScreen extends ConsumerWidget {
                               'admin.listedBy'.tr(args: [p.host?.name ?? '—']),
                               style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12),
                             ),
+                            // Their plan is full (e.g. posted from an iPhone and paid
+                            // the team directly)? Give them access here, then approve.
+                            if (p.hostId.isNotEmpty)
+                              AdminPlanStrip(agentId: p.hostId, agentName: p.host?.name ?? ''),
                             const SizedBox(height: 12),
                             Row(
                               children: [

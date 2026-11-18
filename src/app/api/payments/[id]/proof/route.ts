@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { uploadImage, FOLDERS } from '@/lib/cloudinary';
 import { sendPaymentProofSubmittedEmail } from '@/lib/email';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
@@ -174,6 +175,7 @@ export async function POST(req: Request, { params }: Params) {
   } catch (error) {
     console.error(`payments/proof: admin notification failed for ${updated.orderRef}`, error);
   }
+  pushToAdmins(pushes.proofSubmitted(updated.orderRef, payment.customerName ?? ''));
 
   return NextResponse.json({
     success: true,

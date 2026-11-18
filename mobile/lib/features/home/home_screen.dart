@@ -31,7 +31,24 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.article_outlined), onPressed: () => context.push('/blog')),
+          // Buying and renting guides (the blog), named so people know what
+          // it is: a bare article icon was rarely recognised.
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TextButton.icon(
+              onPressed: () => context.push('/blog'),
+              icon: const Icon(Icons.menu_book_outlined, size: 18),
+              label: Text('blog.guides'.tr()),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                backgroundColor: AppColors.surfaceContainer,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: const Size(0, 36),
+                shape: const StadiumBorder(),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
         ],
       ),
       floatingActionButton: const FavoritesFab(heroTag: 'home-favorites-fab'),

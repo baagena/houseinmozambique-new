@@ -52,6 +52,9 @@ class ListingWizard extends ConsumerStatefulWidget {
   /// Answers to start from, e.g. when coming back from the payment step.
   final WizardSubmission? initial;
 
+  /// Shown above the first step — e.g. which plan covers this listing.
+  final Widget? banner;
+
   const ListingWizard({
     super.key,
     required this.scrollController,
@@ -60,6 +63,7 @@ class ListingWizard extends ConsumerStatefulWidget {
     required this.onComplete,
     this.onExit,
     this.initial,
+    this.banner,
   });
 
   @override
@@ -474,6 +478,7 @@ class _ListingWizardState extends ConsumerState<ListingWizard> {
                 ],
               ),
               const SizedBox(height: 10),
+              if (_step == 0 && widget.banner != null) widget.banner!,
               _StepProgress(steps: steps, current: _step),
               const SizedBox(height: 4),
               Text(

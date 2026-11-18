@@ -35,6 +35,9 @@ class AppColors {
   static const outlineVariant = Color(0xFFC4C6CF);
 
   static const error = Color(0xFFBA1A1A);
+
+  /// A saved (favourite) heart: a clear, bright red.
+  static const favorite = Color(0xFFE53935);
   static const onError = Color(0xFFFFFFFF);
   static const errorContainer = Color(0xFFFFDAD6);
   static const onErrorContainer = Color(0xFF93000A);
@@ -73,6 +76,15 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      // Each platform's own way back: on Android the predictive-back swipe
+      // (page shrinks and follows the finger), on iPhone the swipe from the
+      // left edge (page slides with the finger).
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Roboto',

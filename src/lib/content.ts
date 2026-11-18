@@ -61,10 +61,8 @@ export function mergeOverrides(lang: Language, overrides: FlatContent): Record<s
  * Load all content overrides from the database, grouped by language as flat
  * dot-path maps.
  *
- * A failed read throws. The public pages are cached, and an empty result
- * would have been cached with them: the in-code defaults in place of what
- * staff wrote, for up to an hour. When a cached page's refresh throws, Next
- * keeps serving the previous version instead.
+ * A failed read throws, and the caller decides. The layout falls back to the
+ * in-code defaults so the site stays up (src/app/[lang]/layout.tsx).
  */
 export async function getContentOverrides(): Promise<ContentOverrides> {
   const grouped: ContentOverrides = { en: {}, pt: {} };

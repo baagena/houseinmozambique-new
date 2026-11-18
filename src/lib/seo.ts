@@ -7,6 +7,7 @@ import { hostIdentity } from '@/lib/host-identity';
  */
 import { SITE_URL } from './site';
 import { localizedPath } from './site-lang';
+import type { Language } from './translations';
 
 // Defined once in lib/site.ts; re-exported for existing imports.
 export { SITE_URL };
@@ -48,6 +49,13 @@ interface PageMetaInput {
   noindex?: boolean;
   publishedTime?: string;
   modifiedTime?: string;
+  /**
+   * The page exists in this one language only (e.g. a blog post written in
+   * English). Its canonical is then that language's address on both
+   * addresses, and no translation is claimed: the /x and /en/x pair would
+   * otherwise be the same text declared as two languages.
+   */
+  onlyLang?: Language;
 }
 
 /**
@@ -64,6 +72,7 @@ export function buildMetadata({
   noindex = false,
   publishedTime,
   modifiedTime,
+  onlyLang,
 }: PageMetaInput = {}): Metadata {
   /*
    * Path-relative on purpose: the root layout's metadataBase is the /en origin
@@ -71,21 +80,25 @@ export function buildMetadata({
    * declares itself as canonical. The language alternates are absolute — they
    * name both addresses whichever one is being served.
    */
-  const url = path.startsWith('/') ? path : `/${path}`;
+  const path0 = path.startsWith('/') ? path : `/${path}`;
+  // One-language pages: one absolute address, whichever address served them.
+  const url = onlyLang ? absoluteUrl(localizedPath(path0, onlyLang)) : path0;
   const ogImages = images && images.length > 0 ? images : [absoluteUrl('/opengraph-image')];
 
   return {
     title,
     description,
     keywords: keywords && keywords.length ? keywords : undefined,
-    alternates: {
-      canonical: url,
-      languages: {
-        pt: absoluteUrl(url),
-        en: absoluteUrl(localizedPath(url, 'en')),
-        'x-default': absoluteUrl(url),
-      },
-    },
+    alternates: onlyLang
+      ? { canonical: url, languages: { [onlyLang]: url } }
+      : {
+          canonical: url,
+          languages: {
+            pt: absoluteUrl(url),
+            en: absoluteUrl(localizedPath(url, 'en')),
+            'x-default': absoluteUrl(url),
+          },
+        },
     robots: noindex
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
@@ -98,8 +111,8 @@ export function buildMetadata({
       images: ogImages.map((u) => ({ url: u, width: 1200, height: 630, alt: title || SITE_NAME })),
       // Matches <html lang>: the served page is Portuguese, and a share card
       // that claims en_US gets previewed and ranked as the wrong language.
-      locale: 'pt_MZ',
-      alternateLocale: ['en_US'],
+      locale: onlyLang === 'en' ? 'en_US' : 'pt_MZ',
+      alternateLocale: onlyLang ? undefined : ['en_US'],
       ...(type === 'article' ? { publishedTime, modifiedTime } : {}),
     },
     twitter: {
@@ -233,10 +246,12 @@ interface ArticleInput {
   author?: { name: string } | null;
   category?: string;
   tags?: string[];
+  /** The language the article is written in (lib/blog-content detectTextLang). */
+  lang?: Language;
 }
 
 export function articleJsonLd(a: ArticleInput) {
-  const url = absoluteUrl(`/news/${a.slug}`);
+  const url = absoluteUrl(localizedPath(`/news/${a.slug}`, a.lang ?? 'pt'));
   const published = a.publishedAt ? new Date(a.publishedAt).toISOString() : undefined;
   const modified = a.updatedAt ? new Date(a.updatedAt).toISOString() : published;
   return {
@@ -250,7 +265,7 @@ export function articleJsonLd(a: ArticleInput) {
     dateModified: modified,
     articleSection: a.category,
     keywords: a.tags?.join(', '),
-    inLanguage: 'en',
+    inLanguage: a.lang ?? 'pt',
     author: { '@type': a.author?.name ? 'Person' : 'Organization', name: a.author?.name || SITE_NAME },
     publisher: { '@id': `${SITE_URL}/#organization` },
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },

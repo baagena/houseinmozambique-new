@@ -59,6 +59,21 @@ function getResendErrorMessage(response: ResendSendResult) {
 }
 
 async function sendEmail(options: EmailOptions) {
+  /*
+   * Local testing against a copy of the database (scripts/dev-local.mjs):
+   * the copy holds real customers' addresses, so nothing may be sent. The
+   * email is printed to the server console instead and reported as sent, so
+   * every flow that emails (replies, approvals, sign-ups) can still be tested.
+   */
+  if (process.env.EMAIL_MODE === 'log') {
+    console.info(
+      `\n📧 [EMAIL NOT SENT — local test mode]\n   to: ${options.to}\n   subject: ${options.subject}\n   ${
+        (options.text || options.html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim().slice(0, 300)
+      }\n`,
+    );
+    return { id: `local-${Date.now()}` } as ResendSendResult;
+  }
+
   if (!resend) {
     throw new Error('Resend email provider not configured. Set RESEND_API_KEY in your environment.');
   }

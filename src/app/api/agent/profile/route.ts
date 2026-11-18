@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
+import { parseContactFields } from '@/lib/agent-contact-links';
 
 export async function PATCH(request: Request) {
   try {
@@ -26,6 +27,9 @@ export async function PATCH(request: Request) {
     if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) {
       return NextResponse.json({ error: 'Enter a valid public agency email address.' }, { status: 400 });
     }
+    // WhatsApp number and social profile links, shown on the public profile.
+    const contact = parseContactFields(body);
+    if ('error' in contact) return NextResponse.json({ error: contact.error }, { status: 400 });
 
     const updatedAgent = await prisma.agent.update({
       where: { id: userId },
@@ -38,6 +42,7 @@ export async function PATCH(request: Request) {
         ...(yearsExperience !== undefined && { yearsExperience: Number(yearsExperience) }),
         ...(bio !== undefined && { bio }),
         ...(specializations !== undefined && { specializations }),
+        ...contact.data,
         ...(isCorporate && body.agencyBusinessType !== undefined && { agencyBusinessType: String(body.agencyBusinessType).trim() }),
         ...(isCorporate && body.agencyAbout !== undefined && { agencyAbout: String(body.agencyAbout).trim() }),
         ...(isCorporate && agencyServices !== undefined && { agencyServices }),
@@ -56,6 +61,8 @@ export async function PATCH(request: Request) {
         bio: true,
         yearsExperience: true,
         specializations: true,
+        whatsapp: true,
+        socialLinks: true,
       },
     });
 

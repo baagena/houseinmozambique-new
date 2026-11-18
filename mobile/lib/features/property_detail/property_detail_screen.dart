@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,6 +16,8 @@ import '../../widgets/error_view.dart';
 import '../../widgets/favorites_fab.dart';
 import '../../widgets/property_card.dart';
 import '../../core/utils/labels.dart';
+import '../../services/firebase_services.dart';
+import '../../services/contact_tracker.dart';
 
 final propertyDetailProvider =
     FutureProvider.autoDispose.family<(Property, List<Property>), String>((ref, id) {
@@ -42,6 +45,7 @@ class PropertyDetailScreen extends ConsumerWidget {
         ),
         data: (result) {
           final (property, similar) = result;
+          Analytics.viewProperty(property.id, property.type, property.city);
           final isFavorite = ref.watch(favoritesControllerProvider).contains(property.id);
 
           return _PropertyDetailBody(
@@ -75,7 +79,26 @@ class _PropertyDetailBody extends ConsumerStatefulWidget {
 
 class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
   final _pageController = PageController();
+  final _scroll = ScrollController();
   int _currentImage = 0;
+
+  static const _headerHeight = 300.0;
+
+  /// True once the photo has scrolled away and the plain top bar shows: the
+  /// status bar icons turn dark and the round photo buttons turn flat.
+  bool _collapsed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final top = MediaQuery.paddingOf(context).top;
+    final collapsed = _scroll.offset > _headerHeight - kToolbarHeight - top - 8;
+    if (collapsed != _collapsed) setState(() => _collapsed = collapsed);
+  }
   late final AgentContact _contact = AgentContact.fromProperty(widget.property, lang: context.locale.languageCode);
 
   Property get property => widget.property;
@@ -83,10 +106,12 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
   @override
   void dispose() {
     _pageController.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
   void _openContact() {
+    ref.read(contactTrackerProvider).listing(property.id, 'form');
     context.push('/contact', extra: {
       'propertyId': property.id,
       'agentId': property.hostId,
@@ -104,11 +129,21 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
     }
   }
 
-  void _call(String number) => _guarded(() => launchCall(number));
+  // Each press is also recorded for the agent's "how buyers reached you".
+  void _call(String number) {
+    ref.read(contactTrackerProvider).listing(property.id, 'call');
+    _guarded(() => launchCall(number));
+  }
 
-  void _openWhatsApp(String number) => _guarded(() => launchWhatsApp(number, property));
+  void _openWhatsApp(String number) {
+    ref.read(contactTrackerProvider).listing(property.id, 'whatsapp');
+    _guarded(() => launchWhatsApp(number, property));
+  }
 
-  void _email(String address) => _guarded(() => launchEmail(address, property));
+  void _email(String address) {
+    ref.read(contactTrackerProvider).listing(property.id, 'email');
+    _guarded(() => launchEmail(address, property));
+  }
 
   void _openMaps() {
     final query = _contact.coordinates ?? property.address ?? property.location;
@@ -137,21 +172,53 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
     return Stack(
       children: [
         CustomScrollView(
+          controller: _scroll,
           slivers: [
             SliverAppBar(
               pinned: true,
-              expandedHeight: 300,
+              expandedHeight: _headerHeight,
               backgroundColor: AppColors.surface,
               foregroundColor: AppColors.onSurface,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 1,
+              // Over the photo the clock and battery are white (on the dark
+              // shade below); on the plain bar they are dark again.
+              systemOverlayStyle: _collapsed
+                  ? SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent)
+                  : SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
+              automaticallyImplyLeading: false,
+              leadingWidth: 60,
+              leading: Center(
+                child: _HeaderButton(
+                  collapsed: _collapsed,
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: Icons.arrow_back,
+                  onTap: () => Navigator.of(context).maybePop(),
+                ),
+              ),
+              title: AnimatedOpacity(
+                opacity: _collapsed ? 1 : 0,
+                duration: const Duration(milliseconds: 180),
+                child: Text(
+                  property.localizedTitle(context.locale.languageCode),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                ),
+              ),
+              titleSpacing: 0,
               actions: [
                 _AnimatedFavoriteButton(
+                  collapsed: _collapsed,
                   isFavorite: widget.isFavorite,
                   onTap: () => ref.read(favoritesControllerProvider.notifier).toggle(property.id),
                 ),
+                const SizedBox(width: 8),
                 // Listings are posted by agents, so anyone viewing one can flag
                 // it to the House in Mozambique team (App Store guideline 1.2).
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
+                  padding: EdgeInsets.zero,
+                  child: _HeaderButton(collapsed: _collapsed, icon: Icons.more_vert),
                   onSelected: (_) => context.push('/contact', extra: {
                     'propertyId': property.id,
                     'subject': 'property.reportSubject'.tr(args: [property.localizedTitle(context.locale.languageCode)]),
@@ -169,6 +236,7 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                     ),
                   ],
                 ),
+                const SizedBox(width: 12),
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Hero(
@@ -191,6 +259,25 @@ class _PropertyDetailBodyState extends ConsumerState<_PropertyDetailBody> {
                                   errorWidget: (context, url, error) => Container(
                                     color: AppColors.surfaceVariant,
                                     child: const Icon(Icons.broken_image_outlined, color: AppColors.onSurfaceVariant),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Soft shade behind the status bar and buttons so
+                            // they stay readable on bright photos.
+                            const Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: 140,
+                              child: IgnorePointer(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [Color(0x80000000), Color(0x00000000)],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -676,23 +763,64 @@ class _PressableIconButtonState extends State<_PressableIconButton> {
 
 class _AnimatedFavoriteButton extends StatelessWidget {
   final bool isFavorite;
+  final bool collapsed;
   final VoidCallback onTap;
-  const _AnimatedFavoriteButton({required this.isFavorite, required this.onTap});
+  const _AnimatedFavoriteButton({required this.isFavorite, required this.collapsed, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      icon: AnimatedSwitcher(
+    return _HeaderButton(
+      collapsed: collapsed,
+      onTap: onTap,
+      child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
         transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
         child: Icon(
           isFavorite ? Icons.favorite : Icons.favorite_border,
           key: ValueKey(isFavorite),
-          color: isFavorite ? AppColors.tertiaryContainer : null,
+          size: 21,
+          color: isFavorite ? AppColors.favorite : AppColors.onSurface,
         ),
       ),
     );
+  }
+}
+
+/// A top-bar button: a white circle with a soft shadow while it sits on the
+/// photo (readable on any picture), a plain icon once the bar is collapsed.
+class _HeaderButton extends StatelessWidget {
+  final bool collapsed;
+  final IconData? icon;
+  final Widget? child;
+  final VoidCallback? onTap;
+  final String? tooltip;
+  const _HeaderButton({required this.collapsed, this.icon, this.child, this.onTap, this.tooltip});
+
+  @override
+  Widget build(BuildContext context) {
+    final content = child ?? Icon(icon, size: 21, color: AppColors.onSurface);
+    final button = AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: collapsed ? Colors.transparent : Colors.white.withValues(alpha: 0.94),
+        boxShadow: collapsed
+            ? const []
+            : const [BoxShadow(color: Color(0x33000000), blurRadius: 8, offset: Offset(0, 2))],
+      ),
+      alignment: Alignment.center,
+      child: content,
+    );
+    // Without onTap the parent (e.g. a popup menu) handles the tap.
+    final tappable = onTap == null
+        ? button
+        : Material(
+            type: MaterialType.transparency,
+            child: InkWell(customBorder: const CircleBorder(), onTap: onTap, child: button),
+          );
+    return tooltip == null ? tappable : Tooltip(message: tooltip!, child: tappable);
   }
 }
 

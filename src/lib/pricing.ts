@@ -13,7 +13,8 @@ export interface PricingPlanRecord {
   slug: string;
   sortOrder: number;
   /** Billing half of the plan. See PricingPlan in schema.prisma. */
-  kind: 'subscription' | 'one_off';
+  /** 'addon' is a listing boost (FEATURED/URGENT), priced here but bought per listing. */
+  kind: 'subscription' | 'one_off' | 'addon';
   /** Centavos. 3,500 MZN is 350000. */
   priceMinor: number;
   currency: string;
@@ -327,7 +328,10 @@ export function toPricingPlanRecord(row: any): PricingPlanRecord {
     ctaMode: row.ctaMode === 'contact' ? 'contact' : 'checkout',
     nameEn: row.nameEn ?? '',
     namePt: row.namePt ?? '',
-    kind: row.kind === 'one_off' ? 'one_off' : 'subscription',
+    // 'addon' must survive the round trip: collapsing it to 'subscription'
+    // meant saving a boost from the admin pricing screen turned it into a
+    // monthly plan, which removed it from every listing's Boost page.
+    kind: row.kind === 'one_off' ? 'one_off' : row.kind === 'addon' ? 'addon' : 'subscription',
     priceMinor: Number(row.priceMinor ?? 0),
     currency: row.currency ?? 'MZN',
     interval: row.interval === 'year' ? 'year' : row.interval === 'month' ? 'month' : null,

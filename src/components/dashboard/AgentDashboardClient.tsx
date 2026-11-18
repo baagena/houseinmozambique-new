@@ -94,6 +94,10 @@ const CHANNEL_COLOR: Record<string, string> = {
   EMAIL: 'var(--d-slot-3)',
   FORM: 'var(--d-slot-4)',
   VIEWING: 'var(--d-slot-5)',
+  WEBSITE: 'var(--d-slot-2)',
+  FACEBOOK: 'var(--d-slot-3)',
+  INSTAGRAM: 'var(--d-slot-4)',
+  LINKEDIN: 'var(--d-slot-5)',
 };
 
 function channelLabel(channel: string, t: AgentCopy): string {
@@ -103,6 +107,14 @@ function channelLabel(channel: string, t: AgentCopy): string {
     case 'EMAIL': return t.channelEmail;
     case 'FORM': return t.channelForm;
     case 'VIEWING': return t.channelViewing;
+    // Presses on the agent's profile (brand names read the same in both languages).
+    case 'WEBSITE': return 'Website';
+    case 'FACEBOOK': return 'Facebook';
+    case 'INSTAGRAM': return 'Instagram';
+    case 'LINKEDIN': return 'LinkedIn';
+    case 'TIKTOK': return 'TikTok';
+    case 'YOUTUBE': return 'YouTube';
+    case 'X': return 'X';
     default: return channel;
   }
 }

@@ -4,4 +4,9 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- DEBUG BUILDS ONLY: lets the app reach the local test server over plain
+         http (http://localhost:3005 through `adb reverse`, or this PC's Wi-Fi
+         address). Release builds for the stores never include this file, so
+         they stay https-only. See mobile/LOCAL_TESTING.md. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

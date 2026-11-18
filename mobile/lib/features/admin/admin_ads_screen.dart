@@ -8,6 +8,7 @@ import '../../repositories/admin_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
 import 'admin_ad_form_screen.dart';
+import '../../widgets/dashboard_ui.dart';
 
 class AdminAdsScreen extends ConsumerWidget {
   const AdminAdsScreen({super.key});
@@ -56,7 +57,7 @@ class AdminAdsScreen extends ConsumerWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Color(int.parse(ad.bgColor.replaceFirst('#', '0xFF'))),
+                        color: Color(int.tryParse(ad.bgColor.replaceFirst('#', '0xFF')) ?? 0xFF002045),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.campaign, color: Colors.white, size: 20),
@@ -70,8 +71,12 @@ class AdminAdsScreen extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
-                            await ref.read(adminRepositoryProvider).deleteAd(ad.id);
-                            ref.invalidate(adminAdsProvider);
+                            final ok = await confirmDialog(context,
+                                title: 'dash.deleteAdTitle'.tr(), body: ad.title, confirmLabel: 'common.delete'.tr(), destructive: true);
+                            if (!ok || !context.mounted) return;
+                            if (await runAction(context, () => ref.read(adminRepositoryProvider).deleteAd(ad.id))) {
+                              ref.invalidate(adminAdsProvider);
+                            }
                           },
                         ),
                       ],

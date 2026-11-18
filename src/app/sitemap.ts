@@ -6,6 +6,8 @@ import { PUBLIC_DATA_TAG } from '@/lib/public-cache';
 import { EN_PREFIX } from '@/lib/site-lang';
 import { getDirectoryVisibleWhere } from '@/lib/data';
 import { getAgentProfileSlug } from '@/lib/agent-profile-url';
+import { detectTextLang } from '@/lib/blog-content';
+import { localizedPath } from '@/lib/site-lang';
 
 /*
  * Rendered per request from cached queries (lib/public-cache.ts purges them
@@ -28,7 +30,7 @@ const getSitemapRows = unstable_cache(
       }),
       prisma.blogPost.findMany({
         where: { status: 'PUBLISHED' },
-        select: { slug: true, updatedAt: true, publishedAt: true, coverImage: true },
+        select: { slug: true, title: true, excerpt: true, content: true, updatedAt: true, publishedAt: true, coverImage: true },
         orderBy: { updatedAt: 'desc' },
         take: 5000,
       }),
@@ -80,13 +82,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
       images: p.images?.length ? [p.images[0]] : undefined,
     })),
-    ...posts.map((post) => ({
-      url: `${SITE_URL}/news/${post.slug}`,
-      lastModified: post.updatedAt || post.publishedAt || now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.6,
-      images: post.coverImage ? [post.coverImage] : undefined,
-    })),
     ...agents.map((agent) => ({
       url: `${SITE_URL}/agents/${getAgentProfileSlug(agent)}`,
       lastModified: agent.updatedAt,
@@ -96,7 +91,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
-  return [...staticRoutes, ...dynamicRoutes].flatMap(withEnglish);
+  /* Articles are each written in one language, so each is listed once, at
+     its own language's address (the one its page names as canonical). */
+  const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: `${SITE_URL}${localizedPath(`/news/${post.slug}`, detectTextLang(post.title, post.excerpt, post.content))}`,
+    lastModified: post.updatedAt || post.publishedAt || now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    images: post.coverImage ? [post.coverImage] : undefined,
+  }));
+
+  return [...[...staticRoutes, ...dynamicRoutes].flatMap(withEnglish), ...postRoutes];
 }
 
 /**

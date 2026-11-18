@@ -11,6 +11,7 @@ import '../../widgets/favorites_fab.dart';
 import '../../widgets/property_card.dart';
 import '../../widgets/shimmer_loaders.dart';
 import '../../core/utils/labels.dart';
+import '../../widgets/sheets.dart';
 
 const _propertyTypes = ['Villa', 'Apartment', 'House', 'Land', 'Commercial'];
 const _cities = ['Maputo', 'Matola', 'Inhambane', 'Beira', 'Nampula', 'Tete', 'Pemba', 'Vilanculos'];
@@ -101,7 +102,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             itemCount: state.results.length + (state.hasMore ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (index >= state.results.length) {
-                                return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
+                                return Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: state.loadMoreFailed
+                                        ? OutlinedButton(
+                                            onPressed: () => ref.read(propertySearchControllerProvider.notifier).retryLoadMore(),
+                                            child: Text('common.retry'.tr()),
+                                          )
+                                        : const CircularProgressIndicator(),
+                                  ),
+                                );
                               }
                               return PropertyCard(property: state.results[index], width: double.infinity, swipeableImages: true);
                             },
@@ -184,10 +195,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(2))),
-            ),
-            const SizedBox(height: 16),
+            SheetTitle('common.filter'.tr()),
             Text('common.filter'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Text('search.city'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),

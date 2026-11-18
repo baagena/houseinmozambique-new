@@ -430,10 +430,11 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                     <select
                       className={inputClass}
                       value={form.kind}
-                      onChange={(e) => set('kind', e.target.value === 'one_off' ? 'one_off' : 'subscription')}
+                      onChange={(e) => set('kind', e.target.value === 'one_off' ? 'one_off' : e.target.value === 'addon' ? 'addon' : 'subscription')}
                     >
                       <option value="subscription">Subscription — renews each period</option>
                       <option value="one_off">Single listing — one property, one payment</option>
+                      <option value="addon">Listing boost — bought per listing</option>
                     </select>
                     <p className="mt-1 text-[11px] text-[#9aa0a8]">
                       Single listing is the owner selling one house without an agent.
@@ -459,9 +460,9 @@ export default function AdminPricingClient({ plans: initial }: { plans: PricingP
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className={labelClass}>
-                      {form.kind === 'one_off' ? 'Listing stays up (days)' : 'Billed every'}
+                      {form.kind === 'one_off' ? 'Listing stays up (days)' : form.kind === 'addon' ? 'Boost runs for (days)' : 'Billed every'}
                     </label>
-                    {form.kind === 'one_off' ? (
+                    {form.kind === 'one_off' || form.kind === 'addon' ? (
                       <input
                         className={inputClass}
                         type="number"

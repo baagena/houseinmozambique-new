@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/components/ui/Icon';
+import AdArtworkCheck from '@/components/dashboard/AdArtworkCheck';
 
 type Ad = {
   id: string;
@@ -334,13 +335,14 @@ export default function AdminAdsClient({ ads: initial }: { ads: Ad[] }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#374151] mb-1">Image URL <span className="font-normal text-[#aaa]">(optional)</span></label>
+                  <label className="block text-xs font-semibold text-[#374151] mb-1">Picture or video link <span className="font-normal text-[#aaa]">(optional)</span></label>
                   <input
                     className="w-full border border-[#e0e0e0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002045]/20"
                     value={form.imageUrl}
                     onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-                    placeholder="https://..."
+                    placeholder="https://res.cloudinary.com/..."
                   />
+                  <AdArtworkCheck url={form.imageUrl} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

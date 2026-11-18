@@ -9,4 +9,8 @@ const _simulateIos = bool.fromEnvironment('SIMULATE_IOS');
 /// build therefore never shows plans, prices or payment instructions: agents
 /// there post on the free Standard plan, and paid plans stay on Android and
 /// the website.
+///
+/// The admin console follows the same rule on iOS: no payment verification,
+/// ledger or price list there. Admins can still give an account access
+/// ("Dar acesso"), worded by what it unlocks — never plan names or prices.
 bool get showsPaidPlans => !_simulateIos && defaultTargetPlatform != TargetPlatform.iOS;

@@ -7,7 +7,7 @@ that powers the website.
 
 | | |
 | --- | --- |
-| Store name | **HouseInMoz** |
+| Store name | **House in Mozambique** |
 | Package / bundle id | `com.houseinmozambique.mobile` |
 | Platforms | Android (Google Play) and iOS |
 | Languages | English (`en`) and Portuguese (`pt`) |

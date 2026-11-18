@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/storage/token_storage.dart';
 import '../models/agent.dart';
 import '../repositories/auth_repository.dart';
+import '../services/firebase_services.dart';
 import 'favorites_controller.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -39,6 +40,7 @@ class AuthController extends Notifier<AuthState> {
     final (token, agent) = await ref.read(authRepositoryProvider).login(email, password);
     await TokenStorage.saveToken(token);
     state = AuthState(status: AuthStatus.authenticated, agent: agent);
+    Analytics.login();
     if (agent.isCustomer) await _mergeFavoritesIfCustomer();
   }
 
@@ -54,6 +56,8 @@ class AuthController extends Notifier<AuthState> {
     int? yearsExperience,
     String? bio,
     List<String>? specializations,
+    /// Extra fields for the account type (e.g. the agency of a CORPORATE sign-up).
+    Map<String, dynamic>? extra,
   }) async {
     final (token, agent) = await ref.read(authRepositoryProvider).register(
           email: email,
@@ -67,9 +71,11 @@ class AuthController extends Notifier<AuthState> {
           yearsExperience: yearsExperience,
           bio: bio,
           specializations: specializations,
+          extra: extra,
         );
     await TokenStorage.saveToken(token);
     state = AuthState(status: AuthStatus.authenticated, agent: agent);
+    Analytics.signUp(agent.role);
     if (agent.isCustomer) await _mergeFavoritesIfCustomer();
   }
 
@@ -92,6 +98,9 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
+    // Before the token goes: the server only removes this phone for the
+    // signed-in account. Never throws, so sign-out always completes.
+    await ref.read(pushServiceProvider).unregister();
     await TokenStorage.clearToken();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
