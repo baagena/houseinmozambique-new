@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,239 +9,220 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/favorites_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/legal_links.dart';
+import '../../core/utils/store_policy.dart';
 import '../../models/agent.dart';
+import '../../repositories/agent_dashboard_repository.dart';
+import '../../services/firebase_services.dart';
 
+/// The Profile tab: one layout for every account. What a person can do decides
+/// which rows appear (someone who lists property gets the listing tools, an
+/// admin gets the console) — nobody is shown a "customer" or "agent" label,
+/// and there is a single sign-in and a single sign-up for everyone.
 class ProfileTabScreen extends ConsumerWidget {
   const ProfileTabScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
-    final agent = authState.agent;
+    final agent = ref.watch(authControllerProvider).agent;
     final favoritesCount = ref.watch(favoritesControllerProvider).length;
+    final listsProperty = agent != null && agent.isAgent;
+    // Counts are decoration: while loading, or if a request fails, show a dash.
+    final listings = listsProperty ? ref.watch(myPropertiesProvider).asData?.value.length : null;
+    final unreadLeads = listsProperty ? ref.watch(myLeadsProvider).asData?.value.$2 : null;
+    final language = Localizations.localeOf(context).languageCode == 'pt'
+        ? 'settings.portuguese'.tr()
+        : 'settings.english'.tr();
 
-    return Scaffold(
-      appBar: AppBar(title: Text('nav.profile'.tr())),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (agent == null)
-            ..._buildGuest(context, favoritesCount)
-          else if (agent.isCustomer)
-            ..._buildCustomer(context, ref, agent, favoritesCount)
-          else
-            ..._buildAgent(context, ref, agent),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // The header is dark blue, so the status bar icons go light on this tab.
+      value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            _Header(
+              agent: agent,
+              stats: [
+                if (listsProperty)
+                  _Stat(
+                    value: listings?.toString() ?? '–',
+                    label: 'nav.listings'.tr(),
+                    onTap: () => context.push('/dashboard/listings'),
+                  ),
+                if (listsProperty)
+                  _Stat(
+                    value: unreadLeads?.toString() ?? '–',
+                    label: 'nav.leads'.tr(),
+                    onTap: () => context.push('/dashboard/leads'),
+                  ),
+                _Stat(
+                  value: '$favoritesCount',
+                  label: 'nav.favorites'.tr(),
+                  onTap: () => context.push('/favorites'),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (listsProperty) ...[
+                    _GroupTitle('profile.myProperty'.tr()),
+                    _Group(children: [
+                      _Row(
+                        icon: Icons.dashboard_outlined,
+                        color: AppColors.primary,
+                        label: 'dashboard.title'.tr(),
+                        onTap: () => context.push('/dashboard'),
+                      ),
+                      _Row(
+                        icon: Icons.home_work_outlined,
+                        color: AppColors.secondary,
+                        label: 'dashboard.myListings'.tr(),
+                        onTap: () => context.push('/dashboard/listings'),
+                      ),
+                      _Row(
+                        icon: Icons.inbox_outlined,
+                        color: const Color(0xFF0F766E),
+                        label: 'dashboard.leads'.tr(),
+                        badge: (unreadLeads ?? 0) > 0 ? '$unreadLeads' : null,
+                        onTap: () => context.push('/dashboard/leads'),
+                      ),
+                      _Row(
+                        icon: Icons.person_search_outlined,
+                        color: const Color(0xFF7C3AED),
+                        label: 'dash.buyersLooking'.tr(),
+                        onTap: () => context.push('/dashboard/requests'),
+                      ),
+                      // Admins don't pay; nothing to bill.
+                      if (showsPaidPlans && !agent.isAdmin)
+                        _Row(
+                          icon: Icons.payments_outlined,
+                          color: const Color(0xFF166534),
+                          label: 'dash.billing'.tr(),
+                          onTap: () => context.push('/dashboard/billing'),
+                        ),
+                      if (agent.isAdmin)
+                        _Row(
+                          icon: Icons.admin_panel_settings_outlined,
+                          color: AppColors.tertiary,
+                          label: 'settings.adminConsole'.tr(),
+                          onTap: () => context.push('/admin'),
+                        ),
+                    ]),
+                    const SizedBox(height: 20),
+                  ] else ...[
+                    _ListPropertyCard(
+                      onTap: () => context.push('/agent-register', extra: {'accountType': 'AGENT'}),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  _GroupTitle('profile.account'.tr()),
+                  _Group(children: [
+                    if (listsProperty)
+                      _Row(
+                        icon: Icons.person_outline,
+                        color: AppColors.primary,
+                        label: 'settings.editProfile'.tr(),
+                        onTap: () => context.push('/dashboard/profile'),
+                      ),
+                    _Row(
+                      icon: Icons.favorite_outline,
+                      color: const Color(0xFFBE123C),
+                      label: 'nav.favorites'.tr(),
+                      badge: favoritesCount > 0 ? '$favoritesCount' : null,
+                      onTap: () => context.push('/favorites'),
+                    ),
+                    if (listsProperty && firebaseReady) const _PushToggleRow(),
+                    _Row(
+                      icon: Icons.language,
+                      color: const Color(0xFF0369A1),
+                      label: 'settings.language'.tr(),
+                      value: language,
+                      onTap: () => context.push('/settings'),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  _GroupTitle('profile.support'.tr()),
+                  _Group(children: [
+                    _Row(
+                      icon: Icons.support_agent_outlined,
+                      color: AppColors.secondary,
+                      label: 'settings.helpContact'.tr(),
+                      onTap: () => context.push('/contact'),
+                    ),
+                    _Row(
+                      icon: Icons.description_outlined,
+                      color: AppColors.onSurfaceVariant,
+                      label: 'settings.termsOfService'.tr(),
+                      external: true,
+                      onTap: openTermsOfService,
+                    ),
+                    _Row(
+                      icon: Icons.privacy_tip_outlined,
+                      color: AppColors.onSurfaceVariant,
+                      label: 'settings.privacyPolicy'.tr(),
+                      external: true,
+                      onTap: openPrivacyPolicy,
+                    ),
+                  ]),
+                  if (agent != null) ...[
+                    const SizedBox(height: 24),
+                    OutlinedButton.icon(
+                      onPressed: () => _confirmSignOut(context, ref),
+                      icon: const Icon(Icons.logout, size: 18),
+                      label: Text('common.logout'.tr()),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                    if (!agent.isAdmin)
+                      TextButton(
+                        onPressed: () => _confirmDeleteAccount(context),
+                        child: Text(
+                          'settings.deleteAccount'.tr(),
+                          style: const TextStyle(color: AppColors.outline, fontSize: 13),
+                        ),
+                      ),
+                  ],
+                  const SizedBox(height: 12),
+                  Text(
+                    appVersion.isEmpty ? 'House in Mozambique' : 'House in Mozambique · v$appVersion',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12, color: AppColors.outline),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  // ── Guest: explain the two account types and where each signs in ──────────
-
-  List<Widget> _buildGuest(BuildContext context, int favoritesCount) {
-    return [
-      Row(
-        children: [
-          const CircleAvatar(
-            radius: 26,
-            backgroundColor: AppColors.surfaceVariant,
-            child: Icon(Icons.person_outline, size: 26, color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('settings.guestTitle'.tr(), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                const SizedBox(height: 2),
-                Text('settings.guestSubtitle'.tr(), style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant)),
-              ],
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 24),
-      _SectionLabel('settings.yourAccount'.tr()),
-      const SizedBox(height: 12),
-      // Customer account: free, favorites sync across devices.
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.outlineVariant),
+Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('common.logout'.tr()),
+      content: Text('profile.signOutConfirm'.tr()),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('common.cancel'.tr())),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text('common.logout'.tr(), style: const TextStyle(color: AppColors.error)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(color: AppColors.secondaryContainer, shape: BoxShape.circle),
-                  child: const Icon(Icons.person_add_alt_outlined, color: AppColors.onSecondaryContainer, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text('settings.customerCardTitle'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text('settings.customerCardBody'.tr(), style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
-            const SizedBox(height: 14),
-            _BenefitRow(icon: Icons.favorite_outline, labelKey: 'settings.benefitSyncFavorites'),
-            _BenefitRow(icon: Icons.forum_outlined, labelKey: 'settings.benefitFasterContact'),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => context.push('/agent-register', extra: {'accountType': 'CUSTOMER'}),
-                    child: Text('auth.register'.tr()),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.push('/agent-login'),
-                    child: Text('auth.signIn'.tr()),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text('settings.oneSignInNote'.tr(), style: const TextStyle(fontSize: 11.5, color: AppColors.onSurfaceVariant)),
-          ],
-        ),
-      ),
-      const SizedBox(height: 20),
-      _ProfileTile(
-        icon: Icons.favorite_outline,
-        label: 'nav.favorites'.tr(),
-        trailingText: favoritesCount > 0 ? '$favoritesCount' : null,
-        onTap: () => context.push('/favorites'),
-      ),
-      _ProfileTile(icon: Icons.support_agent_outlined, label: 'settings.helpContact'.tr(), onTap: () => context.push('/contact')),
-      _ProfileTile(icon: Icons.settings_outlined, label: 'settings.title'.tr(), onTap: () => context.push('/settings')),
-      const Divider(height: 32),
-      _SectionLabel('settings.forProfessionals'.tr()),
-      const SizedBox(height: 12),
-      // Agent account: the professional pitch.
-      Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer], begin: Alignment.topLeft, end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.real_estate_agent_outlined, color: AppColors.primary, size: 26),
-            ),
-            const SizedBox(height: 16),
-            Text('settings.agentLogin'.tr(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text('settings.agentLoginSubtitle'.tr(), style: const TextStyle(color: Colors.white70, fontSize: 13.5)),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.primary),
-                onPressed: () => context.push('/agent-register', extra: {'accountType': 'AGENT'}),
-                child: Text('settings.becomeAgent'.tr()),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white70)),
-                onPressed: () => context.push('/agent-login'),
-                child: Text('auth.signIn'.tr()),
-              ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 16),
-      const _BenefitRow(icon: Icons.home_work_outlined, labelKey: 'settings.benefitListings'),
-      const _BenefitRow(icon: Icons.forum_outlined, labelKey: 'settings.benefitLeads'),
-      const _BenefitRow(icon: Icons.insights_outlined, labelKey: 'settings.benefitInsights'),
-    ];
-  }
-
-  // ── Signed in as customer ─────────────────────────────────────────────────
-
-  List<Widget> _buildCustomer(BuildContext context, WidgetRef ref, Agent agent, int favoritesCount) {
-    return [
-      _AccountHeader(agent: agent, badge: 'settings.customerBadge'.tr()),
-      const SizedBox(height: 20),
-      _ProfileTile(
-        icon: Icons.favorite_outline,
-        label: 'nav.favorites'.tr(),
-        trailingText: favoritesCount > 0 ? '$favoritesCount' : null,
-        onTap: () => context.push('/favorites'),
-      ),
-      _ProfileTile(icon: Icons.support_agent_outlined, label: 'settings.helpContact'.tr(), onTap: () => context.push('/contact')),
-      _ProfileTile(icon: Icons.settings_outlined, label: 'settings.title'.tr(), onTap: () => context.push('/settings')),
-      const Divider(height: 32),
-      _SectionLabel('settings.forProfessionals'.tr()),
-      const SizedBox(height: 12),
-      // Upgrade path: customers can become agents without a new account flow.
-      Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          leading: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-            child: const Icon(Icons.real_estate_agent_outlined, color: Colors.white, size: 22),
-          ),
-          title: Text('settings.becomeAgent'.tr(), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
-          subtitle: Text('settings.becomeAgentSubtitle'.tr(), style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push('/agent-register', extra: {'accountType': 'AGENT'}),
-        ),
-      ),
-      const SizedBox(height: 20),
-      _SignOutTile(onTap: () => ref.read(authControllerProvider.notifier).logout()),
-      if (!agent.isAdmin) _DeleteAccountTile(onTap: () => _confirmDeleteAccount(context)),
-    ];
-  }
-
-  // ── Signed in as agent (or admin) ─────────────────────────────────────────
-
-  List<Widget> _buildAgent(BuildContext context, WidgetRef ref, Agent agent) {
-    return [
-      _AccountHeader(
-        agent: agent,
-        badge: agent.isAdmin ? 'settings.adminBadge'.tr() : 'settings.agentBadge'.tr(),
-        verified: agent.isVerified,
-      ),
-      const SizedBox(height: 20),
-      _ProfileTile(icon: Icons.dashboard_outlined, label: 'dashboard.title'.tr(), onTap: () => context.push('/dashboard')),
-      _ProfileTile(icon: Icons.person_outline, label: 'settings.editProfile'.tr(), onTap: () => context.push('/dashboard/profile')),
-      _ProfileTile(icon: Icons.support_agent_outlined, label: 'settings.helpContact'.tr(), onTap: () => context.push('/contact')),
-      _ProfileTile(icon: Icons.settings_outlined, label: 'settings.title'.tr(), onTap: () => context.push('/settings')),
-      // Deliberately discreet: only admins ever see this entry.
-      if (agent.isAdmin)
-        _ProfileTile(
-          icon: Icons.admin_panel_settings_outlined,
-          label: 'settings.adminConsole'.tr(),
-          onTap: () => context.push('/admin'),
-        ),
-      const SizedBox(height: 20),
-      _SignOutTile(onTap: () => ref.read(authControllerProvider.notifier).logout()),
-      if (!agent.isAdmin) _DeleteAccountTile(onTap: () => _confirmDeleteAccount(context)),
-    ];
-  }
+      ],
+    ),
+  );
+  if (ok == true) await ref.read(authControllerProvider.notifier).logout();
 }
 
 Future<void> _confirmDeleteAccount(BuildContext context) async {
@@ -253,16 +235,420 @@ Future<void> _confirmDeleteAccount(BuildContext context) async {
   }
 }
 
-class _DeleteAccountTile extends StatelessWidget {
+// ── Header ───────────────────────────────────────────────────────────────────
+
+class _Stat {
+  final String value;
+  final String label;
   final VoidCallback onTap;
-  const _DeleteAccountTile({required this.onTap});
+  const _Stat({required this.value, required this.label, required this.onTap});
+}
+
+class _Header extends StatelessWidget {
+  final Agent? agent;
+  final List<_Stat> stats;
+  const _Header({required this.agent, required this.stats});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.delete_forever_outlined, color: AppColors.error),
-      title: Text('settings.deleteAccount'.tr(), style: const TextStyle(color: AppColors.error)),
+    final a = agent;
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryContainer],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                    child: CircleAvatar(
+                      radius: 32,
+                      backgroundColor: AppColors.secondaryContainer,
+                      backgroundImage: a?.avatar != null ? CachedNetworkImageProvider(a!.avatar!) : null,
+                      // Offline or a broken link: keep the plain circle, no error.
+                      onBackgroundImageError: a?.avatar != null ? (_, __) {} : null,
+                      child: a?.avatar != null
+                          ? null
+                          : a == null
+                              ? const Icon(Icons.person, size: 34, color: AppColors.onSecondaryContainer)
+                              : Text(
+                                  a.initials,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.onSecondaryContainer,
+                                  ),
+                                ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                a?.name ?? 'settings.guestTitle'.tr(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            if (a?.isVerified == true) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.verified, size: 18, color: AppColors.secondaryContainer),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          a == null ? 'profile.guestBody'.tr() : (a.email ?? a.location),
+                          maxLines: a == null ? 3 : 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.3),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (a == null) ...[
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                        ),
+                        onPressed: () => context.push('/agent-login'),
+                        child: Text('auth.signIn'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white70),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => context.push('/agent-register', extra: {'accountType': 'CUSTOMER'}),
+                        child: Text('auth.register'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 18),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < stats.length; i++) ...[
+                        if (i > 0) const VerticalDivider(width: 1, indent: 12, endIndent: 12, color: Colors.white24),
+                        Expanded(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: stats[i].onTap,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    stats[i].value,
+                                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    stats[i].label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Building blocks ──────────────────────────────────────────────────────────
+
+class _GroupTitle extends StatelessWidget {
+  final String text;
+  const _GroupTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, bottom: 8),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+          color: AppColors.outline,
+        ),
+      ),
+    );
+  }
+}
+
+/// A white rounded card holding rows, with hairlines between them.
+class _Group extends StatelessWidget {
+  final List<Widget> children;
+  const _Group({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) const Divider(height: 1, indent: 66, color: AppColors.surfaceContainer),
+              children[i],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IconTile extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  const _IconTile({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(11)),
+      child: Icon(icon, size: 20, color: color),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+  final String? badge;
+  final String? value;
+  final bool external;
+  const _Row({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+    this.badge,
+    this.value,
+    this.external = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
       onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        child: Row(
+          children: [
+            _IconTile(icon: icon, color: color),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              ),
+            ),
+            if (value != null)
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    value!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13, color: AppColors.outline),
+                  ),
+                ),
+              ),
+            if (badge != null)
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(color: AppColors.secondaryContainer, borderRadius: BorderRadius.circular(12)),
+                child: Text(
+                  badge!,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.onSecondaryContainer),
+                ),
+              ),
+            const SizedBox(width: 6),
+            Icon(external ? Icons.open_in_new : Icons.chevron_right, size: external ? 16 : 20, color: AppColors.outlineVariant),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown to anyone who is not listing property yet (signed in or not).
+class _ListPropertyCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ListPropertyCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryContainer),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
+            child: const Icon(Icons.add_home_outlined, color: Colors.white),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('profile.listTitle'.tr(), style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(
+                  'profile.listBody'.tr(),
+                  style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant, height: 1.3),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 38,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    onPressed: onTap,
+                    child: Text('profile.listCta'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Push notifications on/off for this phone.
+class _PushToggleRow extends ConsumerStatefulWidget {
+  const _PushToggleRow();
+
+  @override
+  ConsumerState<_PushToggleRow> createState() => _PushToggleRowState();
+}
+
+class _PushToggleRowState extends ConsumerState<_PushToggleRow> {
+  bool? _enabled;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    pushEnabledPreference().then((v) {
+      if (mounted) setState(() => _enabled = v);
+    });
+  }
+
+  Future<void> _set(bool value) async {
+    setState(() {
+      _busy = true;
+      _enabled = value;
+    });
+    await ref.read(pushServiceProvider).setEnabled(
+          value,
+          ref.read(authControllerProvider).agent,
+          lang: Localizations.localeOf(context).languageCode,
+          appVersion: appVersion,
+        );
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+      child: Row(
+        children: [
+          const _IconTile(icon: Icons.notifications_outlined, color: Color(0xFFB45309)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              'settings.pushNotifications'.tr(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Switch(value: _enabled ?? true, onChanged: _enabled == null || _busy ? null : _set),
+        ],
+      ),
     );
   }
 }
@@ -339,143 +725,6 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
               : Text('settings.deleteAccountConfirm'.tr()),
         ),
       ],
-    );
-  }
-}
-
-class _AccountHeader extends StatelessWidget {
-  final Agent agent;
-  final String badge;
-  final bool verified;
-  const _AccountHeader({required this.agent, required this.badge, this.verified = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.surfaceVariant,
-            backgroundImage: agent.avatar != null ? CachedNetworkImageProvider(agent.avatar!) : null,
-            child: agent.avatar == null ? Text(agent.initials, style: const TextStyle(fontWeight: FontWeight.w700)) : null,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(agent.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
-                if ((agent.email ?? agent.title).isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(agent.email ?? agent.title, style: const TextStyle(fontSize: 12.5, color: AppColors.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(color: AppColors.secondaryContainer, borderRadius: BorderRadius.circular(12)),
-                      child: Text(badge, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onSecondaryContainer)),
-                    ),
-                    if (verified) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.verified, size: 15, color: AppColors.primary),
-                      const SizedBox(width: 3),
-                      Text('agent.verified'.tr(), style: const TextStyle(fontSize: 11.5, color: AppColors.primary, fontWeight: FontWeight.w600)),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15));
-  }
-}
-
-class _BenefitRow extends StatelessWidget {
-  final IconData icon;
-  final String labelKey;
-  const _BenefitRow({required this.icon, required this.labelKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: AppColors.surfaceContainer, shape: BoxShape.circle),
-            child: Icon(icon, size: 18, color: AppColors.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(labelKey.tr(), style: const TextStyle(fontSize: 13.5, color: AppColors.onSurfaceVariant))),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final String? trailingText;
-  const _ProfileTile({required this.icon, required this.label, required this.onTap, this.trailingText});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (trailingText != null) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(color: AppColors.secondaryContainer, borderRadius: BorderRadius.circular(12)),
-              child: Text(trailingText!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.onSecondaryContainer)),
-            ),
-            const SizedBox(width: 8),
-          ],
-          const Icon(Icons.chevron_right),
-        ],
-      ),
-      onTap: onTap,
-    );
-  }
-}
-
-class _SignOutTile extends StatelessWidget {
-  final VoidCallback onTap;
-  const _SignOutTile({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.logout, color: AppColors.error),
-      title: Text('common.logout'.tr(), style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.w600)),
-      onTap: onTap,
     );
   }
 }

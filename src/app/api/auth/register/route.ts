@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { sendAgentVerificationEmail, sendNewAgentNotificationEmail } from '@/lib/email';
 import { randomBytes } from 'node:crypto';
 import { FOLDERS, uploadImage } from '@/lib/cloudinary';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
       },
     });
 
+    pushToAdmins(pushes.newAccount(newAgent.name, newAgent.role));
     const { password: _, ...agentWithoutPassword } = newAgent;
 
     try {

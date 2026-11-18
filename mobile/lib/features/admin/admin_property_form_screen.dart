@@ -152,14 +152,14 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(labelText: 'admin.title'.tr()),
-                validator: (v) => v == null || v.isEmpty ? ' ' : null,
+                validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
                 decoration: InputDecoration(labelText: 'admin.description'.tr()),
-                validator: (v) => v == null || v.isEmpty ? ' ' : null,
+                validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -184,7 +184,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                 ],
               ),
               const SizedBox(height: 12),
-              TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'listingForm.city'.tr()), validator: (v) => v == null || v.isEmpty ? ' ' : null),
+              TextFormField(controller: _cityController, decoration: InputDecoration(labelText: 'listingForm.city'.tr()), validator: (v) => v == null || v.isEmpty ? 'common.required'.tr() : null),
               const SizedBox(height: 12),
               TextFormField(controller: _addressController, decoration: InputDecoration(labelText: 'listingForm.address'.tr())),
               const SizedBox(height: 12),
@@ -192,7 +192,7 @@ class _AdminPropertyFormScreenState extends ConsumerState<AdminPropertyFormScree
                 controller: _priceController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: 'listingForm.price'.tr()),
-                validator: (v) => v == null || double.tryParse(v) == null ? ' ' : null,
+                validator: (v) => v == null || double.tryParse(v) == null ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 12),
               Row(

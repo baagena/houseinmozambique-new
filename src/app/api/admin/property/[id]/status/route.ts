@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
 import { activateRequestedPlan } from '@/lib/plan-requests';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
+import { pushListingDecision } from '@/lib/push';
 
 export async function POST(request: Request, { params }: Params) {
   try {
@@ -38,6 +39,7 @@ export async function POST(request: Request, { params }: Params) {
         console.error('Property status notification email failed:', error);
       }
     }
+    pushListingDecision(existing.hostId, existing.title, existing.status, status);
 
     revalidatePath('/dashboard/admin/properties');
     revalidatePath('/dashboard/admin/approvals');
@@ -89,6 +91,7 @@ export async function PATCH(request: Request, { params }: Params) {
         console.error('Property status notification email failed:', error);
       }
     }
+    pushListingDecision(existing.hostId, existing.title, existing.status, status);
 
     revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');

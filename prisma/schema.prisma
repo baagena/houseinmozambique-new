@@ -17,6 +17,12 @@ model Agent {
   location               String
   officeAddress          String?
   phone                  String?
+  // Public contact channels shown on the agent's profile. `whatsapp` falls
+  // back to `phone` when empty; `socialLinks` holds full https URLs keyed by
+  // network (facebook, instagram, linkedin, tiktok, youtube, x) — see
+  // lib/agent-contact-links.ts.
+  whatsapp               String?
+  socialLinks            Json?
   rating                 Float           @default(0)
   reviewCount            Int             @default(0)
   isFeatured             Boolean         @default(false)
@@ -57,6 +63,7 @@ model Agent {
   blogPosts              BlogPost[]
   favorites              Favorite[]
   contactEvents          ContactEvent[]
+  pushDevices            PushDevice[]
   subscriptions          Subscription[]
   listingCredits         ListingCredit[]
   propertyRequests       PropertyRequest[]
@@ -807,17 +814,38 @@ model Advertisement {
 /// Property.contactClicks keeps incrementing alongside these rows so the
 /// existing aggregate dashboards do not change meaning.
 model ContactEvent {
-  id         String   @id @default(cuid())
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId String
+  id         String    @id @default(cuid())
+  // Null when the press was on the agent's own profile rather than a listing
+  // (corporate agents often have no listings at all).
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String?
   agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
   agentId    String
-  channel    String // WHATSAPP | CALL | EMAIL | FORM | VIEWING
+  channel    String // WHATSAPP | CALL | EMAIL | FORM | VIEWING | WEBSITE | FACEBOOK | INSTAGRAM | LINKEDIN | TIKTOK | YOUTUBE | X
   createdAt  DateTime @default(now())
 
   @@index([agentId, createdAt])
   @@index([propertyId, createdAt])
   @@index([channel, createdAt])
+}
+
+/// A phone that receives push notifications for a signed-in agent or admin.
+/// Registered by the mobile app (POST /api/mobile/v1/devices) and removed on
+/// sign-out, when notifications are switched off, or when Firebase reports the
+/// token dead. One row per Firebase token; a token that signs in as somebody
+/// else moves to them.
+model PushDevice {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId    String
+  platform   String // android | ios
+  lang       String   @default("pt") // en | pt — the language the push is written in
+  appVersion String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([agentId])
 }
 
 /// Website traffic, one row per day (Maputo time). Written by POST /api/visit

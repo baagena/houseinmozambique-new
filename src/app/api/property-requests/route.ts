@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { requestRef, daysFromNow, REQUEST_DAYS } from '@/lib/property-requests';
 import { sendRequestReceivedEmail, sendNewRequestAdminEmail } from '@/lib/email';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
@@ -106,6 +107,8 @@ export async function POST(req: Request) {
       },
       select: { id: true, ref: true, name: true, email: true, city: true, intent: true },
     });
+
+    pushToAdmins(pushes.propertyRequest(created.city, created.intent));
 
     /*
      * Both emails are best-effort. The requirement is saved; a Resend outage

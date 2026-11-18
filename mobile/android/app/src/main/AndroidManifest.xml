@@ -1,9 +1,19 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Android 13+: asked at runtime when an agent or admin signs in. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Analytics counts usage without the advertising ID: no ad tracking, so
+         no advertising-ID declaration in Play Console. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
     <application
-        android:label="HouseInMoz"
+        android:label="House in Mozambique"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
+        <!-- enableOnBackInvokedCallback: Android's predictive back — while the
+             back swipe is in progress the page follows the finger and the
+             previous page shows behind it (Android 14+). -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,6 +36,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Push notifications: a white house silhouette in the status bar
+             (a full-colour launcher icon shows as a grey square there). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

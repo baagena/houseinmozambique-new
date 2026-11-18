@@ -125,11 +125,19 @@ either is fine).
 | Phone number | Yes | Yes | No | App functionality |
 | Photos or videos | Yes (listing photos agents upload) | Yes | No | App functionality |
 | Other user content (listings, contact messages) | Yes | Yes | No | App functionality |
-| User ID | Yes | Yes | No | App functionality |
+| User ID | Yes | Yes | No | App functionality, Analytics |
+| Device ID (Firebase installation / push token) | Yes | Yes | No | App functionality (push notifications), Analytics |
+| Product interaction (screens opened, listings viewed, taps on contact buttons) | Yes | Yes | No | Analytics |
+| Search history (search filters: rent/buy, city, property type) | Yes | Yes | No | Analytics |
+| Coarse location (country/region Google Analytics derives from the IP address) | Yes | No | No | Analytics |
 
-Not collected: location, contacts, browsing history, search history,
-purchases, financial info, health, diagnostics, advertising data.
-**No tracking** (no third-party analytics or ad SDKs in the app).
+Not collected: precise location, contacts, browsing history, purchases,
+financial info, health, diagnostics, advertising data.
+**No tracking.** Google Analytics for Firebase is built without the
+advertising identifier (`$FirebaseAnalyticsWithoutAdIdSupport` in
+`ios/Podfile`), so the app never reads the IDFA and shows no App Tracking
+Transparency prompt. Push notifications (Firebase Cloud Messaging) go only to
+signed-in agents and admins, who are asked for permission first.
 
 ## Export compliance
 
@@ -158,7 +166,8 @@ Demo account (agent): app.review@houseinmozambique.com / <PASSWORD>
 - Account deletion: Profile > "Eliminar conta" (asks for the password, then permanently deletes the account, its favourites and its listings).
 - Posting a listing: tap "Anunciar" in the tab bar. The agent answers seven steps of questions and the title and description are generated from the answers. Every listing is reviewed by our team before it is published.
 - Reporting content: on any listing, the ⋮ menu > "Denunciar este anúncio" sends a report to our team.
-- There are no purchases, subscriptions or payments in the iOS app. Posting on iOS is free.
+- There are no purchases, subscriptions or payments in the iOS app for its users (buyers, owners and agents). Posting on iOS is free.
+- Staff accounts (our own employees) have an Admin console (Profile > "Consola de Administração") for moderating listings, agents and articles. It is internal tooling for our team and contains no purchases, prices or payments; the review account is an agent account and does not see it.
 - The app is in Portuguese (the language of Mozambique); English can be selected in Profile > Definições.
 ```
 

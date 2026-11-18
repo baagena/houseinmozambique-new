@@ -1,18 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { AGENT_PUBLIC_SELECT } from '@/lib/mobile-auth';
+import { AGENT_PROFILE_SELECT } from '@/lib/mobile-auth';
+import { toPublicProfile } from '@/lib/agent-public-profile';
+import { getDirectoryVisibleWhere } from '@/lib/data';
 
 export async function GET() {
   const agents = await prisma.agent.findMany({
-    // Same two exclusions as the web directory in lib/data.ts: staff and
-    // private owners are not for hire, and demo/test accounts are not people.
-    where: { role: 'AGENT', isHidden: false },
-    orderBy: { rating: 'desc' },
+    // Exactly the website's directory (lib/data.ts): agents only, no demo or
+    // test accounts, verified emails, and corporate agencies only while their
+    // subscription is paid.
+    where: getDirectoryVisibleWhere(),
+    orderBy: [{ isFeatured: 'desc' }, { rating: 'desc' }],
     select: {
-      ...AGENT_PUBLIC_SELECT,
-      _count: { select: { properties: true } },
+      ...AGENT_PROFILE_SELECT,
+      _count: { select: { properties: { where: { status: 'PUBLISHED' } } } },
     },
   });
 
-  return NextResponse.json({ agents });
+  return NextResponse.json({ agents: agents.map(toPublicProfile) });
 }

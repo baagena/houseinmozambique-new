@@ -31,7 +31,6 @@ export default function AdminGrantPlan({
   const [slug, setSlug] = useState(plans[0]?.slug ?? '');
   const [months, setMonths] = useState(1);
   const [note, setNote] = useState('');
-  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -46,13 +45,12 @@ export default function AdminGrantPlan({
       const res = await fetch(`/api/admin/agent/${agentId}/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planSlug: slug, months, note, paymentConfirmed }),
+        body: JSON.stringify({ planSlug: slug, months, note }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not grant the plan.');
       setMessage({ ok: true, text: isCorporate ? `${chosen?.name ?? 'Plan'} recorded. Agency visibility is active through the paid period.` : `${chosen?.name ?? 'Plan'} granted.` });
       setNote('');
-      setPaymentConfirmed(false);
       router.refresh();
     } catch (e) {
       setMessage({ ok: false, text: e instanceof Error ? e.message : 'Could not grant the plan.' });
@@ -71,7 +69,7 @@ export default function AdminGrantPlan({
         {credits > 0 && <> · <b>{credits}</b> unused single-listing credit{credits === 1 ? '' : 's'}</>}
       </p>
       <p className="mt-1 text-[12px] text-[#74777f]">
-        {isCorporate ? 'Record the paid agency subscription here. A corporate agency appears in the directory only while its paid period is current.' : 'Plans requested through the contact form are recorded here once paid. Destaque and Super Destaque add one featured listing; a monthly plan starts or extends the subscription.'}
+        {isCorporate ? 'Activate the agency here. It appears in the directory while the period you choose is current.' : 'Plans requested through the contact form are recorded here once paid. Destaque and Super Destaque add one featured listing; a monthly plan starts or extends the subscription.'}
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_130px]">
@@ -88,21 +86,19 @@ export default function AdminGrantPlan({
       </div>
       <input
         className={`${field} mt-3`}
-        placeholder={isCorporate ? 'Required payment record, e.g. M-Pesa reference ABC123' : 'Note, e.g. Paid by M-Pesa, ref ABC123'}
+        placeholder="Optional note, e.g. Paid by M-Pesa, ref ABC123"
         value={note}
         onChange={(e) => setNote(e.target.value)}
         maxLength={300}
-        required={isCorporate}
       />
-      {isCorporate && <label className="mt-3 flex items-start gap-2 text-[12px] leading-5 text-[#526174]"><input type="checkbox" checked={paymentConfirmed} onChange={(event) => setPaymentConfirmed(event.target.checked)} className="mt-1" />I confirm payment has been received and recorded above.</label>}
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={grant}
-          disabled={busy || !slug || (isCorporate && (!paymentConfirmed || !note.trim()))}
+          disabled={busy || !slug}
           className="rounded-lg bg-[#002045] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#0a2f5c] disabled:opacity-50"
         >
-          {busy ? 'Recording…' : isCorporate ? 'Confirm payment & activate' : 'Grant plan'}
+          {busy ? 'Recording…' : isCorporate ? 'Activate agency' : 'Grant plan'}
         </button>
         {message && (
           <span className={`text-[13px] font-medium ${message.ok ? 'text-emerald-700' : 'text-red-600'}`}>{message.text}</span>

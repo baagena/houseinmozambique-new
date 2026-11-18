@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/session';
 import { grantFromPayment } from '@/lib/entitlements';
 import { sendPaymentApprovedEmail, sendPaymentRejectedEmail } from '@/lib/email';
+import { pushes, pushToAgents } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
@@ -102,6 +103,7 @@ export async function POST(req: Request, { params }: Params) {
       }
     }
 
+    pushToAgents([payment.userId], pushes.paymentRejected(payment.orderRef));
     revalidatePath('/dashboard/admin/payments/verify');
     revalidatePath('/dashboard/admin/payments');
     return NextResponse.json({ success: true, status: 'REJECTED' });
@@ -202,6 +204,8 @@ export async function POST(req: Request, { params }: Params) {
       console.error(`admin/verify: approval email failed for ${payment.orderRef}`, error);
     }
   }
+
+  pushToAgents([payment.userId], pushes.paymentApproved(payment.orderRef));
 
   revalidatePath('/dashboard/admin/payments/verify');
   revalidatePath('/dashboard/admin/payments');

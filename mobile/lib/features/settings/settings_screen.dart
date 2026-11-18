@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/utils/legal_links.dart';
+import '../../services/firebase_services.dart' show appVersion;
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -46,7 +47,7 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text('settings.about'.tr()),
-            subtitle: const Text('House in Mozambique · v1.2.1'),
+            subtitle: Text(appVersion.isEmpty ? 'House in Mozambique' : 'House in Mozambique · v$appVersion'),
           ),
         ],
       ),

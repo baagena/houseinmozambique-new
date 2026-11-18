@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import ProfileForm from '@/components/dashboard/ProfileForm';
+import { readSocialLinks } from '@/lib/agent-contact-links';
 import { getSession } from '@/lib/session';
 
 export default async function AgentProfilePage() {
@@ -30,10 +31,12 @@ export default async function AgentProfilePage() {
       agencyAreasServed: true,
       agencyWebsite: true,
       agencyEmail: true,
+      whatsapp: true,
+      socialLinks: true,
     },
   });
 
   if (!agent) redirect('/auth');
 
-  return <ProfileForm agent={agent} />;
+  return <ProfileForm agent={{ ...agent, socialLinks: readSocialLinks(agent.socialLinks) }} />;
 }

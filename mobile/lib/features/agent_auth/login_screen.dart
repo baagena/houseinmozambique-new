@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/dashboard_ui.dart';
+import '../../repositories/auth_repository.dart';
 
 const _lastEmailKey = 'last_login_email';
 
@@ -60,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _error = null;
     });
     try {
-      final email = _emailController.text.trim();
+      final email = _emailController.text.trim().toLowerCase();
       await ref.read(authControllerProvider.notifier).login(email, _passwordController.text);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lastEmailKey, email);
@@ -86,6 +88,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final email = await promptText(
+      context,
+      title: 'auth.forgotPassword'.tr(),
+      label: 'admin.email'.tr(),
+      initial: _emailController.text.trim(),
+      required: true,
+      maxLines: 1,
+      keyboardType: TextInputType.emailAddress,
+      confirmLabel: 'common.send'.tr(),
+    );
+    if (email == null || !mounted) return;
+    await runAction(
+      context,
+      () => ref.read(authRepositoryProvider).forgotPassword(email),
+      success: 'auth.resetSent'.tr(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,6 +129,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  enableSuggestions: false,
                   autofillHints: const [AutofillHints.username, AutofillHints.email],
                   textInputAction: TextInputAction.next,
                   onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
@@ -139,7 +162,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : Text('auth.login'.tr()),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: _submitting ? null : _forgotPassword,
+                  child: Text('auth.forgotPassword'.tr()),
+                ),
                 TextButton(
                   onPressed: () => context.push('/agent-register', extra: widget.redirectTo),
                   child: Text('${'auth.noAccount'.tr()} ${'auth.signUp'.tr()}'),

@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/store_policy.dart';
 import '../../models/agent.dart';
 import '../../repositories/admin_repository.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/dashboard_ui.dart';
 import 'admin_agent_form_screen.dart';
+import 'admin_grant_plan_sheet.dart';
 
 class AdminAgentsScreen extends ConsumerWidget {
   const AdminAgentsScreen({super.key});
@@ -73,7 +76,15 @@ class _AgentTile extends ConsumerWidget {
           child: agent.avatar == null ? Text(agent.initials, style: const TextStyle(color: Colors.white)) : null,
         ),
         title: Text(agent.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${agent.title} · ${'admin.listingsCount'.tr(args: ['${agent.propertyCount}'])}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${agent.title} · ${'admin.listingsCount'.tr(args: ['${agent.propertyCount}'])}'),
+            // Every platform: "grant plan" on Android/web, "give access" on iPhone.
+            if (!agent.isAdmin && agent.role != 'REVOKED')
+              AdminPlanStrip(agentId: agent.id, agentName: agent.name),
+          ],
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -88,9 +99,20 @@ class _AgentTile extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => AdminAgentFormScreen(agent: agent)),
                   );
                   if (updated == true) ref.invalidate(adminAgentsProvider);
+                } else if (value == 'plan') {
+                  await openGrantPlan(context, ref, agent.id, agent.name);
                 } else if (value == 'revoke') {
-                  await ref.read(adminRepositoryProvider).revokeAgent(agent.id);
-                  ref.invalidate(adminAgentsProvider);
+                  final ok = await confirmDialog(
+                    context,
+                    title: 'admin.revokeAccess'.tr(),
+                    body: agent.name,
+                    confirmLabel: 'admin.revokeAccess'.tr(),
+                    destructive: true,
+                  );
+                  if (!ok || !context.mounted) return;
+                  if (await runAction(context, () => ref.read(adminRepositoryProvider).revokeAgent(agent.id))) {
+                    ref.invalidate(adminAgentsProvider);
+                  }
                 } else if (value == 'delete') {
                   final confirmed = await showDialog<bool>(
                     context: context,
@@ -118,6 +140,11 @@ class _AgentTile extends ConsumerWidget {
               },
               itemBuilder: (context) => [
                 PopupMenuItem(value: 'edit', child: Text('common.edit'.tr())),
+                if (agent.role != 'REVOKED')
+                  PopupMenuItem(
+                    value: 'plan',
+                    child: Text(showsPaidPlans ? 'dash.grantPlan'.tr() : 'dash.giveAccess'.tr()),
+                  ),
                 if (agent.role != 'REVOKED') PopupMenuItem(value: 'revoke', child: Text('admin.revokeAccess'.tr())),
                 PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
               ],

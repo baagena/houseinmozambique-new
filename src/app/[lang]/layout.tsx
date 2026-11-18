@@ -6,7 +6,7 @@ import { fontVariables } from '../fonts';
 import SiteChrome from '@/components/layout/SiteChrome';
 import ChatWidget from '@/components/layout/ChatWidget';
 import { LanguageProvider } from '@/components/i18n/LanguageContext';
-import { getContentOverrides } from '@/lib/content';
+import { getContentOverrides, type ContentOverrides } from '@/lib/content';
 import JsonLd from '@/components/seo/JsonLd';
 import {
   SITE_NAME,
@@ -116,7 +116,22 @@ export default async function RootLayout({
   // Only the proxy chooses this segment, and only as pt or en.
   if (!(SITE_LANGS as readonly string[]).includes(param)) notFound();
   const lang = toSiteLang(param);
-  const contentOverrides = await getContentOverrides();
+  /*
+   * The frame of the site (menu, footer, and every page that is only text)
+   * must not depend on the database answering. If staff's edited copy cannot
+   * be read, the copy built into the code is used instead.
+   *
+   * A page first rendered that way is cached like any other, so it can show
+   * the built-in copy for up to the hour above, or until the next edit purges
+   * it. Purging it here instead would also throw away the good cached pages
+   * that are carrying the site through the outage.
+   */
+  let contentOverrides: ContentOverrides = { en: {}, pt: {} };
+  try {
+    contentOverrides = await getContentOverrides();
+  } catch (err) {
+    console.error('layout: site content unavailable, using built-in copy', err);
+  }
 
   return (
     <html lang={lang} className={`antialiased ${fontVariables}`}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { SocialLinks, SocialNetwork } from '@/lib/agent-contact-links';
 import Image from 'next/image';
 import Icon from '@/components/ui/Icon';
 
@@ -30,7 +31,18 @@ interface Agent {
   agencyAreasServed: string[];
   agencyWebsite: string | null;
   agencyEmail: string | null;
+  whatsapp: string | null;
+  socialLinks: SocialLinks;
 }
+
+const SOCIAL_FIELDS: Array<{ key: SocialNetwork; label: string; placeholder: string }> = [
+  { key: 'facebook', label: 'Facebook', placeholder: 'facebook.com/yourpage' },
+  { key: 'instagram', label: 'Instagram', placeholder: '@yourhandle' },
+  { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/yourname' },
+  { key: 'tiktok', label: 'TikTok', placeholder: '@yourhandle' },
+  { key: 'youtube', label: 'YouTube', placeholder: '@yourchannel' },
+  { key: 'x', label: 'X (Twitter)', placeholder: '@yourhandle' },
+];
 
 export default function ProfileForm({ agent }: { agent: Agent }) {
   const [isSaving, setIsSaving] = useState(false);
@@ -54,6 +66,8 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
     agencyAreasServed: (agent.agencyAreasServed ?? []).join(', '),
     agencyWebsite: agent.agencyWebsite ?? '',
     agencyEmail: agent.agencyEmail ?? '',
+    whatsapp: agent.whatsapp ?? '',
+    socialLinks: { ...agent.socialLinks } as Record<string, string>,
   });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -221,6 +235,17 @@ export default function ProfileForm({ agent }: { agent: Agent }) {
             />
           </div>
         </div>
+
+        {/* Public contact channels: every press on the profile is counted. */}
+        <section className="space-y-5 border-t border-[#f2f4f6] pt-8">
+          <div><h2 className="text-lg font-black text-[#002045]">WhatsApp &amp; social media</h2><p className="mt-1 text-xs text-[#74777f]">Shown as buttons on your public profile. You can see how many people used each one on your dashboard.</p></div>
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="space-y-2 text-[10px] font-black uppercase tracking-widest text-[#002045] md:col-span-2">WhatsApp number (if different from your phone)<input type="tel" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} placeholder="+258 84 123 4567" className="mt-2 w-full rounded-2xl border-0 bg-[#f7f9fb] px-5 py-4 text-sm font-bold normal-case tracking-normal" /></label>
+            {SOCIAL_FIELDS.map((field) => (
+              <label key={field.key} className="space-y-2 text-[10px] font-black uppercase tracking-widest text-[#002045]">{field.label}<input value={formData.socialLinks[field.key] ?? ''} onChange={(e) => setFormData({...formData, socialLinks: {...formData.socialLinks, [field.key]: e.target.value}})} placeholder={field.placeholder} className="mt-2 w-full rounded-2xl border-0 bg-[#f7f9fb] px-5 py-4 text-sm font-bold normal-case tracking-normal" /></label>
+            ))}
+          </div>
+        </section>
 
         {/* Narrative bio */}
         {agent.agencyName && (

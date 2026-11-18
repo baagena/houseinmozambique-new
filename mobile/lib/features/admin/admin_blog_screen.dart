@@ -8,6 +8,7 @@ import '../../widgets/error_view.dart';
 import '../../widgets/shimmer_loaders.dart';
 import '../../widgets/status_badge.dart';
 import 'admin_blog_form_screen.dart';
+import '../../widgets/dashboard_ui.dart';
 
 class AdminBlogScreen extends ConsumerWidget {
   const AdminBlogScreen({super.key});
@@ -61,8 +62,12 @@ class AdminBlogScreen extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
-                            await ref.read(adminRepositoryProvider).deleteBlogPost(post.id);
-                            ref.invalidate(adminBlogPostsProvider);
+                            final ok = await confirmDialog(context,
+                                title: 'dash.deleteArticleTitle'.tr(), body: post.title, confirmLabel: 'common.delete'.tr(), destructive: true);
+                            if (!ok || !context.mounted) return;
+                            if (await runAction(context, () => ref.read(adminRepositoryProvider).deleteBlogPost(post.id))) {
+                              ref.invalidate(adminBlogPostsProvider);
+                            }
                           },
                         ),
                       ],

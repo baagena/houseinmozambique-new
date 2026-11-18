@@ -9,6 +9,10 @@ import { AGENT_PUBLIC } from '@/lib/dto';
 import { buildMetadata } from '@/lib/seo';
 import { getDirectoryVisibleWhere } from '@/lib/data';
 import { agentMatchesProfileSegment, getAgentProfilePath, getAgentProfileSlug } from '@/lib/agent-profile-url';
+import { readSocialLinks, whatsappDigits, SOCIAL_NETWORKS } from '@/lib/agent-contact-links';
+import TrackedContactLink from '@/components/agents/TrackedContactLink';
+
+const SOCIAL_LABELS = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', x: 'X' } as const;
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -38,6 +42,8 @@ export default async function AgentProfilePage({ params }: Props) {
     select: {
       ...AGENT_PUBLIC,
       corporateStatus: true,
+      whatsapp: true,
+      socialLinks: true,
       properties: {
         where: { status: 'PUBLISHED' }, orderBy: { createdAt: 'desc' }, take: 6,
         select: { id: true, title: true, city: true, location: true, price: true, priceUnit: true, currency: true, type: true, bedrooms: true, bathrooms: true, area: true, images: true, listingType: true },
@@ -52,8 +58,14 @@ export default async function AgentProfilePage({ params }: Props) {
   const corporate = Boolean(agent.agencyName);
   const publicName = agent.agencyName || agent.name;
   const phone = agent.agencyPhone || agent.phone;
-  const digits = phone?.replace(/\D/g, '') || '';
-  const whatsapp = digits.startsWith('258') ? digits : digits.startsWith('0') ? `258${digits.slice(1)}` : `258${digits}`;
+  // A dedicated WhatsApp number wins; otherwise the phone is assumed to be on WhatsApp.
+  const whatsapp = whatsappDigits(agent.whatsapp || phone);
+  const email = agent.agencyEmail;
+  const website = agent.agencyWebsite;
+  const socials = readSocialLinks(agent.socialLinks);
+  const socialEntries = SOCIAL_NETWORKS.filter((n) => socials[n]).map((n) => ({ network: n, url: socials[n] as string }));
+  const contactName = corporate ? 'the agency' : agent.name;
+  const waMessage = encodeURIComponent(`Olá ${publicName}, encontrei o seu perfil no House in Mozambique.`);
   const areas = agent.agencyAreasServed.length ? agent.agencyAreasServed : [agent.location];
 
   return (
@@ -96,7 +108,7 @@ export default async function AgentProfilePage({ params }: Props) {
                 <h2 className="mt-7 text-lg font-semibold">Areas served</h2>
                 <div className="mt-3 flex flex-wrap gap-2">{areas.map((area) => <span key={area} className="inline-flex items-center gap-1 rounded-full border border-[#e5e9e5] px-3 py-1.5 text-xs text-[#45524b]"><Icon name="location_on" size={14} />{area}</span>)}</div>
                 {agent.officeAddress && <a className="mt-4 inline-flex items-start gap-2 text-sm text-[var(--gold-deep)] hover:underline" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(agent.officeAddress)}`} target="_blank" rel="noreferrer"><Icon name="map" size={17} />{agent.officeAddress}<Icon name="open_in_new" size={14} /></a>}
-                {corporate && agent.agencyWebsite && <a className="mt-3 block text-sm font-medium text-[var(--gold-deep)] hover:underline" href={agent.agencyWebsite} target="_blank" rel="noreferrer">Visit agency website <Icon name="open_in_new" size={14} className="inline" /></a>}
+                {corporate && agent.agencyWebsite && <TrackedContactLink agentId={agent.id} channel="website" className="mt-3 block text-sm font-medium text-[var(--gold-deep)] hover:underline" href={agent.agencyWebsite} target="_blank" rel="noreferrer">Visit agency website <Icon name="open_in_new" size={14} className="inline" /></TrackedContactLink>}
               </div>
             </section>
 
@@ -107,14 +119,21 @@ export default async function AgentProfilePage({ params }: Props) {
           </div>
 
           <aside className="h-fit overflow-hidden rounded-3xl border border-[#e7eae6] bg-white shadow-sm lg:sticky lg:top-5">
-            <div className="bg-[var(--ink)] p-5 text-white"><h2 className="font-semibold !text-white">Get in touch</h2><p className="mt-1 text-sm text-white/75">Contact {corporate ? 'the agency' : agent.name} directly.</p></div>
-            <div id="get-in-touch" className="grid grid-cols-3 gap-2 p-4">
-              {phone && <a href={`tel:${phone}`} className="flex flex-col items-center gap-2 rounded-xl bg-[var(--paper)] p-3 text-xs font-semibold hover:bg-[var(--line)]"><Icon name="call" size={22} className="text-[var(--gold-deep)]" />Call</a>}
-              {phone && <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-2 rounded-xl bg-[var(--paper)] p-3 text-xs font-semibold hover:bg-[var(--line)]"><Icon name="chat" size={22} className="text-[var(--gold-deep)]" />WhatsApp</a>}
-              {agent.agencyEmail && <a href={`mailto:${agent.agencyEmail}`} className="flex flex-col items-center gap-2 rounded-xl bg-[var(--paper)] p-3 text-xs font-semibold hover:bg-[var(--line)]"><Icon name="mail" size={22} className="text-[var(--gold-deep)]" />Email</a>}
+            <div className="bg-[var(--ink)] p-5 text-white"><h2 className="font-semibold !text-white">Get in touch</h2><p className="mt-1 text-sm text-white/75">Contact {contactName} directly — replies usually come fastest on WhatsApp.</p></div>
+            <div id="get-in-touch" className="space-y-2.5 p-4">
+              {whatsapp && <TrackedContactLink agentId={agent.id} channel="whatsapp" href={`https://wa.me/${whatsapp}?text=${waMessage}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-semibold text-white transition hover:brightness-95"><Icon name="chat" size={19} />WhatsApp</TrackedContactLink>}
+              <div className="grid grid-cols-2 gap-2.5">
+                {phone && <TrackedContactLink agentId={agent.id} channel="call" href={`tel:${phone}`} className="flex items-center justify-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2.5 text-sm font-semibold hover:border-[var(--ink)]"><Icon name="call" size={18} className="text-[var(--gold-deep)]" />Call</TrackedContactLink>}
+                {email && <TrackedContactLink agentId={agent.id} channel="email" href={`mailto:${email}`} className="flex items-center justify-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2.5 text-sm font-semibold hover:border-[var(--ink)]"><Icon name="mail" size={18} className="text-[var(--gold-deep)]" />Email</TrackedContactLink>}
+                {website && <TrackedContactLink agentId={agent.id} channel="website" href={website} target="_blank" rel="noreferrer" className="col-span-2 flex items-center justify-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2.5 text-sm font-semibold hover:border-[var(--ink)]"><Icon name="language" size={18} className="text-[var(--gold-deep)]" />Website</TrackedContactLink>}
+              </div>
+              {!whatsapp && !phone && !email && !website && <p className="rounded-xl bg-[var(--paper)] p-3 text-sm text-[var(--hm-muted)]">Contact details are being updated.</p>}
             </div>
-            {phone && <div className="px-5 pb-5"><a href={`tel:${phone}`} className="btn btn--gold btn--full"><Icon name="call" size={17} />Contact {corporate ? 'agency' : 'agent'}</a></div>}
-            {corporate && phone && <p className="px-5 pb-4 text-center text-sm text-[#56615c]">Phone / WhatsApp: <a className="font-semibold text-[var(--ink)] hover:underline" href={`tel:${phone}`}>{phone}</a></p>}
+            {socialEntries.length > 0 && <div className="mx-5 border-t border-[#edf0ed] py-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#68736e]">Follow</p>
+              <div className="flex flex-wrap gap-2">{socialEntries.map(({ network, url }) => <TrackedContactLink key={network} agentId={agent.id} channel={network} href={url} target="_blank" rel="noreferrer me" aria-label={SOCIAL_LABELS[network]} title={SOCIAL_LABELS[network]} className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-white transition hover:-translate-y-0.5 hover:shadow-sm">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/social/${network}.svg`} alt="" className="h-[18px] w-[18px] object-contain" /></TrackedContactLink>)}</div>
+            </div>}
+            {phone && <p className="px-5 pb-1 text-center text-sm text-[#56615c]">Phone: <TrackedContactLink agentId={agent.id} channel="call" className="font-semibold text-[var(--ink)] hover:underline" href={`tel:${phone}`}>{phone}</TrackedContactLink></p>}
             <div className="mx-5 border-t border-[#edf0ed] py-4 text-xs leading-5 text-[#68736e]">{agent.officeAddress ? <><span className="font-semibold text-[#26352e]">Office address</span><br />{agent.officeAddress}</> : `${agent.location}, Mozambique`}</div>
             {agent.isVerified && <div className="mx-5 mb-5 flex gap-2 rounded-xl bg-[#f5efe3] p-3 text-xs leading-5 text-[var(--ink)]"><Icon name="verified_user" size={17} className="text-[var(--verified)]" />Identity / business details verified by House in Mozambique.</div>}
           </aside>

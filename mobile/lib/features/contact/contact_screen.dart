@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/network/api_client.dart';
-import '../../core/theme/app_theme.dart';
 import '../../repositories/inquiry_repository.dart';
+import '../../services/firebase_services.dart';
+import '../../widgets/sheets.dart';
+import '../../controllers/auth_controller.dart';
 
 class ContactScreen extends ConsumerStatefulWidget {
   final String? propertyId;
@@ -20,8 +22,8 @@ class ContactScreen extends ConsumerStatefulWidget {
 
 class _ContactScreenState extends ConsumerState<ContactScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _nameController = TextEditingController();
-  late final _emailController = TextEditingController();
+  late final _nameController = TextEditingController(text: ref.read(authControllerProvider).agent?.name ?? '');
+  late final _emailController = TextEditingController(text: ref.read(authControllerProvider).agent?.email ?? '');
   late final _subjectController = TextEditingController(text: widget.prefillSubject ?? '');
   late final _messageController = TextEditingController();
   bool _submitting = false;
@@ -47,16 +49,10 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
             propertyId: widget.propertyId,
             agentId: widget.agentId,
           );
+      Analytics.contactAgent('form');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('contact.success'.tr())));
-      // This sheet can be the only route on the stack (e.g. after a login
-      // redirect); popping then would leave a black screen behind.
-      final router = GoRouter.of(context);
-      if (router.canPop()) {
-        router.pop();
-      } else {
-        router.go('/home');
-      }
+      _close();
     } catch (e) {
       if (!mounted) return;
       final message = e.asApiException?.message ?? 'contact.error'.tr();
@@ -66,80 +62,76 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
     }
   }
 
+  void _close() {
+    // This sheet can be the only route on the stack (e.g. after a login
+    // redirect); popping then would leave a black screen behind.
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+    } else {
+      router.go('/home');
+    }
+  }
+
+  String? _required(String? v) => (v == null || v.trim().isEmpty) ? 'common.required'.tr() : null;
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    return RouteSheet(
+      onClose: _close,
+      builder: (context, scrollController) => Form(
+        key: _formKey,
+        child: ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          children: [
+            SheetTitle('contact.title'.tr(), onClose: _close),
+            TextFormField(
+              controller: _nameController,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(labelText: 'contact.name'.tr()),
+              validator: _required,
             ),
-            child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
-                    ),
-                  ),
-                  Text('contact.title'.tr(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(labelText: 'contact.name'.tr()),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(labelText: 'contact.email'.tr()),
-                    validator: (v) => (v == null || !v.contains('@')) ? ' ' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _subjectController,
-                    decoration: InputDecoration(labelText: 'contact.subject'.tr()),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _messageController,
-                    maxLines: 5,
-                    decoration: InputDecoration(labelText: 'contact.message'.tr()),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? ' ' : null,
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _submitting ? null : _submit,
-                      child: _submitting
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Text('common.send'.tr()),
-                    ),
-                  ),
-                  ],
-                ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              decoration: InputDecoration(labelText: 'contact.email'.tr()),
+              validator: (v) => RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch((v ?? '').trim())
+                  ? null
+                  : 'admin.validEmail'.tr(),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _subjectController,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(labelText: 'contact.subject'.tr()),
+              validator: _required,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _messageController,
+              maxLines: 5,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(labelText: 'contact.message'.tr(), alignLabelWithHint: true),
+              validator: _required,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submitting ? null : _submit,
+                child: _submitting
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text('common.send'.tr()),
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

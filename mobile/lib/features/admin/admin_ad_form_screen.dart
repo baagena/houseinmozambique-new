@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
+import '../../models/ad.dart';
 import '../../models/advertisement.dart';
+import '../../widgets/ad_banner.dart';
+import 'ad_artwork_check.dart';
 import '../../repositories/admin_repository.dart';
 
 const _positions = ['after_featured', 'between_cities_1', 'between_cities_2', 'before_footer', 'sidebar_strip', 'top_banner'];
@@ -33,6 +36,33 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
   bool _submitting = false;
 
   bool get _isEditing => widget.ad != null;
+
+  @override
+  void initState() {
+    super.initState();
+    for (final c in [_titleController, _descriptionController, _imageUrlController, _linkUrlController,
+        _linkTextController, _bgColorController, _textColorController]) {
+      c.addListener(_refresh);
+    }
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  /// The ad as it stands in the form, for the live preview.
+  Ad get _draft => Ad(
+        id: widget.ad?.id ?? 'preview',
+        title: _titleController.text.trim().isEmpty ? 'admin.previewTitle'.tr() : _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        imageUrl: _imageUrlController.text.trim(),
+        linkUrl: _linkUrlController.text.trim(),
+        linkText: _linkTextController.text.trim(),
+        position: 'preview',
+        type: _type,
+        bgColor: _bgColorController.text.trim(),
+        textColor: _textColorController.text.trim(),
+      );
 
   @override
   void dispose() {
@@ -95,7 +125,16 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
               const SizedBox(height: 12),
               TextFormField(controller: _descriptionController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.description'.tr()]))),
               const SizedBox(height: 12),
-              TextFormField(controller: _imageUrlController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.imageUrl'.tr()]))),
+              TextFormField(
+                controller: _imageUrlController,
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: 'common.optional'.tr(args: ['admin.imageOrVideoUrl'.tr()]),
+                  hintText: 'https://res.cloudinary.com/…',
+                ),
+              ),
+              AdArtworkCheck(url: _imageUrlController.text),
               const SizedBox(height: 12),
               TextFormField(controller: _linkUrlController, decoration: InputDecoration(labelText: 'common.optional'.tr(args: ['admin.linkUrl'.tr()]))),
               const SizedBox(height: 12),
@@ -130,6 +169,17 @@ class _AdminAdFormScreenState extends ConsumerState<AdminAdFormScreen> {
                 onChanged: (v) => setState(() => _isActive = v),
               ),
               const SizedBox(height: 20),
+              Text('admin.preview'.tr(), style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              // Exactly what people will see (same widget as the Home screen).
+              ClipRect(
+                child: AdBanner(
+                  key: ValueKey(_imageUrlController.text.trim()),
+                  ads: [_draft],
+                  position: 'preview',
+                ),
+              ),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _submitting ? null : _submit,
                 child: _submitting

@@ -9,6 +9,7 @@ import { featureFromPlan } from '@/lib/listing-addons';
 import { findRequestablePlan } from '@/lib/plan-requests';
 import { revalidatePath } from 'next/cache';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 /**
  * Uploads a single image to Cloudinary.
@@ -251,6 +252,8 @@ export async function publishDraft(id: string) {
       publishedUntil: decision.publishedUntil,
     }).catch((e) => console.error('featureFromPlan failed:', e));
 
+    if (property.status === 'PENDING') pushToAdmins(pushes.listingToReview(property.title));
+
     revalidateListing(id);
     revalidatePath('/dashboard/agent/listings');
 
@@ -439,6 +442,8 @@ export async function createProperty(formData: any, imageUrls: string[]) {
           sendPropertySubmittedEmail(property, { name: agent.name, email: agent.email }),
         ]);
       }
+    if (property.status === 'PENDING') pushToAdmins(pushes.listingToReview(property.title, agent.name));
+
     } catch (error: any) {
       console.error('Property notification email failed:', error);
     }

@@ -74,19 +74,19 @@ export function planDataFromBody(body: any) {
      * not 350000 — and is converted once, at the edge, so nothing downstream
      * has to remember which unit it is holding.
      */
-    kind: body.kind === 'one_off' ? 'one_off' : 'subscription',
+    kind: body.kind === 'one_off' ? 'one_off' : body.kind === 'addon' ? 'addon' : 'subscription',
     // `priceMinor` is already centavos (the admin form converts on input);
     // `priceMajor` is meticais and needs converting. Accepting both and
     // running toMinor() over either would multiply the centavo path by 100.
     priceMinor: body.priceMajor != null ? toMinor(body.priceMajor) : clampMinor(body.priceMinor),
     currency: String(body.currency || 'MZN').toUpperCase().slice(0, 3),
-    interval: body.kind === 'one_off'
+    interval: body.kind === 'one_off' || body.kind === 'addon'
       ? null
       : body.interval === 'year' ? 'year' : 'month',
     listingQuota: toQuota(body.listingQuota, 1),
     featuredQuota: Math.max(0, toQuota(body.featuredQuota, 0)),
-    durationDays: body.kind === 'one_off'
-      ? Math.max(1, Number(body.durationDays) || 60)
+    durationDays: body.kind === 'one_off' || body.kind === 'addon'
+      ? Math.max(1, Number(body.durationDays) || (body.kind === 'addon' ? 30 : 60))
       : null,
     isActive: body.isActive ?? true,
     highlighted: body.highlighted ?? false,

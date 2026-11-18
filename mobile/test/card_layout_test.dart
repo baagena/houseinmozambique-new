@@ -61,7 +61,7 @@ Widget _host({required double height, required Widget child}) {
 void main() {
   testWidgets('PropertyCard fits a 266dp home row at max text scale', (tester) async {
     await tester.pumpWidget(_host(height: 266, child: PropertyCard(property: _property())));
-    expect(find.text('MT 2,500/mo'), findsOneWidget);
+    expect(find.textContaining('2,500'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

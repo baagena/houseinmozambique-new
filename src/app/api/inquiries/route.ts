@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendContactConfirmationEmail, sendContactNotificationEmail } from '@/lib/email';
+import { pushes, pushToAdmins, pushToAgents } from '@/lib/push';
 
 const SECTOR_KEYWORDS: Array<{ specialization: string; keywords: string[] }> = [
   { specialization: 'Luxury Villas', keywords: ['luxury villa', 'luxury villas', 'luxury'] },
@@ -96,6 +97,9 @@ export async function POST(req: Request) {
         agentId: assignedAgentId,
       },
     });
+
+    if (inquiry.agentId) pushToAgents([inquiry.agentId], pushes.newLead(name, subject));
+    else pushToAdmins(pushes.contactMessage(name, subject));
 
     // Send emails
     try {

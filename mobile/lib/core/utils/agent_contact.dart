@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/property.dart';
 import '../network/api_config.dart';
+import '../../services/firebase_services.dart';
 
 /// The listing form folds agent contact details and coordinates into the
 /// description text (see listing_form_screen.dart / the website's
@@ -79,11 +80,13 @@ String _internationalDigits(String raw) {
 }
 
 Future<void> launchCall(String number) async {
+  Analytics.contactAgent('call');
   await launchUrl(Uri.parse('tel:$number'), mode: LaunchMode.externalApplication);
 }
 
 /// Opens WhatsApp with a message referencing the property (title + web link).
 Future<void> launchWhatsApp(String number, Property property) async {
+  Analytics.contactAgent('whatsapp');
   final digits = _internationalDigits(number);
   final message = 'property.whatsappMessage'.tr(args: [property.title, propertyUrl(property)]);
   await launchUrl(
@@ -93,7 +96,37 @@ Future<void> launchWhatsApp(String number, Property property) async {
 }
 
 Future<void> launchEmail(String address, Property property) async {
+  Analytics.contactAgent('email');
   final subject = Uri.encodeComponent('property.inquirySubject'.tr(args: [property.title]));
   final body = Uri.encodeComponent('property.emailBody'.tr(args: [property.title, propertyUrl(property)]));
   await launchUrl(Uri.parse('mailto:$address?subject=$subject&body=$body'), mode: LaunchMode.externalApplication);
 }
+
+// ── Agent profile contacts (no listing involved) ──────────────────────────
+// Recording the press is the caller's job (ContactTracker.profile); these
+// only open the app or page.
+
+String? whatsappNumberDigits(String? raw) {
+  if (raw == null || raw.trim().isEmpty) return null;
+  final digits = _internationalDigits(raw);
+  return digits.length >= 9 ? digits : null;
+}
+
+Future<void> launchProfileWhatsApp(String number, String agentName) async {
+  final digits = whatsappNumberDigits(number) ?? number;
+  final message = 'agentProfile.whatsappMessage'.tr(args: [agentName]);
+  await launchUrl(
+    Uri.parse('https://wa.me/$digits?text=${Uri.encodeComponent(message)}'),
+    mode: LaunchMode.externalApplication,
+  );
+}
+
+Future<void> launchProfileCall(String number) =>
+    launchUrl(Uri.parse('tel:${number.replaceAll(' ', '')}'), mode: LaunchMode.externalApplication);
+
+Future<void> launchProfileEmail(String address) =>
+    launchUrl(Uri.parse('mailto:$address'), mode: LaunchMode.externalApplication);
+
+/// Websites and social profiles open in their own app when installed.
+Future<void> launchExternalLink(String url) =>
+    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);

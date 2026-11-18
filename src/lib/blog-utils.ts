@@ -1,5 +1,13 @@
+/**
+ * Article address from its title. Accents are converted, not dropped:
+ * "Formação Imobiliária" → "formacao-imobiliaria" (it used to give
+ * "forma-o-imobili-ria", which reads badly in search results). Existing
+ * slugs pass through unchanged, so published addresses never move.
+ */
 export function slugify(value: string) {
   return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .trim()
     .replace(/['"]/g, '')

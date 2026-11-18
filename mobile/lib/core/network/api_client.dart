@@ -46,7 +46,11 @@ class ApiClient {
     dio = Dio(BaseOptions(
       baseUrl: ApiConfig.baseUrl,
       connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      // Slow mobile data, and the first request to a server that was asleep,
+      // can legitimately take longer than 15s; giving up early showed people
+      // "No internet" while their connection was fine.
+      sendTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
 
@@ -71,7 +75,12 @@ class ApiClient {
       onError: (error, handler) {
         final isNetworkError = _networkErrorTypes.contains(error.type);
         final data = error.response?.data;
-        final message = isNetworkError
+        // A timeout is the server being slow, not the phone being offline.
+        final timedOut = error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.sendTimeout;
+        final message = timedOut
+            ? 'common.serverSlow'.tr()
+            : isNetworkError
             ? 'common.noInternet'.tr()
             : (data is Map && data['error'] != null)
                 ? localizeServerError(data['error'].toString())

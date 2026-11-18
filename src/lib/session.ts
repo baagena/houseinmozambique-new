@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -54,6 +54,42 @@ function verifySessionToken(token: string): string | null {
   }
 }
 
+/**
+ * The mobile app's identity: `Authorization: Bearer <jwt>`, the token issued by
+ * /api/mobile/v1/auth/login (src/lib/mobile-auth.ts, payload `{ agentId }`).
+ *
+ * Accepting it here lets the app call the same /api routes the website uses
+ * — payments, payment proof, boosts, request responses, every admin action —
+ * instead of each one needing a duplicate under /api/mobile/v1 that drifts out
+ * of step. Before this, the app's plan payment posted to /api/payments and got
+ * 401 every time, because that route only knew the cookie.
+ *
+ * Not a CSRF opening: a browser never attaches an Authorization header on its
+ * own, and these routes send no CORS headers, so another site cannot make a
+ * page send one. The role is still loaded from the database below, exactly as
+ * for a cookie session.
+ *
+ * Verified inline rather than via mobile-auth.ts, which throws at import when
+ * JWT_SECRET is missing — that must not take web sessions down with it.
+ */
+async function bearerAgentId(): Promise<string | null> {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return null;
+  let header: string | null = null;
+  try {
+    header = (await headers()).get('authorization');
+  } catch {
+    return null; // Outside a request scope.
+  }
+  if (!header || !header.startsWith('Bearer ')) return null;
+  try {
+    const payload = jwt.verify(header.slice('Bearer '.length).trim(), secret) as { agentId?: unknown };
+    return typeof payload.agentId === 'string' && payload.agentId.length > 0 ? payload.agentId : null;
+  } catch {
+    return null;
+  }
+}
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
@@ -102,9 +138,8 @@ export type SessionAgent = {
 export const getSession = cache(async function getSession(): Promise<SessionAgent | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
 
-  const agentId = verifySessionToken(token);
+  const agentId = (token ? verifySessionToken(token) : null) ?? (await bearerAgentId());
   if (!agentId) return null;
 
   const agent = await prisma.agent.findUnique({

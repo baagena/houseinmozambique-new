@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/session';
 import { agentsToNotify } from '@/lib/property-requests';
 import { sendRequestToAgentEmail } from '@/lib/email';
+import { pushes, pushToAgents } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
@@ -114,6 +115,8 @@ export async function POST(req: Request, { params }: Params) {
 
   let sent = 0;
   const failed: string[] = [];
+  pushToAgents(agents.map((a) => a.id), pushes.buyerRequest(request.city, request.intent));
+
   for (const agent of agents) {
     try {
       await sendRequestToAgentEmail({

@@ -35,9 +35,8 @@ export async function POST(request: Request, { params }: Params) {
   if (isCorporate && plan.kind !== 'subscription') {
     return NextResponse.json({ error: 'Corporate directory visibility requires a monthly or annual subscription.' }, { status: 400 });
   }
-  if (isCorporate && (body.paymentConfirmed !== true || !note)) {
-    return NextResponse.json({ error: 'Confirm that payment was received and add a payment reference or record.' }, { status: 400 });
-  }
+  // No payment proof is demanded here: an admin granting access has already
+  // decided (paid outside the app, a partner, a trial…). A note is optional.
 
   await grantManually({
     agentId: id,

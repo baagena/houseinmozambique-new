@@ -19,12 +19,13 @@ class FavoritesFab extends ConsumerWidget {
       heroTag: heroTag,
       onPressed: () => context.push('/favorites'),
       backgroundColor: AppColors.surfaceContainerLowest,
-      foregroundColor: AppColors.primary,
+      foregroundColor: AppColors.favorite,
+      // Red heart: filled once something is saved, with the count beside it.
       child: Badge(
         isLabelVisible: count > 0,
         label: Text('$count'),
-        backgroundColor: AppColors.secondary,
-        child: const Icon(Icons.favorite_outline),
+        backgroundColor: AppColors.primary, // navy count, readable on the red heart
+        child: Icon(count > 0 ? Icons.favorite : Icons.favorite_outline),
       ),
     );
   }

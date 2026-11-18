@@ -5,6 +5,7 @@ import { requireAdmin as requireAdminSession } from '@/lib/session';
 import { revalidatePath } from 'next/cache';
 import { activateRequestedPlan } from '@/lib/plan-requests';
 import { sendPropertyApprovedEmail, sendPropertyRejectedEmail } from '@/lib/email';
+import { pushListingDecision } from '@/lib/push';
 
 async function requireAdmin() {
   const admin = await requireAdminSession();
@@ -47,6 +48,8 @@ export async function updatePropertyStatus(id: string, status: 'PUBLISHED' | 'RE
         console.error('Property status notification email failed:', error);
       }
     }
+
+    pushListingDecision(existing.hostId, existing.title, existing.status, status);
 
     revalidatePath('/dashboard/agent/listings');
     revalidatePath('/dashboard/admin/approvals');

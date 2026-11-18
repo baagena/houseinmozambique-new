@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { requireBearerAgent } from '@/lib/mobile-auth';
 import { sendPropertySubmissionNotification } from '@/lib/email';
 import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 export async function GET(request: Request) {
   const auth = await requireBearerAgent(request);
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error('Property notification email failed:', error);
     }
+    pushToAdmins(pushes.listingToReview(property.title, auth.agent.name));
 
     return NextResponse.json({ property }, { status: 201 });
   } catch (error: any) {

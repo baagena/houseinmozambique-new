@@ -7,6 +7,7 @@ import { wizardPropertyFields } from '@/lib/listing-wizard-payload';
 import { normalizeAnswers, normalizeContact, wizardBlockers, wizardSchema } from '@/lib/mobile-listing-wizard';
 import { buildPropertySlug, uniquePropertySlug } from '@/lib/property-slug';
 import { sendPropertyApprovedEmail, sendPropertySubmissionNotification, sendPropertySubmittedEmail } from '@/lib/email';
+import { pushes, pushToAdmins } from '@/lib/push';
 
 /** The question set, labels and choices, in ?lang=pt|en. */
 export async function GET(request: Request) {
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error('Property notification email failed:', error);
     }
+    if (!isAdmin) pushToAdmins(pushes.listingToReview(property.title, agent.name));
 
     return NextResponse.json({ property }, { status: 201 });
   } catch (error) {

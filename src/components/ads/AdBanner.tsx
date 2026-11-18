@@ -28,6 +28,122 @@ function trackClick(id: string) {
   fetch(`/api/admin/ads/${id}/click`, { method: 'POST' }).catch(() => {});
 }
 
+/** A link to a video file (MP4/WebM/MOV, or a Cloudinary video upload). */
+export function isVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  let path = url.toLowerCase();
+  try { path = new URL(url, 'https://x').pathname.toLowerCase(); } catch { /* keep raw */ }
+  return /\.(mp4|webm|mov|m4v)$/.test(path) || path.includes('/video/upload/');
+}
+
+/** Black or white text, whichever reads better on a hex background. */
+function onColor(hex: string): string {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  if (Number.isNaN(n) || full.length !== 6) return '#ffffff';
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.55 ? '#111827' : '#ffffff';
+}
+
+/** A banner must be at least 3:2 wide and 600 px across (same rule as the app). */
+export const BANNER_MIN_RATIO = 1.5;
+export const BANNER_MIN_WIDTH = 600;
+export function isBannerSize(width: number, height: number): boolean {
+  return width > 0 && height > 0 && width / height >= BANNER_MIN_RATIO && width >= BANNER_MIN_WIDTH;
+}
+
+/*
+ * An ad with artwork. A wide, large picture (or a video) is shown whole at
+ * full width with the title and button below; anything else — logos, square
+ * or small pictures, small GIFs — is a small tile beside the title, never
+ * stretched. The real size is read when the picture loads.
+ */
+function MediaAd({ ad }: { ad: Ad }) {
+  const brand = ad.bgColor || '#13233F';
+  const video = isVideoUrl(ad.imageUrl);
+  const [muted, setMuted] = useState(true);
+  const [broken, setBroken] = useState(false);
+  const [banner, setBanner] = useState(false);
+  const [ratio, setRatio] = useState(3);
+
+  const measure = (img: HTMLImageElement) => {
+    if (isBannerSize(img.naturalWidth, img.naturalHeight)) {
+      setRatio(Math.min(4, img.naturalWidth / img.naturalHeight));
+      setBanner(true);
+    }
+  };
+
+  return (
+    <div className="h-full overflow-hidden rounded-2xl border border-[#e6e8eb] bg-white shadow-sm">
+      {video && !broken && (
+        <div className="relative flex items-center justify-center bg-black" style={{ aspectRatio: '16 / 9' }}>
+          <video
+            src={ad.imageUrl ?? undefined}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload="metadata"
+            onError={() => setBroken(true)}
+            className="block h-full w-full object-contain"
+          />
+          <button
+            type="button"
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? 'Turn sound on' : 'Mute'}
+            className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white"
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+        </div>
+      )}
+      {!video && !broken && banner && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={ad.imageUrl ?? undefined} alt={ad.title} className="block w-full object-cover" style={{ aspectRatio: String(ratio) }} />
+      )}
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          {!video && !broken && !banner && (
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl border border-[#e6e8eb] bg-white p-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ad.imageUrl ?? undefined}
+                alt=""
+                onLoad={(e) => measure(e.currentTarget)}
+                onError={() => setBroken(true)}
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          )}
+          <div className="min-w-0">
+            <span className="mb-1 inline-block rounded-md border border-[#e6e8eb] bg-[#f6f7f9] px-2 py-0.5 text-[10.5px] font-semibold text-[#5b616b]">
+              Sponsored
+            </span>
+            <p className="font-semibold leading-snug text-[#111827]">{ad.title}</p>
+            {ad.description && <p className="mt-0.5 line-clamp-2 text-sm text-[#5b616b]">{ad.description}</p>}
+          </div>
+        </div>
+        {ad.linkUrl && (
+          <a
+            href={ad.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick(ad.id)}
+            className="flex-shrink-0 rounded-xl px-5 py-2.5 text-center text-sm font-bold transition hover:opacity-90"
+            style={{ background: brand, color: onColor(brand) }}
+          >
+            {(ad.linkText || 'Learn more').replace(/\s*[→>]+\s*$/, '')} →
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────────────────── Ad card variants ─── */
 
 function BannerAd({ ad, compact }: { ad: Ad; compact?: boolean }) {
@@ -150,6 +266,8 @@ function StripAd({ ad }: { ad: Ad }) {
 
 /* ─────────────────────────────────── Render one ad ─── */
 function AdCard({ ad, compact }: { ad: Ad; compact?: boolean }) {
+  // Artwork always gets the full-media layout (whole picture, or a playing video).
+  if (ad.imageUrl) return <MediaAd ad={ad} />;
   if (ad.type === 'card_row') return <CardRowAd ad={ad} />;
   if (ad.type === 'strip') return <StripAd ad={ad} />;
   return <BannerAd ad={ad} compact={compact} />;

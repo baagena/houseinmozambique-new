@@ -94,8 +94,28 @@ export const AGENT_PUBLIC_SELECT = {
   createdAt: true,
 } as const;
 
-export const AGENT_SELF_SELECT = {
+/**
+ * The public profile: everything on AGENT_PUBLIC_SELECT plus the corporate
+ * details and contact channels. Pass rows through toPublicProfile() before
+ * sending them, which cleans the social links and drops nothing else.
+ */
+export const AGENT_PROFILE_SELECT = {
   ...AGENT_PUBLIC_SELECT,
+  officeAddress: true,
+  whatsapp: true,
+  socialLinks: true,
+  agencyName: true,
+  agencyPhone: true,
+  agencyBusinessType: true,
+  agencyAbout: true,
+  agencyServices: true,
+  agencyAreasServed: true,
+  agencyWebsite: true,
+  agencyEmail: true,
+} as const;
+
+export const AGENT_SELF_SELECT = {
+  ...AGENT_PROFILE_SELECT,
   email: true,
   role: true,
 } as const;
