@@ -14,7 +14,11 @@ workflows:
       # Team settings -> Integrations -> Developer Portal -> Manage keys.
       app_store_connect: HouseInMozambique ASC key
     environment:
-      flutter: stable
+      # Pinned to the version the app is developed and tested with. "stable"
+      # moved to a release that auto-migrates iOS to Swift Package Manager,
+      # which broke the custom Firebase Podfile ("sandbox is not in sync
+      # with the Podfile.lock"). Raise deliberately, after testing.
+      flutter: 3.35.7
       xcode: latest
       cocoapods: default
       ios_signing:
@@ -25,7 +29,14 @@ workflows:
         APP_STORE_APPLE_ID: "6815702309"
     scripts:
       - name: Get Flutter packages
-        script: cd mobile && flutter pub get
+        script: |
+          # Keep iOS on CocoaPods (see the Podfile); never auto-migrate.
+          flutter config --no-enable-swift-package-manager
+          cd mobile && flutter pub get
+      - name: Install iOS pods
+        script: |
+          cd mobile/ios
+          pod install --repo-update
       - name: Apply signing profiles
         script: xcode-project use-profiles
       - name: Build signed .ipa
