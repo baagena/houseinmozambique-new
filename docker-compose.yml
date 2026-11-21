@@ -1,0 +1,37 @@
+# House in Mozambique on the VPS, next to RoadReady (which uses port 3000).
+# Build and start with ./deploy.sh — it passes .env.production to the build
+# (for the NEXT_PUBLIC_* settings) as well as to the running container.
+services:
+  houseinmozambique:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://houseinmozambique.com}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_WHATSAPP: ${NEXT_PUBLIC_WHATSAPP:-}
+    image: houseinmozambique:latest
+    container_name: houseinmozambique
+    restart: unless-stopped
+    # Only nginx on the same server can reach it.
+    ports:
+      - "127.0.0.1:3010:3000"
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+    # Lets the container reach a PostgreSQL running on the VPS itself
+    # (DATABASE_URL host "host.docker.internal").
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

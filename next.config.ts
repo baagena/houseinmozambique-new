@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Self-contained server for the Docker image (Dockerfile). Vercel ignores it.
+  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

@@ -1,0 +1,43 @@
+name: Deploy to VPS
+
+# Every push to master rebuilds and restarts the site on the VPS (like RoadReady).
+# Does nothing until the three secrets below are set in GitHub:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#   VPS_HOST (server IP), VPS_USER (e.g. root), VPS_SSH_KEY (private key)
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'mobile/**'
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_SERVER: ${{ secrets.VPS_HOST != '' && secrets.VPS_SSH_KEY != '' }}
+    steps:
+      - name: Skip (server secrets not set yet)
+        if: env.HAS_SERVER != 'true'
+        run: echo "VPS_HOST / VPS_SSH_KEY not set — skipping deploy."
+
+      - name: Deploy on the VPS
+        if: env.HAS_SERVER == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          command_timeout: 25m
+          script: |
+            set -e
+            cd /var/www/houseinmozambique
+            ./deploy.sh
