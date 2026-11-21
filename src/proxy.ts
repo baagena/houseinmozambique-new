@@ -33,6 +33,42 @@ function isUnlocalized(pathname: string) {
   );
 }
 
+/*
+ * Where a visitor is sent by a redirect: the public address they used (behind
+ * nginx on the VPS, Next itself only sees its internal address).
+ */
+function publicUrl(request: NextRequest): URL {
+  const url = request.nextUrl.clone();
+  const host = (request.headers.get('x-forwarded-host') ?? request.headers.get('host'))?.split(',')[0].trim();
+  if (host) {
+    const [hostname, port] = host.split(':');
+    url.hostname = hostname;
+    url.port = port ?? '';
+  }
+  const proto = request.headers.get('x-forwarded-proto')?.split(',')[0].trim();
+  if (proto === 'http' || proto === 'https') url.protocol = `${proto}:`;
+  return url;
+}
+
+/*
+ * The base for an internal rewrite (/x → /pt/x). Next only serves a rewrite
+ * itself when its origin equals the server's own address; any other origin
+ * is fetched over the network like an external site. On Vercel nextUrl is
+ * that address. Self-hosted (Docker, SELF_HOSTED=1) the server's address is
+ * HOSTNAME:PORT, with https when nginx forwards an https request — the same
+ * rule Next uses (router-utils/resolve-routes, initURL).
+ */
+function rewriteBase(request: NextRequest): URL {
+  const url = request.nextUrl.clone();
+  if (process.env.SELF_HOSTED === '1') {
+    const https = (request.headers.get('x-forwarded-proto') ?? '').includes('https');
+    url.protocol = https ? 'https:' : 'http:';
+    url.hostname = process.env.HOSTNAME || 'localhost';
+    url.port = process.env.PORT || '3000';
+  }
+  return url;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -60,12 +96,12 @@ export function proxy(request: NextRequest) {
   // /pt/... is internal only: one address per page, so send it to the real one.
   const unprefixed = stripPtPrefix(pathname);
   if (unprefixed !== null) {
-    const url = request.nextUrl.clone();
+    const url = publicUrl(request);
     url.pathname = unprefixed;
     return NextResponse.redirect(url, 308);
   }
 
-  const url = request.nextUrl.clone();
+  const url = rewriteBase(request);
   url.pathname = pathname === '/' ? PT_PREFIX : `${PT_PREFIX}${pathname}`;
   return NextResponse.rewrite(url);
 }
