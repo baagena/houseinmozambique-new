@@ -35,6 +35,9 @@ for i in $(seq 1 30); do
   fi
 done
 
+# Old image (now untagged) and build cache older than a week. Only unused
+# items are removed — never what a running container (RoadReady too) uses.
 docker image prune -f >/dev/null
+docker builder prune -f --filter until=168h >/dev/null
 docker compose ps
 echo "=== Deploy complete: https://houseinmozambique.com ==="
