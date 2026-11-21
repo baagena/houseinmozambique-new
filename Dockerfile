@@ -31,7 +31,10 @@ ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL \
 # prisma.config.ts requires DATABASE_URL to exist, but generating the client and
 # building never connect — a placeholder is enough. The real one is only given
 # to the running container (.env.production), never baked into the image.
-RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" npm run build
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" \
+    JWT_SECRET="build-only-placeholder-not-for-runtime" \
+    SESSION_SECRET="build-only-placeholder-not-for-runtime" \
+    npm run build
 
 # ─── Stage 3: runtime ─────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
