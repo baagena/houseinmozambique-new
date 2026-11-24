@@ -2,6 +2,7 @@ import { getAgentsForAdmin } from '@/lib/data';
 import AdminAgentsClient, { type AdminAgent } from '@/components/dashboard/AdminAgentsClient';
 import { requireAdmin } from '@/lib/session';
 import { redirect } from 'next/navigation';
+import { corporateAccessState } from '@/lib/corporate-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,10 @@ export default async function AdminAgentsPage() {
     agencyWebsite: agent.agencyWebsite ?? '',
     agencyEmail: agent.agencyEmail ?? '',
     corporateStatus: agent.corporateStatus ?? '',
-    corporatePaidThrough: agent.subscriptions[0]?.currentPeriodEnd?.toISOString() ?? null,
+    ...(() => {
+      const access = corporateAccessState(agent.corporateStatus, agent.subscriptions[0]);
+      return { corporateAccess: access.state, corporateAccessUntil: access.until?.toISOString() ?? null };
+    })(),
   }));
 
   return <AdminAgentsClient initialAgents={agents} />;

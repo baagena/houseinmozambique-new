@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardActionMenu from '@/components/dashboard/DashboardActionMenu';
 import Icon from '@/components/ui/Icon';
+import type { CorporateAccessState } from '@/lib/corporate-access';
 
 export interface AdminAgent {
   id: string;
@@ -39,7 +40,24 @@ export interface AdminAgent {
   agencyEmail?: string;
   officeAddress?: string;
   corporateStatus?: string;
-  corporatePaidThrough?: string | null;
+  /** Directory access for a corporate agency — see lib/corporate-access. */
+  corporateAccess?: CorporateAccessState;
+  /** When the trial or subscription ends (or ended), ISO. */
+  corporateAccessUntil?: string | null;
+}
+
+const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+function accessBadge(agent: AdminAgent): { text: string; tone: string } {
+  const until = agent.corporateAccessUntil ? fmtDate(agent.corporateAccessUntil) : '';
+  switch (agent.corporateAccess) {
+    case 'DEMO': return { text: 'Demo', tone: 'bg-sky-50 text-sky-700' };
+    case 'TRIAL': return { text: `Trial until ${until}`, tone: 'bg-emerald-50 text-emerald-700' };
+    case 'ACTIVE': return { text: `Active until ${until}`, tone: 'bg-emerald-50 text-emerald-700' };
+    case 'ENDED': return { text: until ? `Inactive · ended ${until}` : 'Inactive', tone: 'bg-red-50 text-red-700' };
+    case 'DEACTIVATED': return { text: 'Deactivated', tone: 'bg-red-50 text-red-700' };
+    default: return { text: 'Awaiting activation', tone: 'bg-amber-50 text-amber-700' };
+  }
 }
 
 type AgentAccountType = 'INDIVIDUAL' | 'CORPORATE';
@@ -311,7 +329,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                     <div className="leading-tight">
                       <p className="text-[13px] font-medium text-[#002045]">{agent.name}</p>
                       <p className="text-[12px] text-[#9aa0a8]">{agent.email}</p>
-                      {isCorporate(agent) && <p className="mt-1 text-[12px] font-medium text-[#845326]">{agent.agencyName || 'Corporate agency'} · {agent.agencyBusinessType || 'Real estate'} · {(agent.corporateStatus || 'PENDING').toLowerCase()}{agent.agencyPhone ? ` · ${agent.agencyPhone}` : ''}</p>}
+                      {isCorporate(agent) && <p className="mt-1 text-[12px] font-medium text-[#845326]">{agent.agencyName || 'Corporate agency'} · {agent.agencyBusinessType || 'Real estate'}{agent.agencyPhone ? ` · ${agent.agencyPhone}` : ''}</p>}
                       {agent.avatar && (
                         <a
                           href={`/api/agent/avatar-download?url=${encodeURIComponent(agent.avatar)}&name=${encodeURIComponent(`${agent.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-profile.jpg`)}`}
@@ -336,8 +354,10 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                       {agent.role === 'ADMIN' ? 'Admin' : 'Agent'}
                     </span>
                     {agent.role !== 'ADMIN' && <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${isCorporate(agent) ? 'bg-violet-50 text-violet-700' : 'bg-sky-50 text-sky-700'}`}>{isCorporate(agent) ? 'Corporate' : 'Individual'}</span>}
-                    {isCorporate(agent) && <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${agent.corporateStatus === 'DEMO' ? 'bg-sky-50 text-sky-700' : agent.corporatePaidThrough ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{agent.corporateStatus === 'DEMO' ? 'Demo' : agent.corporatePaidThrough ? 'Paid' : agent.corporateStatus === 'ACTIVE' ? 'Payment due' : 'Pending payment'}</span>}
-                    {isCorporate(agent) && agent.corporatePaidThrough && <span className="rounded-md bg-[#f1f3f5] px-1.5 py-0.5 text-[11px] font-medium text-[#5b616b]">Paid through {new Date(agent.corporatePaidThrough).toLocaleDateString('en-GB')}</span>}
+                    {isCorporate(agent) && (() => {
+                      const badge = accessBadge(agent);
+                      return <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${badge.tone}`}>{badge.text}</span>;
+                    })()}
                     {agent.isVerified && (
                       <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">Verified</span>
                     )}
@@ -383,7 +403,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                       href={`/dashboard/admin/agents/${agent.id}`}
                       className="rounded-md px-3 py-2 text-left text-[#74777f] hover:bg-[#f7f9fb] hover:text-[#002045]"
                     >
-                      {isCorporate(agent) ? agent.corporatePaidThrough ? 'Payment & profile' : 'Confirm payment & activate' : 'Analytics'}
+                      {isCorporate(agent) ? agent.corporateAccess === 'TRIAL' || agent.corporateAccess === 'ACTIVE' ? 'Manage access' : 'Activate agency' : 'Analytics'}
                     </Link>
                     <button
                       onClick={() => revoke(agent.id)}
@@ -442,7 +462,7 @@ export default function AdminAgentsClient({ initialAgents }: { initialAgents: Ad
                 <option value="CORPORATE">Corporate agency</option>
               </select>
               <p className="mt-2 text-[12px] leading-5 text-[#74777f]">
-                {draft.accountType === 'CORPORATE' ? 'The agency profile stays private while payment is pending. An admin activates it by granting a subscription.' : 'The professional profile appears in the agent directory when it is verified and visible.'}
+                {draft.accountType === 'CORPORATE' ? 'The agency profile stays private until an admin activates it with a free trial or a subscription period (Activate agency in the agent menu).' : 'The professional profile appears in the agent directory when it is verified and visible.'}
               </p>
             </div>
 

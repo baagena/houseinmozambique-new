@@ -707,7 +707,7 @@
     "months": "Months",
     "paymentRecord": "Payment reference or record",
     "paymentReceived": "I confirm payment was received",
-    "corporateNeedsPayment": "Agencies need a confirmed payment and a payment reference.",
+    "corporateNeedsPayment": "Agencies need a monthly or annual plan.",
     "planGranted": "Plan granted",
     "noFreeSlot": "You have reached the number of live listings on your account. Pause or remove a listing to free a slot.",
     "requestNotOpenYet": "This request is not open to you yet. Please try again later.",
