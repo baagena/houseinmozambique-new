@@ -36,8 +36,9 @@ model Agent {
   bio                    String?
   yearsExperience        Int?
   specializations        String[]
-  // Corporate account request details. Access stays pending until staff verify
-  // payment and grant a subscription from the admin agent record.
+  // Corporate account request details. Staff verify the agency and activate it
+  // with a free trial or subscription period from the admin agent record; it is
+  // listed only while that period runs (src/lib/corporate-access.ts).
   agencyName             String?
   agencyPhone            String?
     agencyBusinessType     String?
@@ -46,7 +47,7 @@ model Agent {
     agencyAreasServed      String[]        @default([])
     agencyWebsite          String?
     agencyEmail            String?
-    corporateStatus        String? // PENDING, ACTIVE, DECLINED, DEMO (development-only preview)
+    corporateStatus        String? // PENDING, ACTIVE, INACTIVE (deactivated by staff), DECLINED, DEMO (development-only preview)
   email                  String          @unique
   password               String
   emailVerifiedAt        DateTime?

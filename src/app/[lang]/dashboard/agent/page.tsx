@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { listingQuality } from '@/lib/listing-quality';
 import AgentDashboardClient from '@/components/dashboard/AgentDashboardClient';
 import { getSession } from '@/lib/session';
+import { CORPORATE_ACCESS_PLAN_WHERE, corporateAccessState } from '@/lib/corporate-access';
 
 /**
  * Reading the clock inside the component body trips react-hooks/purity, which
@@ -24,8 +25,20 @@ export default async function AgentDashboard() {
   if (!agent) redirect('/auth');
   const corporate = await prisma.agent.findUnique({
     where: { id: agentId },
-    select: { agencyName: true, corporateStatus: true },
+    select: {
+      agencyName: true,
+      corporateStatus: true,
+      subscriptions: {
+        where: { plan: CORPORATE_ACCESS_PLAN_WHERE },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { status: true, currentPeriodEnd: true, grantNote: true },
+      },
+    },
   });
+  const corporateAccess = corporate?.corporateStatus
+    ? corporateAccessState(corporate.corporateStatus, corporate.subscriptions[0])
+    : null;
 
   const dayAgo = hoursAgo(24);
   const monthAgo = hoursAgo(24 * 30);
@@ -107,9 +120,10 @@ export default async function AgentDashboard() {
     <AgentDashboardClient
       agentName={agent.name}
       needsProfilePhoto={agent.role === 'AGENT' && !agent.avatar}
-      corporate={corporate?.corporateStatus ? {
+      corporate={corporate && corporateAccess ? {
         agencyName: corporate.agencyName ?? '',
-        status: corporate.corporateStatus,
+        access: corporateAccess.state,
+        until: corporateAccess.until?.toISOString() ?? null,
       } : null}
       stats={{
         liveListings: myProperties.filter((p) => p.status === 'PUBLISHED').length,

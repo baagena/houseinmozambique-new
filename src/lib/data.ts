@@ -1,6 +1,7 @@
 import { prisma } from './db';
 import { AGENT_PUBLIC, AGENT_ADMIN_LIST } from './dto';
 import { hostIdentity, type HostLike } from './host-identity';
+import { CORPORATE_ACCESS_PLAN_WHERE } from './corporate-access';
 
 /**
  * The agent attached to a listing.
@@ -181,7 +182,8 @@ export function getDirectoryVisibleWhere(now = new Date()) {
     role: 'AGENT' as const,
     isHidden: false,
     emailVerifiedAt: { not: null },
-    // Corporate agencies appear publicly only during a current paid period.
+    // Corporate agencies appear publicly only while staff have them activated
+    // and their trial or subscription period is running (lib/corporate-access).
     OR: [
       { corporateStatus: null, agencyName: null },
       {
@@ -190,7 +192,7 @@ export function getDirectoryVisibleWhere(now = new Date()) {
           some: {
             status: 'ACTIVE',
             currentPeriodEnd: { gt: now },
-            plan: { kind: 'subscription', priceMinor: { gt: 0 } },
+            plan: CORPORATE_ACCESS_PLAN_WHERE,
           },
         },
       },
@@ -222,11 +224,13 @@ export async function getAgentsForAdmin() {
     select: {
       ...AGENT_ADMIN_LIST,
       _count: { select: { properties: true } },
+      // The latest corporate access period, ended or not, so staff can see a
+      // trial that ran out as well as one that is running.
       subscriptions: {
-        where: { status: 'ACTIVE', currentPeriodEnd: { gt: new Date() }, plan: { kind: 'subscription', priceMinor: { gt: 0 } } },
-        orderBy: { currentPeriodEnd: 'desc' },
+        where: { plan: CORPORATE_ACCESS_PLAN_WHERE },
+        orderBy: { createdAt: 'desc' },
         take: 1,
-        select: { currentPeriodEnd: true },
+        select: { status: true, currentPeriodEnd: true, grantNote: true },
       },
     },
   });

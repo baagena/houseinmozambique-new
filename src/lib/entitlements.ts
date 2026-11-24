@@ -404,6 +404,8 @@ export async function grantManually(opts: {
   grantedBy: string;
   note: string;
   months?: number;
+  /** An exact length in days (a free trial), used instead of `months`. */
+  days?: number;
 }) {
   const plan = await prisma.pricingPlan.findUnique({ where: { slug: opts.planSlug } });
   if (!plan) throw new Error(`Unknown plan "${opts.planSlug}"`);
@@ -418,7 +420,7 @@ export async function grantManually(opts: {
   }
 
   const months = opts.months ?? 1;
-  const days = (plan.interval === 'year' ? 365 : 30) * months;
+  const days = opts.days ?? (plan.interval === 'year' ? 365 : 30) * months;
   const current = await subscriptionInForce(opts.agentId);
   const base = current && current.currentPeriodEnd > new Date() ? current.currentPeriodEnd : new Date();
 

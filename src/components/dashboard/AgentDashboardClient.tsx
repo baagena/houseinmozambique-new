@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import Icon from '@/components/ui/Icon';
 import StatTile from '@/components/dashboard/StatTile';
+import type { CorporateAccessState } from '@/lib/corporate-access';
 
 /**
  * The agent overview, following #view-ag-overview in the design package's
@@ -45,7 +46,7 @@ export interface AttentionListing {
 interface Props {
   agentName: string;
   needsProfilePhoto: boolean;
-  corporate: { agencyName: string; status: string } | null;
+  corporate: { agencyName: string; access: CorporateAccessState; until: string | null } | null;
   stats: {
     liveListings: number;
     pendingListings: number;
@@ -144,16 +145,26 @@ export default function AgentDashboardClient({
         </Link>
       </div>
 
-      {corporate && (
-        <div className={`alert ${corporate.status === 'ACTIVE' ? 'good' : 'warn'}`}>
-          <Icon name="domain" size={18} />
-          <div>
-            <div className="a-title">{corporate.agencyName} · {corporate.status === 'ACTIVE' ? 'Corporate account active' : 'Corporate account awaiting payment confirmation'}</div>
-            <div className="a-sub">{corporate.status === 'ACTIVE' ? 'Your agency profile is listed publicly.' : 'Our team will contact you by your preferred channel to arrange payment. Your agency profile will be published once payment is confirmed.'}</div>
+      {corporate && corporate.access !== 'DEMO' && (() => {
+        const until = corporate.until ? new Date(corporate.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const live = corporate.access === 'TRIAL' || corporate.access === 'ACTIVE';
+        const title = corporate.access === 'TRIAL' ? `Agency active · free trial until ${until}`
+          : corporate.access === 'ACTIVE' ? `Agency active until ${until}`
+          : corporate.access === 'NOT_ACTIVATED' ? 'Agency under review'
+          : 'Agency not active';
+        const sub = live ? 'Your agency profile is listed publicly.'
+          : corporate.access === 'NOT_ACTIVATED' ? 'Our team is reviewing your agency details and will contact you shortly. Your profile is published once it is verified.'
+          : 'Your agency profile is not listed at the moment. Contact our team to reactivate it.';
+        return (
+          <div className={`alert ${live ? 'good' : 'warn'}`}>
+            <Icon name="domain" size={18} />
+            <div>
+              <div className="a-title">{corporate.agencyName} · {title}</div>
+              <div className="a-sub">{sub}</div>
+            </div>
           </div>
-          <Link href="/dashboard/agent/billing" className="btn" style={{ textDecoration: 'none' }}>Billing</Link>
-        </div>
-      )}
+        );
+      })()}
 
       {needsProfilePhoto && (
         <div className="alert warn">

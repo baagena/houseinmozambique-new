@@ -5,6 +5,8 @@ import { getAgentById } from '@/lib/data';
 import { requireAdmin } from '@/lib/session';
 import Icon from '@/components/ui/Icon';
 import AdminGrantPlan from '@/components/dashboard/AdminGrantPlan';
+import AdminCorporateAccess from '@/components/dashboard/AdminCorporateAccess';
+import { CORPORATE_ACCESS_LABEL, CORPORATE_ACCESS_PLAN_WHERE, corporateAccessState } from '@/lib/corporate-access';
 import { prisma } from '@/lib/db';
 import { getEntitlementState } from '@/lib/entitlements';
 
@@ -27,7 +29,7 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
   }
 
   // Plans the team can sell by hand: everything except the free tier.
-  const [plans, entitlement, corporate] = await Promise.all([
+  const [plans, entitlement, corporate, latestAccess] = await Promise.all([
     prisma.pricingPlan.findMany({
       where: { isActive: true, kind: { not: 'addon' }, NOT: { priceMinor: 0, ctaMode: 'checkout' } },
       orderBy: { sortOrder: 'asc' },
@@ -36,9 +38,16 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
     getEntitlementState(agent.id, agent.role),
     prisma.agent.findUnique({
       where: { id },
-      select: { email: true, agencyName: true, agencyPhone: true, officeAddress: true, corporateStatus: true, agencyBusinessType: true, agencyAbout: true, agencyServices: true, agencyAreasServed: true, agencyWebsite: true, agencyEmail: true },
+      select: { email: true, emailVerifiedAt: true, agencyName: true, agencyPhone: true, officeAddress: true, corporateStatus: true, agencyBusinessType: true, agencyAbout: true, agencyServices: true, agencyAreasServed: true, agencyWebsite: true, agencyEmail: true },
+    }),
+    prisma.subscription.findFirst({
+      where: { agentId: id, plan: CORPORATE_ACCESS_PLAN_WHERE },
+      orderBy: { createdAt: 'desc' },
+      select: { status: true, currentPeriodEnd: true, grantNote: true, plan: { select: { slug: true } } },
     }),
   ]);
+  const isCorporate = Boolean(corporate?.corporateStatus || corporate?.agencyName);
+  const access = corporateAccessState(corporate?.corporateStatus, latestAccess);
 
   const totalProperties = agent.properties?.length || 0;
   const liveCount = agent.properties?.filter((p) => p.status === 'PUBLISHED').length || 0;
@@ -79,17 +88,27 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
         </div>
       </div>
 
-      <AdminGrantPlan
-        agentId={agent.id}
-        plans={plans.filter((p) => !(corporate?.corporateStatus || corporate?.agencyName) || p.kind === 'subscription').map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn, kind: p.kind, price: `${p.pricePt} ${p.unitPt}`.trim() }))}
-        currentPlan={entitlement.planName}
-        credits={entitlement.credits}
-        isCorporate={Boolean(corporate?.corporateStatus || corporate?.agencyName)}
-      />
+      {isCorporate ? (
+        <AdminCorporateAccess
+          agentId={agent.id}
+          plans={plans.filter((p) => p.kind === 'subscription').map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn }))}
+          state={access.state}
+          until={access.until?.toISOString() ?? null}
+          currentPlanSlug={latestAccess?.plan.slug ?? null}
+          emailVerified={Boolean(corporate?.emailVerifiedAt)}
+        />
+      ) : (
+        <AdminGrantPlan
+          agentId={agent.id}
+          plans={plans.map((p) => ({ slug: p.slug, name: p.namePt || p.nameEn, kind: p.kind, price: `${p.pricePt} ${p.unitPt}`.trim() }))}
+          currentPlan={entitlement.planName}
+          credits={entitlement.credits}
+        />
+      )}
 
       {corporate?.corporateStatus && (
         <section className="rounded-3xl border border-[#f2f4f6] bg-white p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#845326] mb-2">Corporate request · {corporate.corporateStatus.toLowerCase()}</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#845326] mb-2">Agency details · {CORPORATE_ACCESS_LABEL[access.state].toLowerCase()}</p>
           <h2 className="text-xl font-bold text-[#002045]">{corporate.agencyName}</h2>
           {corporate.agencyBusinessType && <p className="mt-1 text-sm text-[#5E6B7A]">{corporate.agencyBusinessType}</p>}
           {corporate.agencyAbout && <p className="mt-3 max-w-3xl text-sm leading-6 text-[#5E6B7A]">{corporate.agencyAbout}</p>}
@@ -103,7 +122,7 @@ export default async function AdminAgentAnalyticsPage({ params }: Props) {
             {corporate.agencyPhone && <a className="text-[#845326] underline" href={`tel:${corporate.agencyPhone}`}>Call {corporate.agencyPhone}</a>}
             {corporate.agencyPhone && <a className="text-[#845326] underline" href={`https://wa.me/${agencyWhatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
           </div>
-          {corporate.corporateStatus === 'PENDING' && <p className="mt-3 text-sm text-[#5E6B7A]">Review the business details and contact the agency directly to arrange payment. Grant the matching paid subscription above after payment is received; this activates the company profile in the public directory.</p>}
+          {access.state === 'NOT_ACTIVATED' && <p className="mt-3 text-sm text-[#5E6B7A]">Review the business details and contact the agency if anything needs checking. Then start a free trial above — that verifies the agency and lists it in the public directory until the trial ends.</p>}
         </section>
       )}
 
